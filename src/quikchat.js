@@ -120,12 +120,12 @@ class quikchat {
         messageDiv.classList.add(this.messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
 
         const userDiv = document.createElement('div');
-        userDiv.textContent = user;
+        userDiv.innerHTML = user;
         userDiv.style = `width: 100%; text-align: ${align}; font-size: 1em; font-weight:700; color: #444;`;
 
         const contentDiv = document.createElement('div');
         contentDiv.style = `width: 100%; text-align: ${align};`;
-        contentDiv.textContent = message;
+        contentDiv.innerHTML = message;
 
         messageDiv.appendChild(userDiv);
         messageDiv.appendChild(contentDiv);

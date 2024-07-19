@@ -59,14 +59,18 @@
                 theme: 'quikchat-theme-light',
                 titleArea: { title: 'QuikChatJS', align: 'left', show: true },
                 onSend: (chat, msg) => {
+
                     chat.addMessage(msg, 'me', 'right'); // echo the message to the chat area
+
                     // do something with the message
-                    
+                    chat.addMessage(bw.loremIpsum(bw.random(0,50),bw.random(33,100)), 'bot', 'left');
                 }
             });
             chatBox.addMessage('Hello, how are you?', 'bot', 'left');
             chatBox.addMessage('I am fine, thank you.', 'user', 'right');
             chatBox.addMessage('How can I help you today?', 'bot', 'left');
+            chatBox.changeTheme("quikchat-theme-debug");
+
         });
     </script>
 </body>

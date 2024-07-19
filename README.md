@@ -7,7 +7,7 @@ quikchat is a simple vanilla (no dependancies) JavaScript chat control that can 
 * Themeable
 
 ## Demo
-[Example Code and Demo](https://deftio.github.io/quickchat/example.html)
+[Example Code and Demo](https://deftio.github.io/quikchat/example.html)
 
 
 ## Installation

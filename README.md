@@ -18,7 +18,7 @@ Link the quikchat.css stylesheet to style the chat interface.
 html
 
 ```html
-<script src="./path/to/quikchat.js"></script>
+<script src="./path/to/quikchat.umd.min.js"></script>
 <link rel="stylesheet" href="quikchat.css">
 ```
 

@@ -1,0 +1,17 @@
+# Ignore node_modules directory
+node_modules/
+
+
+# Ignore any temporary files
+*.log
+*.tmp
+
+# Ignore any IDE-specific files
+.vscode/
+.idea/
+
+# Ignore any compiled binaries
+*.exe
+*.dll
+*.so
+*.dylib

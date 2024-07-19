@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuikChatJS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+        rel="stylesheet">
+    <link
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90' style='fill:blue'>&#x1F4AC;</text></svg>"
+        rel="icon" />
+    
+    <script src="https://www.unpkg.com/bitwrench@1.2.16/bitwrench.min.js"></script>
+    <link href="./dist/quikchatjs.css" rel="stylesheet"/>
+    <style>
+           body {
+            margin: 0;
+            padding: 5%;
+            height: 100%;
+            width: 100%;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 300;
+        }
+
+        .parent {
+            height: 50vh;
+            width: 40vw;
+        }
+
+        /* these are not part of the widget, just for the demo test */
+        .system-btn {
+            padding: 8px 12px;
+            background-color: #918434;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        
+    </style>
+</head>
+<body>
+    <h2>Component Styles and Resize Checks</h2>
+    <p>This is a test of a themeable chat widget with a title area, messages area, and input area. The title area and
+        input area can be hidden.</p>
+    <div class="parent"></div>
+    <br>
+    <button class="system-btn" onclick="chatBox.titleAreaToggle()">Toggle Title</button>
+    <button class="system-btn" onclick="chatBox.inputAreaToggle()">Toggle Input</button>
+    <script type="module">
+        import quikchat from './dist/quikchat.esm.js';
+        document.addEventListener('DOMContentLoaded', () => {
+            const parentDiv = document.querySelector('.parent');
+            window.chatBox = new quikchat (parentDiv, {
+                theme: 'quikchat-theme-light',
+                titleArea: { title: 'QuikChatJS', align: 'left', show: true },
+                onSend: (chat, msg) => {
+                    chat.addMessage(msg, 'me', 'right');
+                }
+            });
+            chatBox.addMessage('Hello, how are you?', 'user', 'left');
+            chatBox.addMessage('I am fine, thank you.', 'bot', 'right');
+            chatBox.addMessage('How can I help you today?', 'user', 'left');
+            chatBox.addMessage('I can help with a chat widget.', 'bot', 'right');
+        });
+    </script>
+</body>
+
+</html>

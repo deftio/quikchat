@@ -1,0 +1,251 @@
+/* Base Styles - Affect behavior so change with char */
+.quikchat-base {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    min-width: 200px;
+    min-height: 200px;
+}
+
+.quikchat-title-area {
+    width: 100%;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.quikchat-messages-area {
+    flex-grow: 1;
+    padding: 8px;
+    overflow-y: auto;
+    width: 100%;
+}
+
+.quikchat-message {
+    padding: 2px;
+}
+
+.quikchat-input-area {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    min-height: 56px;
+    height: 4em;
+    width: 100%;
+}
+
+.quikchat-input-textbox {
+    flex-grow: 1;
+    min-height: 40px;
+    resize: none;
+    padding: 8px;
+}
+
+.quikchat-input-send-btn {
+    margin-left: 8px;
+    padding: 8px 12px;
+    height: 100%;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* ***************************************** */
+/* Theme styles : debug                      */
+.quikchat-theme-debug {
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 5px;
+    background-color: mediumorchid;
+}
+
+.quikchat-theme-debug .quikchat-title-area {
+    background-color: lightblue;
+    color: #333;
+    font-size: 1.1em;
+    font-weight: 700;
+}
+
+.quikchat-theme-debug .quikchat-messages-area {
+    background-color: lightsalmon;
+}
+
+.quikchat-theme-debug .quikchat-message-1 {
+    background-color: lightseagreen;
+    color: #eee;
+}
+
+.quikchat-theme-debug .quikchat-message-2 {
+    background-color: lightpink;
+    color: #444;
+}
+
+.quikchat-theme-debug .quikchat-input-area {
+    background-color: lightgreen;
+}
+
+.quikchat-theme-debug .quikchat-input-textbox {
+    background-color: #eee;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.quikchat-theme-debug .quikchat-input-send-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+/* ********************************** */
+/* theme dark                         */
+.quikchat-theme-dark {
+    border: 1px solid #555555;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #212121;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.quikchat-theme-dark .quikchat-title-area {
+    background-color: #263238;
+    color: #eceff1;
+    padding: 8px;
+    font-weight: bold;
+    border-bottom: 1px solid #37474f;
+}
+
+.quikchat-theme-dark .quikchat-messages-area {
+    background-color: #424242;
+    color: #eceff1;
+    padding: 10px;
+}
+
+.quikchat-theme-dark .quikchat-message-1 {
+    background-color: #004d40;
+    color: #b2dfdb;
+    padding: 6px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+
+.quikchat-theme-dark .quikchat-message-2 {
+    background-color: #6a1b9a;
+    color: #e1bee7;
+    padding: 6px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+
+.quikchat-theme-dark .quikchat-input-area {
+    padding: 8px;
+    background-color: #263238;
+}
+
+.quikchat-theme-dark .quikchat-input-textbox {
+    width: 75%;
+    padding: 8px;
+    background-color: #424242;
+    border: 1px solid #555;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #eceff1;
+}
+
+.quikchat-theme-dark .quikchat-input-send-btn {
+    background-color: #1b5e20;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+/* ********************************** */
+/* theme light */
+.quikchat-theme-light {
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 10px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.quikchat-theme-light .quikchat-title-area {
+    background-color: #3a3b3c;
+    /* Darker grey for header */
+    color: #ffffff;
+    padding: 12px;
+    font-weight: bold;
+    border-bottom: 1px solid #e0e0e0;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+}
+
+.quikchat-theme-light .quikchat-messages-area {
+    background-color: #f9f9f9;
+    /* Very light grey */
+    color: #333333;
+    padding: 12px;
+    border-top: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.quikchat-theme-light .quikchat-message-1 {
+    background-color: #e0f7fa;
+    /* Light teal */
+    color: #00796b;
+    /* Dark teal */
+    padding: 8px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.quikchat-theme-light .quikchat-message-2 {
+    background-color: #ffecb3;
+    /* Light yellow */
+    color: #f57c00;
+    /* Dark orange */
+    padding: 8px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.quikchat-theme-light .quikchat-input-area {
+    background-color: #ffffff;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    border-radius: 0 0 8px 8px;
+}
+
+.quikchat-theme-light .quikchat-input-textbox {
+    flex-grow: 1;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #333333;
+    margin-right: 10px;
+}
+
+.quikchat-theme-light .quikchat-input-send-btn {
+    background-color: #007bff;
+    /* ChatGPT/Vercel blue */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.quikchat-theme-light .quikchat-input-send-btn:hover {
+    background-color: #0056b3;
+    /* Darker blue */
+}

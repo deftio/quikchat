@@ -46,6 +46,14 @@ class quikchat {
         this.sendButton.addEventListener('click', () => this.onSend(this, this.textEntry.value.trim()));
         window.addEventListener('resize', () => this.handleContainerResize());
         this.chatWidget.addEventListener('resize', () => this.handleContainerResize());
+        this.textEntry.addEventListener('keydown', (event) => {
+            // Check if Shift + Enter is pressed
+            if (event.shiftKey && event.keyCode === 13) {
+                // Prevent default behavior (adding new line)
+                event.preventDefault();
+                this.onSend(this, this.textEntry.value.trim())
+            }
+        });
     }
 
     titleAreaToggle() {

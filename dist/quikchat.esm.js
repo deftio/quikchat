@@ -99,6 +99,14 @@ var quikchat = /*#__PURE__*/function () {
       this.chatWidget.addEventListener('resize', function () {
         return _this.handleContainerResize();
       });
+      this.textEntry.addEventListener('keydown', function (event) {
+        // Check if Shift + Enter is pressed
+        if (event.shiftKey && event.keyCode === 13) {
+          // Prevent default behavior (adding new line)
+          event.preventDefault();
+          _this.onSend(_this, _this.textEntry.value.trim());
+        }
+      });
     }
   }, {
     key: "titleAreaToggle",

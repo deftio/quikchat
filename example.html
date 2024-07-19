@@ -59,13 +59,14 @@
                 theme: 'quikchat-theme-light',
                 titleArea: { title: 'QuikChatJS', align: 'left', show: true },
                 onSend: (chat, msg) => {
-                    chat.addMessage(msg, 'me', 'right');
+                    chat.addMessage(msg, 'me', 'right'); // echo the message to the chat area
+                    // do something with the message
+                    
                 }
             });
-            chatBox.addMessage('Hello, how are you?', 'user', 'left');
-            chatBox.addMessage('I am fine, thank you.', 'bot', 'right');
-            chatBox.addMessage('How can I help you today?', 'user', 'left');
-            chatBox.addMessage('I can help with a chat widget.', 'bot', 'right');
+            chatBox.addMessage('Hello, how are you?', 'bot', 'left');
+            chatBox.addMessage('I am fine, thank you.', 'user', 'right');
+            chatBox.addMessage('How can I help you today?', 'bot', 'left');
         });
     </script>
 </body>

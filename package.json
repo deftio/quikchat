@@ -1,9 +1,15 @@
 {
-  "name": "quikchatjs",
+  "name": "quikchat",
   "version": "1.0.0",
-  "description": "~ ~ note: alpha version frequent changes ~ quikchat is a simple vanilla (no dependancies) JavaScript chat control ",
-  "main": "dist/my-library.umd.js",
-  "module": "dist/my-library.esm.js",
+  "description": "quikchat is a simple vanilla (no dependancies) JavaScript chat control for browsers ",
+  "main": "dist/quikchat.umd.min.js",
+  "module": "dist/quikchat.min.js",
+  "unpkg": "dist/quikchat.umd.min.js",
+  "browser": "dist/quikchat.umd.min.js",
+  "files": [
+    "dist"
+  ],
+  "author" : "deftio",
   "type": "module",
   "directories": {
     "example": "examples"
@@ -13,8 +19,7 @@
     "build": "rollup -c"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "license": "BSD-2-Clause",
   "devDependencies": {
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^26.0.1",

@@ -63,13 +63,15 @@
                     chat.addMessage(msg, 'me', 'right'); // echo the message to the chat area
 
                     // do something with the message
+                    // bw (bitwrench) is a utility library that is included in the demo but not related to quikchatjs
+                    // this just creates a random number of messages from the bot
                     chat.addMessage(bw.loremIpsum(bw.random(0,50),bw.random(33,100)), 'bot', 'left');
                 }
             });
             chatBox.addMessage('Hello, how are you?', 'bot', 'left');
             chatBox.addMessage('I am fine, thank you.', 'user', 'right');
             chatBox.addMessage('How can I help you today?', 'bot', 'left');
-            chatBox.changeTheme("quikchat-theme-debug");
+            chatBox.changeTheme("quikchat-theme-light");
 
         });
     </script>

@@ -26,6 +26,8 @@
 
 .quikchat-message {
     padding: 2px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 .quikchat-input-area {

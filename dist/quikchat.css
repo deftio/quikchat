@@ -55,7 +55,9 @@
 }
 
 /* ***************************************** */
-/* Theme styles : debug                      */
+/* Theme styles : debug                      
+    This theme is for debugging purposes only and has a very distinct look. 
+ */
 .quikchat-theme-debug {
     border: 1px solid black;
     border-radius: 10px;
@@ -65,11 +67,12 @@
 
 .quikchat-theme-debug .quikchat-title-area {
     background-color: lightblue;
-    color: #333;
-    font-size: 1.1em;
-    font-weight: 700;
+    color: #333; 
+    padding: 8px;
+    font-weight: 600;
     margin-right: 10px;
 }
+
 
 .quikchat-theme-debug .quikchat-messages-area {
     background-color: lightsalmon;
@@ -114,10 +117,10 @@
 }
 
 .quikchat-theme-dark .quikchat-title-area {
-    background-color: #263238;
+    background-color: #212121;
     color: #eceff1;
     padding: 8px;
-    font-weight: bold;
+    font-weight: 600;
     border-bottom: 1px solid #37474f;
 }
 
@@ -128,16 +131,14 @@
 }
 
 .quikchat-theme-dark .quikchat-message-1 {
-    background-color: #004d40;
-    color: #b2dfdb;
+    background-color: #404040e5;
     padding: 6px;
     border-radius: 4px;
     margin-bottom: 4px;
 }
 
 .quikchat-theme-dark .quikchat-message-2 {
-    background-color: #6a1b9a;
-    color: #e1bee7;
+    background-color: #5a5a5a;
     padding: 6px;
     border-radius: 4px;
     margin-bottom: 4px;

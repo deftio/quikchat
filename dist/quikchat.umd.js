@@ -65,137 +65,144 @@
         onSend: function onSend() {}
       };
       _classCallCheck(this, quikchat);
-      this.parentElement = parentElement;
-      this.theme = meta.theme;
-      this.onSend = meta.onSend ? meta.onSend : function () {};
-      this.createWidget();
+      this._parentElement = parentElement;
+      this._theme = meta.theme;
+      this._onSend = meta.onSend ? meta.onSend : function () {};
+      this._createWidget();
       // title area
       if (meta.titleArea) {
-        this.titleAreaSet(meta.titleArea.title, meta.titleArea.align);
+        this.titleAreaSetContents(meta.titleArea.title, meta.titleArea.align);
         if (meta.titleArea.show) {
           this.titleAreaShow();
         } else {
           this.titleAreaHide();
         }
       }
-      this.attachEventListeners();
+      this._attachEventListeners();
     }
     return _createClass(quikchat, [{
-      key: "createWidget",
-      value: function createWidget() {
+      key: "_createWidget",
+      value: function _createWidget() {
         var widgetHTML = "\n            <div class=\"quikchat-base ".concat(this.theme, "\">\n                <div class=\"quikchat-title-area\">\n                    <span style=\"font-size: 1.5em; font-weight: 600;\">Title Area</span>\n                </div>\n                <div class=\"quikchat-messages-area\"></div>\n                <div class=\"quikchat-input-area\">\n                    <textarea class=\"quikchat-input-textbox\"></textarea>\n                    <button class=\"quikchat-input-send-btn\">Send</button>\n                </div>\n            </div>\n            ");
-        this.parentElement.innerHTML = widgetHTML;
-        this.chatWidget = this.parentElement.querySelector('.quikchat-base');
-        this.titleArea = this.chatWidget.querySelector('.quikchat-title-area');
-        this.messagesArea = this.chatWidget.querySelector('.quikchat-messages-area');
-        this.inputArea = this.chatWidget.querySelector('.quikchat-input-area');
-        this.textEntry = this.inputArea.querySelector('.quikchat-input-textbox');
-        this.sendButton = this.inputArea.querySelector('.quikchat-input-send-btn');
+        this._parentElement.innerHTML = widgetHTML;
+        this._chatWidget = this._parentElement.querySelector('.quikchat-base');
+        this._titleArea = this._chatWidget.querySelector('.quikchat-title-area');
+        this._messagesArea = this._chatWidget.querySelector('.quikchat-messages-area');
+        this._inputArea = this._chatWidget.querySelector('.quikchat-input-area');
+        this._textEntry = this._inputArea.querySelector('.quikchat-input-textbox');
+        this._sendButton = this._inputArea.querySelector('.quikchat-input-send-btn');
+        this.msgid = 0;
       }
     }, {
-      key: "attachEventListeners",
-      value: function attachEventListeners() {
+      key: "$",
+      value: function $() {}
+    }, {
+      key: "_attachEventListeners",
+      value: function _attachEventListeners() {
         var _this = this;
-        this.sendButton.addEventListener('click', function () {
-          return _this.onSend(_this, _this.textEntry.value.trim());
+        this._sendButton.addEventListener('click', function () {
+          return _this._onSend(_this, _this._textEntry.value.trim());
         });
         window.addEventListener('resize', function () {
-          return _this.handleContainerResize();
+          return _this._handleContainerResize();
         });
-        this.chatWidget.addEventListener('resize', function () {
-          return _this.handleContainerResize();
+        this._chatWidget.addEventListener('resize', function () {
+          return _this._handleContainerResize();
         });
-        this.textEntry.addEventListener('keydown', function (event) {
+        this._textEntry.addEventListener('keydown', function (event) {
           // Check if Shift + Enter is pressed
           if (event.shiftKey && event.keyCode === 13) {
             // Prevent default behavior (adding new line)
             event.preventDefault();
-            _this.onSend(_this, _this.textEntry.value.trim());
+            _this._onSend(_this, _this._textEntry.value.trim());
           }
         });
       }
     }, {
       key: "titleAreaToggle",
       value: function titleAreaToggle() {
-        this.titleArea.style.display === 'none' ? this.titleAreaShow() : this.titleAreaHide();
+        this._titleArea.style.display === 'none' ? this.titleAreaShow() : this.titleAreaHide();
       }
     }, {
       key: "titleAreaShow",
       value: function titleAreaShow() {
-        this.titleArea.style.display = '';
-        this.adjustMessagesAreaHeight();
+        this._titleArea.style.display = '';
+        this._adjustMessagesAreaHeight();
       }
     }, {
       key: "titleAreaHide",
       value: function titleAreaHide() {
-        this.titleArea.style.display = 'none';
-        this.adjustMessagesAreaHeight();
+        this._titleArea.style.display = 'none';
+        this._adjustMessagesAreaHeight();
       }
     }, {
-      key: "titleAreaSet",
-      value: function titleAreaSet(title) {
+      key: "titleAreaSetContents",
+      value: function titleAreaSetContents(title) {
         var align = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'center';
-        this.titleArea.textContent = title;
-        this.titleArea.style.textAlign = align;
+        this._titleArea.innerHTML = title;
+        this._titleArea.style.textAlign = align;
       }
     }, {
-      key: "titleAreaGet",
-      value: function titleAreaGet() {
-        return this.titleArea.textContent;
+      key: "titleAreaGetContents",
+      value: function titleAreaGetContents() {
+        return this._titleArea.innerHTML;
       }
     }, {
       key: "inputAreaToggle",
       value: function inputAreaToggle() {
-        this.inputArea.classList.toggle('hidden');
-        this.inputArea.style.display === 'none' ? this.inputAreaShow() : this.inputAreaHide();
+        this._inputArea.classList.toggle('hidden');
+        this._inputArea.style.display === 'none' ? this.inputAreaShow() : this.inputAreaHide();
       }
     }, {
       key: "inputAreaShow",
       value: function inputAreaShow() {
-        this.inputArea.style.display = '';
-        this.adjustMessagesAreaHeight();
+        this._inputArea.style.display = '';
+        this._adjustMessagesAreaHeight();
       }
     }, {
       key: "inputAreaHide",
       value: function inputAreaHide() {
-        this.inputArea.style.display = 'none';
-        this.adjustMessagesAreaHeight();
+        this._inputArea.style.display = 'none';
+        this._adjustMessagesAreaHeight();
       }
     }, {
-      key: "adjustMessagesAreaHeight",
-      value: function adjustMessagesAreaHeight() {
-        var hiddenElements = _toConsumableArray(this.chatWidget.children).filter(function (child) {
+      key: "_adjustMessagesAreaHeight",
+      value: function _adjustMessagesAreaHeight() {
+        var hiddenElements = _toConsumableArray(this._chatWidget.children).filter(function (child) {
           return child.classList.contains('hidden');
         });
         var totalHiddenHeight = hiddenElements.reduce(function (sum, child) {
           return sum + child.offsetHeight;
         }, 0);
-        var containerHeight = this.chatWidget.offsetHeight;
-        this.messagesArea.style.height = "calc(100% - ".concat(containerHeight - totalHiddenHeight, "px)");
+        var containerHeight = this._chatWidget.offsetHeight;
+        this._messagesArea.style.height = "calc(100% - ".concat(containerHeight - totalHiddenHeight, "px)");
       }
     }, {
-      key: "handleContainerResize",
-      value: function handleContainerResize() {
-        this.adjustMessagesAreaHeight();
-        this.adjustSendButtonWidth();
-        console.log('Container resized');
+      key: "_handleContainerResize",
+      value: function _handleContainerResize() {
+        this._adjustMessagesAreaHeight();
+        this._adjustSendButtonWidth();
+        //console.log('Container resized');
       }
     }, {
-      key: "adjustSendButtonWidth",
-      value: function adjustSendButtonWidth() {
-        var sendButtonText = this.sendButton.textContent.trim();
-        var fontSize = parseFloat(getComputedStyle(this.sendButton).fontSize);
+      key: "_adjustSendButtonWidth",
+      value: function _adjustSendButtonWidth() {
+        var sendButtonText = this._sendButton.textContent.trim();
+        var fontSize = parseFloat(getComputedStyle(this._sendButton).fontSize);
         var minWidth = fontSize * sendButtonText.length + 16;
-        this.sendButton.style.minWidth = "".concat(minWidth, "px");
+        this._sendButton.style.minWidth = "".concat(minWidth, "px");
       }
     }, {
-      key: "addMessage",
-      value: function addMessage(message) {
+      key: "messageAddNew",
+      value: function messageAddNew(message) {
         var user = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "foo";
         var align = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'left';
         var messageDiv = document.createElement('div');
-        messageDiv.classList.add('quikchat-message');
-        messageDiv.classList.add(this.messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
+        var msgid = this.msgid;
+        var msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
+        messageDiv.classList.add('quikchat-message', msgidClass);
+        this.msgid++;
+        messageDiv.classList.add(this._messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
         var userDiv = document.createElement('div');
         userDiv.innerHTML = user;
         userDiv.style = "width: 100%; text-align: ".concat(align, "; font-size: 1em; font-weight:700; color: #444;");
@@ -204,37 +211,89 @@
         contentDiv.innerHTML = message;
         messageDiv.appendChild(userDiv);
         messageDiv.appendChild(contentDiv);
-        this.messagesArea.appendChild(messageDiv);
-        this.messagesArea.lastChild.scrollIntoView();
-        this.textEntry.value = '';
-        this.adjustMessagesAreaHeight();
+        this._messagesArea.appendChild(messageDiv);
+        this._messagesArea.lastChild.scrollIntoView();
+        this._textEntry.value = '';
+        this._adjustMessagesAreaHeight();
+        return {
+          msgid: msgid
+        };
       }
     }, {
-      key: "removeMesssage",
-      value: function removeMesssage(n) {
-        this.messagesArea.removeChild(this.messagesArea.children[n]);
+      key: "messageRemove",
+      value: function messageRemove(n) {
+        // use css selector to remove the message
+        var sucess = false;
+        try {
+          this._messagesArea.removeChild(this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0'))));
+          sucess = true;
+        } catch (error) {
+          console.log("{String(n)} : Message ID not found");
+        }
+        return sucess;
       }
+      /* returns the message html object from the DOM
+      */
     }, {
-      key: "getMessage",
-      value: function getMessage(n) {
-        return this.messagesArea.children[n].lastChild.textContent;
+      key: "messageGetDOMObject",
+      value: function messageGetDOMObject(n) {
+        var msg = null;
+        // now use css selector to get the message 
+        try {
+          msg = this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0')));
+        } catch (error) {
+          console.log("{String(n)} : Message ID not found");
+        }
+        return msg;
       }
+      /* returns the message content only
+      */
     }, {
-      key: "appendMessage",
-      value: function appendMessage(n, message) {
-        this.messagesArea.children[n].lastChild.textContent += message;
+      key: "messageGetContent",
+      value: function messageGetContent(n) {
+        var content = "";
+        // now use css selector to get the message 
+        try {
+          content = this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0'))).lastChild.textContent;
+        } catch (error) {
+          console.log("{String(n)} : Message ID not found");
+        }
+        return content;
       }
+
+      /* append message to the message content
+      */
     }, {
-      key: "updateMessage",
-      value: function updateMessage(n, message) {
-        this.messagesArea.children[n].lastChild.textContent = message;
+      key: "messageAppendContent",
+      value: function messageAppendContent(n, content) {
+        var sucess = false;
+        try {
+          this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0'))).lastChild.innerHTML += content;
+          sucess = true;
+        } catch (error) {
+          console.log("{String(n)} : Message ID not found");
+        }
+      }
+      /* replace message content
+      */
+    }, {
+      key: "messageReplaceContent",
+      value: function messageReplaceContent(n, content) {
+        var sucess = false;
+        try {
+          this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0'))).lastChild.innerHTML = content;
+          sucess = true;
+        } catch (error) {
+          console.log("{String(n)} : Message ID not found");
+        }
+        return sucess;
       }
     }, {
       key: "changeTheme",
       value: function changeTheme(newTheme) {
-        this.chatWidget.classList.remove(this.theme);
-        this.chatWidget.classList.add(newTheme);
-        this.theme = newTheme;
+        this._chatWidget.classList.remove(this._theme);
+        this._chatWidget.classList.add(newTheme);
+        this._theme = newTheme;
       }
     }]);
   }();

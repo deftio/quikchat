@@ -111,7 +111,7 @@
 .quikchat-theme-dark {
     border: 1px solid #555555;
     border-radius: 8px;
-    padding: 10px;
+    padding: 5px;
     background-color: #212121;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
@@ -125,7 +125,7 @@
 }
 
 .quikchat-theme-dark .quikchat-messages-area {
-    background-color: #424242;
+    background-color: #212121;
     color: #eceff1;
     padding: 10px;
 }
@@ -199,7 +199,7 @@
   }
   
   .quikchat-theme-light .quikchat-input-area {
-    background-color: #f0f0f0;
+    background-color: #f9f9f9;
   }
   
   .quikchat-theme-light .quikchat-input-textbox {

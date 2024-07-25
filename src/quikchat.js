@@ -1,5 +1,10 @@
 
 class quikchat {
+    /**
+     * 
+     * @param string or DOM element  parentElement 
+     * @param {*} meta 
+     */
     constructor(parentElement, 
         meta = { 
             theme: 'quikchat-theme-light', 
@@ -23,6 +28,7 @@ class quikchat {
             }
         }
         this._attachEventListeners();
+        this.trackHistory = meta.trackHistory || true;
         this._history = [];
     }
 
@@ -124,16 +130,24 @@ class quikchat {
         this._sendButton.style.minWidth = `${minWidth}px`;
     }
 
-    messageAddNew(message, user = "foo", align = 'left') {
+    messageAddNew(message, userObject = "test", align = 'left') {
         const messageDiv = document.createElement('div');
         const msgid = this.msgid;
         const msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
         messageDiv.classList.add('quikchat-message', msgidClass);
         this.msgid++;
         messageDiv.classList.add(this._messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
-
+        let user = {name: "not-set",role : "user"};
+        if (typeof userObject === 'object') {
+            for (const key in userObject) {
+                user[key] = userObject[key];
+            }
+        }
+        else { // if userObject is a string
+            user["name"] = userObject ;
+        }
         const userDiv = document.createElement('div');
-        userDiv.innerHTML = user;
+        userDiv.innerHTML = user.name;
         userDiv.style = `width: 100%; text-align: ${align}; font-size: 1em; font-weight:700; color: #444;`;
 
         const contentDiv = document.createElement('div');
@@ -147,6 +161,14 @@ class quikchat {
 
         this._textEntry.value = '';
         this._adjustMessagesAreaHeight();
+        const timestamp = new Date().toISOString();
+        const updatedtime = timestamp;
+        if (this.trackHistory) {
+            this._history.push({ msgid, user, message, align, timestamp, updatedtime, messageDiv});
+            if (this._history.length > 10000000) {
+                this._history.shift();
+            }
+        }
         return {msgid};
     }
 
@@ -159,6 +181,10 @@ class quikchat {
         }
         catch (error) {
             console.log(`{String(n)} : Message ID not found`);
+        }
+        if (sucess) {
+            // remove from history
+            this._history = this._history.filter((item) => item.msgid !== n);
         }
         return sucess;
     }
@@ -218,6 +244,46 @@ class quikchat {
         }
         return sucess;
     }
+    // history functions
+    /**
+     * 
+     * @param {*} n 
+     * @param {*} m 
+     * @returns array of history messages
+     */
+    historyGet(n,m) {
+
+        if (n == undefined) {
+            n = 0;
+            m= this._history.length;
+        }
+        if (m === undefined) {
+            m = n < 0 ? m: n + 1;
+        }
+        return this._history.slice(n,m);
+    }
+
+    historyClear() {
+        this.msgid = 0;
+        this._history = [];
+    }   
+
+    historyGetLength() {
+        return this._history.length;
+    }   
+
+    historyGetMessage(n) {
+        if ( n>=0 && n < this._history.length) {
+            this._history[n];
+        }
+        return {};
+
+    }      
+
+    historyGetMessageContent(n) {
+        return this._history[n].message;
+    }
+
 
     changeTheme(newTheme) {
         this._chatWidget.classList.remove(this._theme);

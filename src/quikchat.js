@@ -1,7 +1,9 @@
-// quikchat.js
 
 class quikchat {
     constructor(parentElement, meta = { theme: 'quikchat-theme-light', onSend: () => { } }) {
+        if (typeof parentElement === 'string') {
+            parentElement = document.querySelector(parentElement);
+        }
         this._parentElement = parentElement;
         this._theme = meta.theme;
         this._onSend = meta.onSend ? meta.onSend : () => { };
@@ -215,6 +217,14 @@ class quikchat {
         this._chatWidget.classList.remove(this._theme);
         this._chatWidget.classList.add(newTheme);
         this._theme = newTheme;
+    }
+
+    get theme() {
+        return this._theme;
+    }
+
+    static getVersion() {
+        return {"version" : "1.0.2"}
     }
 }
 

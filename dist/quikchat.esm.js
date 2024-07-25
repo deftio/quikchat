@@ -16,7 +16,7 @@ function _defineProperties(e, r) {
   }
 }
 function _createClass(e, r, t) {
-  return r && _defineProperties(e.prototype, r), Object.defineProperty(e, "prototype", {
+  return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", {
     writable: !1
   }), e;
 }
@@ -51,7 +51,6 @@ function _unsupportedIterableToArray(r, a) {
   }
 }
 
-// quikchat.js
 var quikchat = /*#__PURE__*/function () {
   function quikchat(parentElement) {
     var meta = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
@@ -59,6 +58,9 @@ var quikchat = /*#__PURE__*/function () {
       onSend: function onSend() {}
     };
     _classCallCheck(this, quikchat);
+    if (typeof parentElement === 'string') {
+      parentElement = document.querySelector(parentElement);
+    }
     this._parentElement = parentElement;
     this._theme = meta.theme;
     this._onSend = meta.onSend ? meta.onSend : function () {};
@@ -288,6 +290,18 @@ var quikchat = /*#__PURE__*/function () {
       this._chatWidget.classList.remove(this._theme);
       this._chatWidget.classList.add(newTheme);
       this._theme = newTheme;
+    }
+  }, {
+    key: "theme",
+    get: function get() {
+      return this._theme;
+    }
+  }], [{
+    key: "getVersion",
+    value: function getVersion() {
+      return {
+        "version": "1.0.2"
+      };
     }
   }]);
 }();

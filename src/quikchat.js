@@ -1,6 +1,11 @@
 
 class quikchat {
-    constructor(parentElement, meta = { theme: 'quikchat-theme-light', onSend: () => { } }) {
+    constructor(parentElement, 
+        meta = { 
+            theme: 'quikchat-theme-light', 
+            onSend: () => { },
+            trackHistory: true,
+        }) {
         if (typeof parentElement === 'string') {
             parentElement = document.querySelector(parentElement);
         }
@@ -18,6 +23,7 @@ class quikchat {
             }
         }
         this._attachEventListeners();
+        this._history = [];
     }
 
     _createWidget() {

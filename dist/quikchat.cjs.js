@@ -57,7 +57,8 @@ var quikchat = /*#__PURE__*/function () {
   function quikchat(parentElement) {
     var meta = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
       theme: 'quikchat-theme-light',
-      onSend: function onSend() {}
+      onSend: function onSend() {},
+      trackHistory: true
     };
     _classCallCheck(this, quikchat);
     if (typeof parentElement === 'string') {
@@ -77,6 +78,7 @@ var quikchat = /*#__PURE__*/function () {
       }
     }
     this._attachEventListeners();
+    this._history = [];
   }
   return _createClass(quikchat, [{
     key: "_createWidget",

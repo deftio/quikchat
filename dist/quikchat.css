@@ -13,6 +13,7 @@
     margin-right: 8px;
     padding-left : 2px;
     padding-right : 2px;
+    padding: 8px;
     font-weight: 600;
     font-size: 1.3em;
 }
@@ -61,7 +62,6 @@
 .quikchat-theme-debug {
     border: 1px solid black;
     border-radius: 10px;
-    padding: 5px;
     background-color: mediumorchid;
 }
 
@@ -90,6 +90,8 @@
 
 .quikchat-theme-debug .quikchat-input-area {
     background-color: lightgreen;
+    border-bottom-left-radius : 10px;
+    border-bottom-right-radius : 10px;
 }
 
 .quikchat-theme-debug .quikchat-input-textbox {
@@ -111,7 +113,6 @@
 .quikchat-theme-dark {
     border: 1px solid #555555;
     border-radius: 8px;
-    padding: 5px;
     background-color: #212121;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
@@ -147,6 +148,9 @@
 .quikchat-theme-dark .quikchat-input-area {
     padding: 8px;
     background-color: #263238;
+
+    border-bottom-left-radius : 10px;
+    border-bottom-right-radius : 10px;
 }
 
 .quikchat-theme-dark .quikchat-input-textbox {
@@ -175,11 +179,11 @@
 .quikchat-theme-light {
     border: 1px solid #cccccc;
     border-radius: 10px;
-    padding: 5px;
     background-color: #f9f9f9;
   }
   
   .quikchat-theme-light .quikchat-title-area {
+    padding: 8px;
     color: #333;
   }
   
@@ -200,7 +204,9 @@
   
   .quikchat-theme-light .quikchat-input-area {
     background-color: #f9f9f9;
-  }
+    border-bottom-left-radius : 10px;
+    border-bottom-right-radius : 10px;
+}
   
   .quikchat-theme-light .quikchat-input-textbox {
     background-color: #ffffff;

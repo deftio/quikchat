@@ -321,8 +321,8 @@ class quikchat {
         return this._theme;
     }
 
-    static getVersion() {
-        return {"version" : "1.0.3"}
+    static version() {
+        return {"version" : "1.0.4", "license" : "BSD-2", "url" :"https://github/deftio/quikchat"};
     }
 }
 

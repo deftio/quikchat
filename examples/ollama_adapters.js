@@ -4,7 +4,7 @@ contains some small wrappers for calling ollama
 
 // this calls the Ollama Completion API without token by token streaming
 function getOllamaCompletionCallback (chatInstance,userInput) {
-    let x= chatInstance.messageAddNew(userInput, "user", "right");
+    chatInstance.messageAddNew(userInput, "user", "right"); // echos the user input to the chat
     return fetch('http://localhost:11434/api/generate', {
         method: 'POST',
         headers: {
@@ -18,9 +18,7 @@ function getOllamaCompletionCallback (chatInstance,userInput) {
     })
     .then(response => response.json())
     .then(data => {
-       // console.log(data.response);
-        chatInstance.messageAddNew (data.response.trim(), "Bot", 'left'); // Use the chat instance to display the bot's response
-
+        chatInstance.messageAddNew (data.response.trim(), "Bot", 'left'); //  display the bot's response
     })
     .catch(error => console.error('Error:', error));
 }
@@ -30,9 +28,8 @@ function getOllamaCompletionCallback (chatInstance,userInput) {
 // this calls the Ollama Streaming API with token streaming
 function getOllamaStreamingCallback (chatInstance,userInput) {
     var fetchedData = [];
-
     let start = true;
-    chatInstance.messageAddNew(userInput, "user", "right");
+    chatInstance.messageAddNew(userInput, "user", "right"); // echos the user input to the chat
     return fetch('http://localhost:11434/api/generate', {
         method: 'POST',
         headers: {
@@ -67,11 +64,11 @@ function getOllamaStreamingCallback (chatInstance,userInput) {
                 const json = JSON.parse(lines[i]);
                 const content = json.response;
                 if (start) {
-                    id = chatInstance.messageAddNew(content,"bot","left");
+                    id = chatInstance.messageAddNew(content,"bot","left"); // start a new chat message
                     start=false;
                 }
                 else {
-                    chatInstance.messageAppendContent(id,content);
+                    chatInstance.messageAppendContent(id,content); // append new content to message
                 }
                 
             }
@@ -82,9 +79,11 @@ function getOllamaStreamingCallback (chatInstance,userInput) {
     })
     .then(() => {
         // At this point, fetchedData contains all the parsed JSON objects
-        //console.log(fetchedData);
+        //console.log(fetchedData); // use this to see the entire response
     })
     .catch(error => {
         console.error('Fetch error:', error);
     });
 }
+
+

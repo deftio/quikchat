@@ -23,8 +23,6 @@ function getOllamaCompletionCallback (chatInstance,userInput) {
     .catch(error => console.error('Error:', error));
 }
 
-
-
 // this calls the Ollama Streaming API with token streaming
 function getOllamaStreamingCallback (chatInstance,userInput) {
     var fetchedData = [];

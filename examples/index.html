@@ -3,32 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+        type="image/gif">
+
     <!-- include bitwrench for styling -->
-    <link rel="stylesheet" href="https://www.unpkg.com/bitwrench@1.2.16/bitwrench.css">
-    <title>Examples</title>
+     <title>Examples</title>
     <style>
         body {
-            margin: 10 auto;
+            margin: 10% auto;
             padding-left:2%;padding-right:2%;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: sans-serif;
         }
         h1 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-        h2 {
             font-size: 1.5rem;
             margin-bottom: 1rem;
+            font-weight: 700;
         }
-        p {
+        h2 {
+            font-size: 1.1rem;
             margin-bottom: 1rem;
+            font-weight: 600;
         }
+       
         a {
             display: inline-block;
             padding: 0.5rem 1rem;
             background-color: #007bff;
             color: #fff;
-            text-decoration: none;
+            text-decoration: underline;
             border-radius: 5px;
             margin-bottom: 1rem;
         }
@@ -63,4 +65,5 @@
 <h2>Example 5: LLM with Conversational Memory</h2>
 <p>This example demonstrates how to use quikchat with a local LLM using Ollama where quikchat provides the chat history to Ollama provides the llm model.  This allows the chat to "remember" what is being discussed.</p>
 <a href="./ollama_with_memory.html">View Example Ollama with Memory</a>
+
 </html>

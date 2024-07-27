@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     
     <!-- Include Yackbox Chat CSS file -->
-    <link rel="stylesheet" href="../../dist/yackbox.css">
+    <link rel="stylesheet" href="../../dist/quikchat.css">
 
     <!-- Include Yackbox Chat JavaScript file -->
     <script src="../../dist/quikchat.umd.min.js"></script>
@@ -24,11 +24,9 @@
             box-sizing: border-box;
         }
         .chat-container {
-            height: 50vh;
+            height: 80vh;
             width: 100%;
             border-radius: 1em;
-            border: 2px solid rgb(33, 31, 27);
-            padding: 0.5em;
         }
     </style>
 
@@ -39,6 +37,7 @@
     <div class="container">
         <br>
         <h2 class="">Dual Chat Containers</h2>
+        <p>These chat containers can send messages to each other showing that each chat control is a separate instance. </p>
 
         <div class="row">
             <div class="col-6"><div class="chat-container" id="chat-container1"></div> </div>
@@ -51,11 +50,25 @@
 
         const chat1 = new quikchat('#chat-container1');
         const chat2 = new quikchat('#chat-container2');
-        cb1 = (context, fn) => {chat1.addMessage(context.content,"ABC")}
-        cb2 = (context, fn) => {chat2.addMessage(context.content,"DEF")}
-        chat1.addCompletionCallback(cb2);
-        chat2.addCompletionCallback(cb1);
+        cb1 = (chatInstance, content) => {
+            chatInstance.messageAddNew(content,"User1","right")  // echo input to own message area
+            chat1.messageAddNew(content,"User1","left")         // post to other chat
+        }
+        cb2 = (chatInstance, content) => {
+            chatInstance.messageAddNew(content,"User2","right") // echo input to own message area
+            chat2.messageAddNew(content,"User2","left")        // post to other chat
+        }
+        chat1.setCallbackOnSend(cb2);
+        chat2.setCallbackOnSend(cb1);
         
+        // some starter messages..
+        chat1.messageAddNew("Hello, User2!","User1","left"); // writes to chat1
+        // now write the same to the other chat
+        chat2.messageAddNew("Hello, User1!","User1","right");
+
+        chat2.messageAddNew("Hello, User1!","User2","left");
+        chat1.messageAddNew("Hello, User2!","User2","right");
+
         
         
     

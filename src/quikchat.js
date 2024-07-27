@@ -59,7 +59,7 @@ class quikchat {
         this._sendButton = this._inputArea.querySelector('.quikchat-input-send-btn');
         this.msgid = 0;
     }
-    
+
     _attachEventListeners() {
         this._sendButton.addEventListener('click', () => this._onSend(this, this._textEntry.value.trim()));
         window.addEventListener('resize', () => this._handleContainerResize());
@@ -73,7 +73,16 @@ class quikchat {
             }
         });
     }
+    // set the onSend function callback.
+    setCallbackOnSend(callback) {
+        this._onSend = callback;
+    }
+    // set a callback for everytime a message is added (listener)
+    setCallbackonMessageAdded(callback) {
+        this._onMessageAdded = callback;
+    }
 
+    // Public methods
     titleAreaToggle() {
         this._titleArea.style.display === 'none' ? this.titleAreaShow() : this.titleAreaHide();
     }
@@ -132,7 +141,7 @@ class quikchat {
         this._sendButton.style.minWidth = `${minWidth}px`;
     }
    
-    messageAddFull(input = {content: "", userString: "user", "align" : "right", "role" : "user"}) {
+    messageAddFull(input = {content: "", userString: "user", align : "right", role : "user", userID : -1}) {
         const msgid = this.msgid;
         const messageDiv = document.createElement('div');
         const msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
@@ -164,6 +173,9 @@ class quikchat {
                 this._history.shift();
             }
         }
+        if (this._onMessageAdded) {
+            this._onMessageAdded(this, msgid);
+        };
         return msgid;
     }
     messageAddNew(content="", userString="user", align = "right", role = "user") {
@@ -228,7 +240,9 @@ class quikchat {
         try {
             this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML += content;
             // update history
-            this._history.filter((item) => item.msgid === n)[0].content += content;
+            let item = this._history.filter((item) => item.msgid === n)[0];
+            item.content += content;
+            item.updatedtime = new Date().toISOString();
             sucess = true;
             this._messagesArea.lastChild.scrollIntoView();
         } 

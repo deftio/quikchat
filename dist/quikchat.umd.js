@@ -139,9 +139,6 @@
         this.msgid = 0;
       }
     }, {
-      key: "$",
-      value: function $() {}
-    }, {
       key: "_attachEventListeners",
       value: function _attachEventListeners() {
         var _this = this;
@@ -163,6 +160,20 @@
           }
         });
       }
+      // set the onSend function callback.
+    }, {
+      key: "setCallbackOnSend",
+      value: function setCallbackOnSend(callback) {
+        this._onSend = callback;
+      }
+      // set a callback for everytime a message is added (listener)
+    }, {
+      key: "setCallbackonMessageAdded",
+      value: function setCallbackonMessageAdded(callback) {
+        this._onMessageAdded = callback;
+      }
+
+      // Public methods
     }, {
       key: "titleAreaToggle",
       value: function titleAreaToggle() {
@@ -243,8 +254,9 @@
         var input = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
           content: "",
           userString: "user",
-          "align": "right",
-          "role": "user"
+          align: "right",
+          role: "user",
+          userID: -1
         };
         var msgid = this.msgid;
         var messageDiv = document.createElement('div');
@@ -278,6 +290,9 @@
           if (this._history.length > this._historyLimit) {
             this._history.shift();
           }
+        }
+        if (this._onMessageAdded) {
+          this._onMessageAdded(this, msgid);
         }
         return msgid;
       }
@@ -359,9 +374,11 @@
         try {
           this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0'))).lastChild.innerHTML += content;
           // update history
-          this._history.filter(function (item) {
+          var item = this._history.filter(function (item) {
             return item.msgid === n;
-          })[0].content += content;
+          })[0];
+          item.content += content;
+          item.updatedtime = new Date().toISOString();
           sucess = true;
           this._messagesArea.lastChild.scrollIntoView();
         } catch (error) {

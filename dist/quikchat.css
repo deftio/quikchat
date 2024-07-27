@@ -12,6 +12,7 @@
     width: 100%;
     min-width: 200px;
     min-height: 200px;
+    box-sizing: border-box !important;
 }
 
 .quikchat-title-area {
@@ -44,23 +45,27 @@
     min-height: 56px;
     height: 4em;
     width: 100%;
-}
+    box-sizing: border-box !important;
 
+}
+  
 .quikchat-input-textbox {
     flex-grow: 1;
     min-height: 40px;
     resize: none;
-    padding: 8px;
+    padding: 4px;
+    height: 100%;
 }
 
 .quikchat-input-send-btn {
     margin-left: 8px;
-    padding: 8px 12px;
+    padding: 8px;
     height: 100%;
+    min-width: 5rem;
     cursor: pointer;
     white-space: nowrap;
 }
-
+  
 /* ***************************************** */
 /* Theme styles : debug                      
     This theme is for debugging purposes only and has a very distinct look. 

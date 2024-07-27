@@ -106,9 +106,11 @@ Any manual edits may be lost.
 <li>Responsive design for various screen sizes.</li>
 <li>Themeable with css</li>
 <li>Hideable/Showable Title and Text Entry areas allows flexibility of usage</li>
+<li>Full history storage and retrieval</li>
+<li>History can be fed directly to OpenAI / Mistral / Ollama compatible API</li>
 </ul>
 <h2 id="demo">Demo</h2>
-<p><a href="https://deftio.github.io/quikchat/example.html">Example Code and Demo</a></p>
+<p><a href="../examples/index.html">Example Code and Demo</a></p>
 <h2 id="installation">Installation</h2>
 <p>To use quikchat in your project, follow these steps:</p>
 <p>Include the quikchat.js JavaScript file in your project.
@@ -116,6 +118,10 @@ Link the quikchat.css stylesheet to style the chat interface.
 html</p>
 <pre><code class="language-html">&lt;script src=&quot;./path/to/quikchat.umd.min.js&quot;&gt;&lt;/script&gt;
 &lt;link rel=&quot;stylesheet&quot; href=&quot;./path/to/quikchat.css&quot;&gt;
+</code></pre>
+<h3 id="use-quikchat-via-cdn">use quikchat Via CDN</h3>
+<pre><code class="language-html">&lt;script src=&quot;https://unpkg.com/quikchat&quot;&gt;&lt;/script&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://unpkg.com/quikchat/dist/quikchat.css&quot; /&gt;
 </code></pre>
 <p>Create a container element in your HTML where you want the chat interface to appear:</p>
 <pre><code class="language-html">&lt;div id=&quot;chat-container&quot;&gt;&lt;/div&gt;

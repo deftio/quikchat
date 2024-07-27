@@ -1,6 +1,6 @@
 {
   "name": "quikchat",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "quikchat is a simple vanilla (no dependancies) JavaScript chat control for browsers ",
   "main": "dist/quikchat.umd.min.js",
   "module": "dist/quikchat.min.js",
@@ -16,7 +16,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node ./tools/updateVersion && rollup -c"
+    "build": "node ./tools/updateVersion && npx docbat -i README.md -o index.html && rollup -c"
   },
   "keywords": [],
   "license": "BSD-2-Clause",

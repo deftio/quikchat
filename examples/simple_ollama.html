@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+        type="image/gif">
+
+    <title>YackBox Demo with local Ollama</title>
+    <!-- Include Bootstrap CSS file -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Include Yackbox Chat CSS file -->
+    <link rel="stylesheet" href="../../dist/quikchat.css">
+
+    <!-- Include Yackbox Chat JavaScript file -->
+    <script src="../../dist/quikchat.umd.min.js"></script>
+
+    <script src="./ollama_adapters.js"></script>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+        .chat-container {
+            height: 70vh;
+            width: 100%;
+        }
+    </style>
+
+</head>
+
+<body>
+       
+
+    <div class="container">
+        <br>
+        <h2 class="">Ollama quikchat Demo</h2>
+        <br>
+        <div class="row">
+            <div class="col-5">
+                <div class="chat-container" id="chat-container1"></div> 
+            </div>
+            <div class="col-1" style="height:100%;"></div>
+            <div class="col-5">
+
+                <div class="chat-container" id="chat-container2"></div> 
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+        const completionsChat = new quikchat('#chat-container1', 
+            {  theme: 'quikchat-theme-light',   
+                onSend: getOllamaCompletionCallback,
+                titleArea: {title: "Completions Chat", "show": true, "align": "left"},
+            });
+        //completionsChat.setDefaultUserName("Me", "left");  // this is the user's name
+        completionsChat.messageAddNew("How can I help? ", "bot", "left");
+
+        const streamingChat = new quikchat('#chat-container2', 
+            {theme: 'quikchat-theme-light',
+            onSend: getOllamaStreamingCallback,
+            titleArea: {title: "Streraming Chat", "show": true, "align": "left"},
+        });
+        //streamingChat.setDefaultUserName("Me", "left");  // this is the user's name
+        streamingChat.messageAddNew("How can I help? ", "bot", "left"); 
+        
+    </script>
+</body>
+
+</html>

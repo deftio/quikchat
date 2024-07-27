@@ -6,9 +6,12 @@ quikchat is a simple vanilla (no dependancies) JavaScript chat control that can 
 * Responsive design for various screen sizes.
 * Themeable with css
 * Hideable/Showable Title and Text Entry areas allows flexibility of usage
+* Full history storage and retrieval
+* History can be fed directly to OpenAI / Mistral / Ollama compatible API
 
 ## Demo
-[Example Code and Demo](https://deftio.github.io/quikchat/example.html)
+[Example Code and Demo](../examples/index.html)
+
 
 
 ## Installation
@@ -21,6 +24,12 @@ html
 ```html
 <script src="./path/to/quikchat.umd.min.js"></script>
 <link rel="stylesheet" href="./path/to/quikchat.css">
+```
+
+### use quikchat Via CDN
+```html
+<script src="https://unpkg.com/quikchat"></script>
+<link rel="stylesheet" href="https://unpkg.com/quikchat/dist/quikchat.css" />
 ```
 
 Create a container element in your HTML where you want the chat interface to appear:

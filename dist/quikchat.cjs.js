@@ -22,11 +22,40 @@ function _createClass(e, r, t) {
     writable: !1
   }), e;
 }
+function _defineProperty(e, r, t) {
+  return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+    value: t,
+    enumerable: !0,
+    configurable: !0,
+    writable: !0
+  }) : e[r] = t, e;
+}
 function _iterableToArray(r) {
   if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r);
 }
 function _nonIterableSpread() {
   throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+}
+function ownKeys(e, r) {
+  var t = Object.keys(e);
+  if (Object.getOwnPropertySymbols) {
+    var o = Object.getOwnPropertySymbols(e);
+    r && (o = o.filter(function (r) {
+      return Object.getOwnPropertyDescriptor(e, r).enumerable;
+    })), t.push.apply(t, o);
+  }
+  return t;
+}
+function _objectSpread2(e) {
+  for (var r = 1; r < arguments.length; r++) {
+    var t = null != arguments[r] ? arguments[r] : {};
+    r % 2 ? ownKeys(Object(t), !0).forEach(function (r) {
+      _defineProperty(e, r, t[r]);
+    }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) {
+      Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
+    });
+  }
+  return e;
 }
 function _toConsumableArray(r) {
   return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread();
@@ -54,11 +83,21 @@ function _unsupportedIterableToArray(r, a) {
 }
 
 var quikchat = /*#__PURE__*/function () {
+  /**
+   * 
+   * @param string or DOM element  parentElement 
+   * @param {*} meta 
+   */
   function quikchat(parentElement) {
     var meta = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
       theme: 'quikchat-theme-light',
       onSend: function onSend() {},
-      trackHistory: true
+      trackHistory: true,
+      titleArea: {
+        title: "Title Area",
+        show: false,
+        align: "center"
+      }
     };
     _classCallCheck(this, quikchat);
     if (typeof parentElement === 'string') {
@@ -71,13 +110,15 @@ var quikchat = /*#__PURE__*/function () {
     // title area
     if (meta.titleArea) {
       this.titleAreaSetContents(meta.titleArea.title, meta.titleArea.align);
-      if (meta.titleArea.show) {
+      if (meta.titleArea.show == true) {
         this.titleAreaShow();
       } else {
         this.titleAreaHide();
       }
     }
     this._attachEventListeners();
+    this.trackHistory = meta.trackHistory || true;
+    this._historyLimit = 10000000;
     this._history = [];
   }
   return _createClass(quikchat, [{
@@ -193,31 +234,62 @@ var quikchat = /*#__PURE__*/function () {
       this._sendButton.style.minWidth = "".concat(minWidth, "px");
     }
   }, {
-    key: "messageAddNew",
-    value: function messageAddNew(message) {
-      var user = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "foo";
-      var align = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'left';
-      var messageDiv = document.createElement('div');
+    key: "messageAddFull",
+    value: function messageAddFull() {
+      var input = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
+        content: "",
+        userString: "user",
+        "align": "right",
+        "role": "user"
+      };
       var msgid = this.msgid;
+      var messageDiv = document.createElement('div');
       var msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
+      'quikchat-userid-' + String(input.userString).padStart(10, '0'); // hash this..
       messageDiv.classList.add('quikchat-message', msgidClass);
       this.msgid++;
       messageDiv.classList.add(this._messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
       var userDiv = document.createElement('div');
-      userDiv.innerHTML = user;
-      userDiv.style = "width: 100%; text-align: ".concat(align, "; font-size: 1em; font-weight:700; color: #444;");
+      userDiv.innerHTML = input.userString;
+      userDiv.style = "width: 100%; text-align: ".concat(input.align, "; font-size: 1em; font-weight:700; color: #444;");
       var contentDiv = document.createElement('div');
-      contentDiv.style = "width: 100%; text-align: ".concat(align, ";");
-      contentDiv.innerHTML = message;
+      contentDiv.style = "width: 100%; text-align: ".concat(input.align, ";");
+      contentDiv.innerHTML = input.content;
       messageDiv.appendChild(userDiv);
       messageDiv.appendChild(contentDiv);
       this._messagesArea.appendChild(messageDiv);
       this._messagesArea.lastChild.scrollIntoView();
       this._textEntry.value = '';
       this._adjustMessagesAreaHeight();
-      return {
-        msgid: msgid
-      };
+      var timestamp = new Date().toISOString();
+      var updatedtime = timestamp;
+      if (this.trackHistory) {
+        this._history.push(_objectSpread2(_objectSpread2({
+          msgid: msgid
+        }, input), {}, {
+          timestamp: timestamp,
+          updatedtime: updatedtime,
+          messageDiv: messageDiv
+        }));
+        if (this._history.length > this._historyLimit) {
+          this._history.shift();
+        }
+      }
+      return msgid;
+    }
+  }, {
+    key: "messageAddNew",
+    value: function messageAddNew() {
+      var content = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+      var userString = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "user";
+      var align = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "right";
+      var role = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "user";
+      return this.messageAddFull({
+        content: content,
+        userString: userString,
+        align: align,
+        role: role
+      });
     }
   }, {
     key: "messageRemove",
@@ -229,6 +301,15 @@ var quikchat = /*#__PURE__*/function () {
         sucess = true;
       } catch (error) {
         console.log("{String(n)} : Message ID not found");
+      }
+      if (sucess) {
+        // slow way to remove from history
+        //this._history = this._history.filter((item) => item.msgid !== n); // todo make this more efficient
+
+        // better way to delete this from history
+        this._history.splice(this._history.findIndex(function (item) {
+          return item.msgid === n;
+        }), 1);
       }
       return sucess;
     }
@@ -254,7 +335,11 @@ var quikchat = /*#__PURE__*/function () {
       var content = "";
       // now use css selector to get the message 
       try {
-        content = this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0'))).lastChild.textContent;
+        // get from history..
+        content = this._history.filter(function (item) {
+          return item.msgid === n;
+        })[0].content;
+        //content =  this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.textContent;
       } catch (error) {
         console.log("{String(n)} : Message ID not found");
       }
@@ -269,7 +354,12 @@ var quikchat = /*#__PURE__*/function () {
       var sucess = false;
       try {
         this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0'))).lastChild.innerHTML += content;
+        // update history
+        this._history.filter(function (item) {
+          return item.msgid === n;
+        })[0].content += content;
         sucess = true;
+        this._messagesArea.lastChild.scrollIntoView();
       } catch (error) {
         console.log("{String(n)} : Message ID not found");
       }
@@ -282,11 +372,61 @@ var quikchat = /*#__PURE__*/function () {
       var sucess = false;
       try {
         this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0'))).lastChild.innerHTML = content;
+        // update history
+        this._history.filter(function (item) {
+          return item.msgid === n;
+        })[0].content = content;
         sucess = true;
       } catch (error) {
         console.log("{String(n)} : Message ID not found");
       }
       return sucess;
+    }
+    // history functions
+    /**
+     * 
+     * @param {*} n 
+     * @param {*} m 
+     * @returns array of history messages
+     */
+  }, {
+    key: "historyGet",
+    value: function historyGet(n, m) {
+      if (n == undefined) {
+        n = 0;
+        m = this._history.length;
+      }
+      if (m === undefined) {
+        m = n < 0 ? m : n + 1;
+      }
+      // remember that entries could be deleted.  TODO: So we need to return the actual history entries
+      // so now we need to find the array index that correspondes to messageIds n (start) and m (end)
+
+      return this._history.slice(n, m);
+    }
+  }, {
+    key: "historyClear",
+    value: function historyClear() {
+      this.msgid = 0;
+      this._history = [];
+    }
+  }, {
+    key: "historyGetLength",
+    value: function historyGetLength() {
+      return this._history.length;
+    }
+  }, {
+    key: "historyGetMessage",
+    value: function historyGetMessage(n) {
+      if (n >= 0 && n < this._history.length) {
+        this._history[n];
+      }
+      return {};
+    }
+  }, {
+    key: "historyGetMessageContent",
+    value: function historyGetMessageContent(n) {
+      return this._history[n].message;
     }
   }, {
     key: "changeTheme",
@@ -304,7 +444,7 @@ var quikchat = /*#__PURE__*/function () {
     key: "getVersion",
     value: function getVersion() {
       return {
-        "version": "1.0.2"
+        "version": "1.0.3"
       };
     }
   }]);

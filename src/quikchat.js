@@ -6,11 +6,13 @@ class quikchat {
      * @param {*} meta 
      */
     constructor(parentElement, 
-        meta = { 
-            theme: 'quikchat-theme-light', 
-            onSend: () => { },
-            trackHistory: true,
-        }) {
+            meta = { 
+                theme: 'quikchat-theme-light', 
+                onSend: () => { }, 
+                trackHistory: true,
+                titleArea: {title: "Title Area", show: false, align: "center"}
+            }) 
+        {
         if (typeof parentElement === 'string') {
             parentElement = document.querySelector(parentElement);
         }
@@ -21,7 +23,7 @@ class quikchat {
         // title area
         if (meta.titleArea) {
             this.titleAreaSetContents(meta.titleArea.title, meta.titleArea.align);
-            if (meta.titleArea.show) {
+            if (meta.titleArea.show == true) {
                 this.titleAreaShow();
             } else {
                 this.titleAreaHide();
@@ -29,6 +31,7 @@ class quikchat {
         }
         this._attachEventListeners();
         this.trackHistory = meta.trackHistory || true;
+        this._historyLimit = 10000000;
         this._history = [];
     }
 
@@ -56,8 +59,7 @@ class quikchat {
         this._sendButton = this._inputArea.querySelector('.quikchat-input-send-btn');
         this.msgid = 0;
     }
-    $() {
-    }
+    
     _attachEventListeners() {
         this._sendButton.addEventListener('click', () => this._onSend(this, this._textEntry.value.trim()));
         window.addEventListener('resize', () => this._handleContainerResize());
@@ -129,30 +131,23 @@ class quikchat {
         const minWidth = fontSize * sendButtonText.length + 16;
         this._sendButton.style.minWidth = `${minWidth}px`;
     }
-
-    messageAddNew(message, userObject = "test", align = 'left') {
-        const messageDiv = document.createElement('div');
+   
+    messageAddFull(input = {content: "", userString: "user", "align" : "right", "role" : "user"}) {
         const msgid = this.msgid;
+        const messageDiv = document.createElement('div');
         const msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
+        const userIdClass = 'quikchat-userid-' + String(input.userString).padStart(10, '0'); // hash this..
         messageDiv.classList.add('quikchat-message', msgidClass);
         this.msgid++;
         messageDiv.classList.add(this._messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
-        let user = {name: "not-set",role : "user"};
-        if (typeof userObject === 'object') {
-            for (const key in userObject) {
-                user[key] = userObject[key];
-            }
-        }
-        else { // if userObject is a string
-            user["name"] = userObject ;
-        }
+     
         const userDiv = document.createElement('div');
-        userDiv.innerHTML = user.name;
-        userDiv.style = `width: 100%; text-align: ${align}; font-size: 1em; font-weight:700; color: #444;`;
+        userDiv.innerHTML = input.userString;
+        userDiv.style = `width: 100%; text-align: ${input.align}; font-size: 1em; font-weight:700; color: #444;`;
 
         const contentDiv = document.createElement('div');
-        contentDiv.style = `width: 100%; text-align: ${align};`;
-        contentDiv.innerHTML = message;
+        contentDiv.style = `width: 100%; text-align: ${input.align};`;
+        contentDiv.innerHTML = input.content;
 
         messageDiv.appendChild(userDiv);
         messageDiv.appendChild(contentDiv);
@@ -164,14 +159,18 @@ class quikchat {
         const timestamp = new Date().toISOString();
         const updatedtime = timestamp;
         if (this.trackHistory) {
-            this._history.push({ msgid, user, message, align, timestamp, updatedtime, messageDiv});
-            if (this._history.length > 10000000) {
+            this._history.push({ msgid, ...input, timestamp, updatedtime, messageDiv});
+            if (this._history.length > this._historyLimit) {
                 this._history.shift();
             }
         }
-        return {msgid};
+        return msgid;
     }
-
+    messageAddNew(content="", userString="user", align = "right", role = "user") {
+        return this.messageAddFull(  
+            {content: content, userString: userString, align: align, role: role}
+        );
+    }
     messageRemove(n) {
         // use css selector to remove the message
         let sucess = false;
@@ -183,8 +182,11 @@ class quikchat {
             console.log(`{String(n)} : Message ID not found`);
         }
         if (sucess) {
-            // remove from history
-            this._history = this._history.filter((item) => item.msgid !== n);
+            // slow way to remove from history
+            //this._history = this._history.filter((item) => item.msgid !== n); // todo make this more efficient
+
+            // better way to delete this from history
+            this._history.splice(this._history.findIndex((item) => item.msgid === n), 1);
         }
         return sucess;
     }
@@ -208,7 +210,9 @@ class quikchat {
         let content = ""
         // now use css selector to get the message 
         try {
-            content =  this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.textContent;
+            // get from history..
+            content = this._history.filter((item) => item.msgid === n)[0].content;
+            //content =  this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.textContent;
         } 
         catch (error) 
         {
@@ -223,7 +227,10 @@ class quikchat {
         let sucess = false;
         try {
             this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML += content;
+            // update history
+            this._history.filter((item) => item.msgid === n)[0].content += content;
             sucess = true;
+            this._messagesArea.lastChild.scrollIntoView();
         } 
         catch (error) 
         {
@@ -236,6 +243,8 @@ class quikchat {
         let sucess = false;
         try {
             this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML = content;
+            // update history
+            this._history.filter((item) => item.msgid === n)[0].content = content;
             sucess = true;
         } 
         catch (error) 
@@ -260,6 +269,9 @@ class quikchat {
         if (m === undefined) {
             m = n < 0 ? m: n + 1;
         }
+        // remember that entries could be deleted.  TODO: So we need to return the actual history entries
+        // so now we need to find the array index that correspondes to messageIds n (start) and m (end)
+        
         return this._history.slice(n,m);
     }
 
@@ -296,7 +308,7 @@ class quikchat {
     }
 
     static getVersion() {
-        return {"version" : "1.0.2"}
+        return {"version" : "1.0.3"}
     }
 }
 

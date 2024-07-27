@@ -1,4 +1,10 @@
-/* Base Styles - Affect behavior so change with char */
+/* 
+ quikchat.css see www.github.com/deftio/quikchat for more info
+ 
+ Base Styles - Affect behavior so change with char
+ For Themes scroll past this section
+ */
+
 .quikchat-base {
     display: flex;
     flex-direction: column;

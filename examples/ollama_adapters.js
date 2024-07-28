@@ -2,6 +2,7 @@
 contains some small wrappers for calling ollama 
 */
 
+const systemPrompt = "You are a helpful assistant.  Try to answer the user's input as accurately as possible and do not make up any answers if you don't know what the user is asking about";
 // this calls the Ollama Completion API without token by token streaming
 function getOllamaCompletionCallback (chatInstance,userInput) {
     chatInstance.messageAddNew(userInput, "user", "right"); // echos the user input to the chat
@@ -12,13 +13,13 @@ function getOllamaCompletionCallback (chatInstance,userInput) {
         },
         body: JSON.stringify({
             model: "mistral",
-            prompt: userInput, 
+            prompt: systemPrompt + userInput, 
             stream: false
         })
     })
     .then(response => response.json())
     .then(data => {
-        chatInstance.messageAddNew (data.response.trim(), "Bot", 'left'); //  display the bot's response
+        chatInstance.messageAddNew (data.response.trim(), "bot", 'left'); //  display the bot's response
     })
     .catch(error => console.error('Error:', error));
 }
@@ -35,7 +36,7 @@ function getOllamaStreamingCallback (chatInstance,userInput) {
         },
         body: JSON.stringify({
             model: "mistral",
-            prompt: userInput,
+            prompt: systemPrompt + userInput,
             stream: true
         })
     })
@@ -68,7 +69,6 @@ function getOllamaStreamingCallback (chatInstance,userInput) {
                 else {
                     chatInstance.messageAppendContent(id,content); // append new content to message
                 }
-                
             }
             partialData = lines[lines.length - 1];
     

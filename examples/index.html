@@ -11,7 +11,7 @@
     <style>
         body {
             margin: 10% auto;
-            padding-left:2%;padding-right:2%;
+            padding-left:5%;padding-right:5%;
             font-family: sans-serif;
         }
         h1 {
@@ -43,7 +43,7 @@
 <!-- example page explains how to use quikchat -->
 
 <h1>QuikChatJS Examples</h1>
-<p>These examples demonstrate how to use QuikChatJS in your projects. Included are basic themes for light, dark, and debugging.</p>
+<p>These examples demonstrate how to use QuikChat in your projects. Included are basic themes for light, dark, and debugging.</p>
 
 <h2>Example 1: Basic Usage as Module</h2>
 <p>This example demonstrates how to create a basic chat widget with QuikChatJS using ESM module import</p>
@@ -66,4 +66,7 @@
 <p>This example demonstrates how to use quikchat with a local LLM using Ollama where quikchat provides the chat history to Ollama provides the llm model.  This allows the chat to "remember" what is being discussed.</p>
 <a href="./ollama_with_memory.html">View Example Ollama with Memory</a>
 
+<h2>Example 6: LLM with Conversational Memory using LMStudio</h2>
+<p>This example demonstrates how to use quikchat with a local LLM using LMStudio where quikchat provides the chat history to LMStudio provides the llm model. This allows the chat to "remember" what is being discussed. <br>This example assumes <a href='https://lmstudio.ai/'>LMStudio</a> is installed and running on port 1234 locally.  Also it assumes the llama3.1 model is running.  This example will not work on the github pages demo website you must run this locally.</p>
+<a href="./lmstudio_with_memory.html">View Example LMStudio with Memory</a>
 </html>

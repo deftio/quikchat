@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,45 +17,56 @@
 
     <script src="./ollama_adapters.js"></script>
     <style>
-        html, body {
+        html,
+        body {
             width: 100%;
             height: 100%;
         }
+
         .chat-container {
             height: 70vh;
             width: 100%;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <br>
-        <h2 class="">Ollama quikchat Demo</h2>
-        <br>
         <div class="row">
+            <div class="col-11">
+                <h2 class="">Ollama QuikChat Demo</h2>
+                <p>This is a demo of two chat widgets that can send messages to each other. One chat widget is connected
+                    to the Ollama completion API, and the other is connected to the Ollama streaming API.</p>
+                Neither chat has conversational memory, so each respose is independent of the previous chat message.
+                <br><br>
+            </div>
             <div class="col-5">
-                <div class="chat-container" id="chat-container1"></div> 
+                <div class="chat-container" id="chat-container1"></div>
             </div>
             <div class="col-1" style="height:100%;"></div>
-            <div class="col-5"> 
-                <div class="chat-container" id="chat-container2"></div> 
+            <div class="col-5">
+                <div class="chat-container" id="chat-container2"></div>
             </div>
         </div>
     </div>
     <script>
-        const completionsChat = new quikchat('#chat-container1', 
-            {  theme: 'quikchat-theme-light',   
+        const completionsChat = new quikchat('#chat-container1',
+            {
+                theme: 'quikchat-theme-light',
                 onSend: getOllamaCompletionCallback,
-                titleArea: {title: "Completions Chat", "show": true, "align": "left"},
+                titleArea: { title: "Completions Chat", "show": true, "align": "left" },
             });
         completionsChat.messageAddNew("How can I help? ", "bot", "left");
 
-        const streamingChat = new quikchat('#chat-container2', 
-            {theme: 'quikchat-theme-light',
-            onSend: getOllamaStreamingCallback,
-            titleArea: {title: "Streaming Chat", "show": true, "align": "left"},
-        });
+        const streamingChat = new quikchat('#chat-container2',
+            {
+                theme: 'quikchat-theme-light',
+                onSend: getOllamaStreamingCallback,
+                titleArea: { title: "Streaming Chat", "show": true, "align": "left" },
+            });
         streamingChat.messageAddNew("How can I help? ", "bot", "left"); 
     </script>
 </body>
+
 </html>

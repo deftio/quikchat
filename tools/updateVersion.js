@@ -18,7 +18,7 @@ async function updateVersion() {
 
     // Create an instance of the class and get the version
     //const quikChatInstance = new quikchat();
-    const version = quikchat.getVersion().version; //static method
+    const version = quikchat.version().version; //static method
 
     // Read the existing package.json file
     const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));

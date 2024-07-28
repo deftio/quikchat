@@ -29,6 +29,7 @@
     flex-grow: 1;
     padding: 8px;
     overflow-y: auto;
+    border-radius: 1rem;
     width: 100%;
 }
 

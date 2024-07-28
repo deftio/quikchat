@@ -274,7 +274,8 @@
         messageDiv.appendChild(userDiv);
         messageDiv.appendChild(contentDiv);
         this._messagesArea.appendChild(messageDiv);
-        this._messagesArea.lastChild.scrollIntoView();
+        //this._messagesArea.lastChild.scrollIntoView();
+        this._messagesArea.lastElementChild.scrollIntoView();
         this._textEntry.value = '';
         this._adjustMessagesAreaHeight();
         var timestamp = new Date().toISOString();
@@ -380,7 +381,8 @@
           item.content += content;
           item.updatedtime = new Date().toISOString();
           sucess = true;
-          this._messagesArea.lastChild.scrollIntoView();
+          //this._messagesArea.lastChild.scrollIntoView();
+          this._messagesArea.lastElementChild.scrollIntoView();
         } catch (error) {
           console.log("{String(n)} : Message ID not found");
         }
@@ -462,10 +464,12 @@
         return this._theme;
       }
     }], [{
-      key: "getVersion",
-      value: function getVersion() {
+      key: "version",
+      value: function version() {
         return {
-          "version": "1.0.3"
+          "version": "1.0.4",
+          "license": "BSD-2",
+          "url": "https://github/deftio/quikchat"
         };
       }
     }]);

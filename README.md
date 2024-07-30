@@ -20,7 +20,7 @@ Quikchat is a vanilla (no dependancies) JavaScript chat control that can be easi
 ## Demo & Examples
 
 Examples are here 
-[Example Code and Demo](../examples/index.html)
+[Example Code and Demo](./examples/index.html)
 Example include using ESM, UMD modules, running multiple chats on the same page, and integration with LLM providers such as Ollama, LMStudio, OpenAI compatible providers.
 
 ## Installation

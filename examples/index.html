@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,66 +8,90 @@
         type="image/gif">
 
     <!-- include bitwrench for styling -->
-     <title>Examples</title>
+    <title>Examples</title>
     <style>
         body {
-            margin: 10% auto;
-            padding-left:5%;padding-right:5%;
+            width: 100%;
+            height: 100%;
             font-family: sans-serif;
         }
+        #container {
+            width: 90%;
+            margin: 0 auto;
+            padding: 1rem;
+        }
         h1 {
-            font-size: 1.5rem;
+            font-size: 2rem;
             margin-bottom: 1rem;
             font-weight: 700;
         }
+
         h2 {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
+            font-size: 1.25rem;
             font-weight: 600;
         }
-       
+
         a {
             display: inline-block;
-            padding: 0.5rem 1rem;
-            background-color: #007bff;
-            color: #fff;
             text-decoration: underline;
-            border-radius: 5px;
-            margin-bottom: 1rem;
+         
         }
+
         a:hover {
-            background-color: #0056b3;
+            font-weight: 700;
+            color: #0622dd;
         }
     </style>
 </head>
+
 <body>
-<!-- example page explains how to use quikchat -->
+    <!-- example page explains how to use quikchat -->
+    <div id="container">
+        <h1>QuikChat Examples</h1>
+        <p>These examples demonstrate how to use QuikChat in your projects. Included are basic themes for light, dark,
+            and debugging.</p>
 
-<h1>QuikChatJS Examples</h1>
-<p>These examples demonstrate how to use QuikChat in your projects. Included are basic themes for light, dark, and debugging.</p>
+        <h2>Basic Usage as Module</h2>
+        <p>This example demonstrates how to create a basic chat widget with QuikChatJS using ESM module import</p>
+        <a href="./example_esm.html">View Example ESM</a>
 
-<h2>Example 1: Basic Usage as Module</h2>
-<p>This example demonstrates how to create a basic chat widget with QuikChatJS using ESM module import</p>
-<a href="./example_esm.html">View Example ESM</a>
+        <h2>Basic Usage as UMD</h2>
+        <p>This example demonstrates how to create a basic chat widget with QuikChatJS using UMD script tag import</p>
+        <a href="./example_umd.html">View Example UMD</a>
 
-<h2>Example 2: Basic Usage as UMD</h2>
-<p>This example demonstrates how to create a basic chat widget with QuikChatJS using UMD script tag import</p>
-<a href="./example_umd.html">View Example UMD</a>
+        <h2>Dual Chatrooms</h2>
+        <p>This example demonstrates how to create two chatrooms that can send messages to each other</p>
+        <a href="./dual-chatrooms.html">View Example Dual Chatrooms</a>
 
-<h2>Example 3: Dual Chatrooms</h2>
-<p>This example demonstrates how to create two chatrooms that can send messages to each other</p>
-<a href="./dual-chatrooms.html">View Example Dual Chatrooms</a>
+        <h2>Simple Ollama</h2>
+        <p>This example shows how to use quikchat with a local LLM using <a href="https://ollama.ai">Ollama</a></p>
+        <a href="./simple_ollama.html">View Example Ollama</a>
 
-<h2>Example 4: Simple Ollama</h2>
-<p>This example shows how to use quikchat with a local LLM using Ollama</p>
-<a href="./simple_ollama.html">View Example Ollama</a>
+        <h2>LLM with Conversational Memory</h2>
+        <p>This example demonstrates how to use quikchat with a local LLM using Ollama where quikchat provides the chat
+            history
+            to Ollama provides the llm model. This allows the chat to "remember" what is being discussed.</p>
+        <a href="./ollama_with_memory.html">View Example Ollama with Memory</a>
+
+        <h2>LLM with Conversational Memory using LMStudio</h2>
+        <p>This example demonstrates how to use quikchat with a local LLM using LMStudio where quikchat provides the
+            chat
+            history to LMStudio provides the llm model. This allows the chat to "remember" what is being discussed.
+            <br>This
+            example assumes <a href='https://lmstudio.ai/'>LMStudio</a> is installed and running on port 1234 locally.
+            Also it
+            assumes the llama3.1 model is running. This example will not work on the github pages demo website you must
+            run this
+            locally.</p>
+        <a href="./lmstudio_with_memory.html">View Example LMStudio with Memory</a>
+
+        <h2>OpenAI</h2>
+        <p>This example demonstrates how to use QuikChat with OpenAI's GPT-4o model. You can use this example with any
+            API that
+            supports token streaming. The example uses the OpenAI API to generate responses to user prompts.</p>
+        <a href="./openai.html">View Example OpenAI</a>
+        <br>
+    </div>
 </body>
 
-<h2>Example 5: LLM with Conversational Memory</h2>
-<p>This example demonstrates how to use quikchat with a local LLM using Ollama where quikchat provides the chat history to Ollama provides the llm model.  This allows the chat to "remember" what is being discussed.</p>
-<a href="./ollama_with_memory.html">View Example Ollama with Memory</a>
-
-<h2>Example 6: LLM with Conversational Memory using LMStudio</h2>
-<p>This example demonstrates how to use quikchat with a local LLM using LMStudio where quikchat provides the chat history to LMStudio provides the llm model. This allows the chat to "remember" what is being discussed. <br>This example assumes <a href='https://lmstudio.ai/'>LMStudio</a> is installed and running on port 1234 locally.  Also it assumes the llama3.1 model is running.  This example will not work on the github pages demo website you must run this locally.</p>
-<a href="./lmstudio_with_memory.html">View Example LMStudio with Memory</a>
 </html>

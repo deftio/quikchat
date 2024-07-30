@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+        type="image/gif">
+
+    <title>QuikChat Demo with local Ollama</title>
+    <!-- Include Bootstrap CSS file -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Include QuikChat CSS file -->
+    <link rel="stylesheet" href="../../dist/quikchat.css">
+
+    <!-- Include QuikChat Chat JavaScript file -->
+    <script src="../../dist/quikchat.umd.min.js"></script>
+
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+        #prompt, input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 0.5rem;
+            font-weight: 300;
+        }
+
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #settings,
+        #chatContainer {
+            margin-top: 20px;
+            height: 70vh;
+        }
+
+        #chatBox {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-11">
+                <h2>Use QuikChat with OpenAI (or any compatiable API)</h2>
+                <p>This example demonstrates how to use QuikChat with OpenAI's GPT-4o model. You can use this example
+                    with any API that supports token streaming. The example uses the OpenAI API to generate responses to
+                    user prompts.</p>
+                    <p></p>
+            </div>
+            <div class="col-5" id="settings">
+                <h3>Settings</h3>
+                <form id="settingsForm">
+                    <label for="prompt">System Prompt:</label>
+                    <textarea type="text" rows="4" style="width:100%; resize:none" id="prompt" name="prompt"
+                        placeholder="">You are a helpful assistant.  Answer the user's questions but say 'I don't know that' if you don't know the answer.</textarea>
+                    <label for="apiKey">API Key</label>
+                    <input type="text" id="apiKey" name="apiKey"
+                        placeholder="sk-01234-put-your-api-key-here. It-is-not-stored-on-any-server.">
+                    <label for="baseUrl">Base URL (optional):</label>
+                    <input type="text" id="baseUrl" name="baseUrl"
+                        placeholder="https://api.openai.com/v1/chat/completions"
+                        value="https://api.openai.com/v1/chat/completions">
+                    <br><br>
+                    <button class="btn btn-primary" type="submit">Save Settings</button><br>
+                    Saving settings, stores the prompt, api key, and base url in a cookie on your local machine. No information is sent to any server.
+                </form>
+            </div>
+            <div class="col-7" id="chatContainer">
+                <h3>Chat</h3>
+                <div id="chatBox" class="chat-container"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let handleAIRequest = async function (chatInstance, userInput) {
+
+            const apiKey = document.getElementById('apiKey').value || '';
+            const baseUrl = document.getElementById('baseUrl').value || 'https://api.openai.com/v1/chat/completions';
+            const prompt = document.getElementById('prompt').value || 'Tell me a story';
+            const responseDiv = document.getElementById('response');
+
+            chatInstance.messageAddNew(userInput, "user", "right");
+
+            const data = {
+                model: 'gpt-4o',
+                messages: [
+                    { role: 'system', content: prompt }, // this is the base prompt
+                    ...chatInstance.historyGet() // get the chat history and add it to the prompt
+                ],
+                temperature: 0.5,
+                max_tokens: 2050,
+                stream: true
+            };
+
+            try {
+                const response = await fetch(baseUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status} ${response.statusText}`);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let done = false;
+                let accumulated = '';
+                let start = true;
+                let id;
+                while (!done) {
+                    const { value, done: doneReading } = await reader.read();
+                    done = doneReading;
+                    accumulated += decoder.decode(value, { stream: true });
+                    let lines = accumulated.split('\n');
+
+                    // Process each line, except the last one, which might be incomplete
+                    for (let i = 0; i < lines.length - 1; i++) {
+                        const line = lines[i].trim();
+                        if (line.startsWith('data: ')) {
+                            const jsonString = line.slice(6);
+                            if (jsonString !== '[DONE]') {
+                                try {
+                                    const json = JSON.parse(jsonString);
+                                    if (json.choices && json.choices.length > 0) {
+                                        //responseDiv.innerHTML += json.choices[0].delta.content || '';
+                                        let content = json.choices[0].delta.content;
+                                        if (start) {
+                                            id = chatInstance.messageAddNew(content, "bot", "left");
+                                            start = false;
+                                        } else {
+                                            if (content)
+                                                chatInstance.messageAppendContent(id, content);
+                                        }
+                                    }
+                                } catch (e) {
+                                    console.error('Error parsing JSON:', e);
+                                }
+                            }
+                        }
+                    }
+                    // Keep the last line for further processing
+                    accumulated = lines[lines.length - 1];
+                }
+            } catch (error) {
+                console.error('Error streaming tokens:', error);
+                responseDiv.innerHTML = `<span style="color: red;">${error.message}</span>`;
+            }
+        };
+
+        let chatInstance = new quikchat('#chatBox', {
+            theme: 'quikchat-theme-light',
+            onSend: handleAIRequest,
+            titleArea: { title: "Chat Area", "show": false, "align": "left" },
+        });
+
+        // set remember the api key to a local cookie 
+        document.getElementById('settingsForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            //save the prompt to a cookie.
+            //this only saves the form to the user's local machine.  It is not sent or stored on
+            //any server.
+            const prompt = document.getElementById('prompt').value;
+            const apiKey = document.getElementById('apiKey').value;
+            const baseUrl = document.getElementById('baseUrl').value;
+            document.cookie = `prompt=${prompt}`;
+            document.cookie = `apiKey=${apiKey}`;
+            document.cookie = `baseUrl=${baseUrl}`;
+        });
+
+        // load the api key from the cookie on document load
+        window.addEventListener('load', function () {
+            const cookies = document.cookie.split(';');
+            cookies.forEach(cookie => {
+                const [name, value] = cookie.split('=');
+                if (name.trim() === 'prompt') {
+                    document.getElementById('prompt').value = value;
+                }
+                if (name.trim() === 'apiKey') {
+                    document.getElementById('apiKey').value = value;
+                }
+                if (name.trim() === 'baseUrl') {
+                    document.getElementById('baseUrl').value = value;
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

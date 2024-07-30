@@ -98,19 +98,27 @@ Any manual edits may be lost.
 <script src="https://unpkg.com/@highlightjs/cdn-assets@11.7.0/highlight.min.js"></script>
 <script>hljs.highlightAll();</script>
 </head>
-<body class="bw-def-page-setup bw-font-sans-serif dbat" ><br><br><h1 id="quikchatjs">quikchat.js</h1>
-<p>quikchat is a simple vanilla (no dependancies) JavaScript chat control that can be easily integrated into web applications. It provides a customizable chat interface with support for hiding and showing a title area and the input area.</p>
+<body class="bw-def-page-setup bw-font-sans-serif dbat" ><br><br><h1 id="quikchat-js">QuikChat (js)</h1>
+<p>Quikchat is a vanilla (no dependancies) JavaScript chat control that can be easily integrated into web applications. It provides a customizable chat interface with support for hiding and showing a title area and the input area.</p>
 <h2 id="features">Features</h2>
 <ul>
-<li>Callback function for message events.</li>
-<li>Responsive design for various screen sizes.</li>
-<li>Themeable with css</li>
+<li>Callback function for message events</li>
+<li>Responsive design for various screen sizes and resizes with parent container</li>
+<li>Themeable with CSS (examples for light and dark)</li>
 <li>Hideable/Showable Title and Text Entry areas allows flexibility of usage</li>
 <li>Full history storage and retrieval</li>
-<li>History can be fed directly to OpenAI / Mistral / Ollama compatible API</li>
+<li>History can be fed directly to OpenAI / Mistral / Ollama compatible APIs for context aware chats</li>
+<li>Available via NPM and CDN</li>
+<li>Provided in UMD and ESM formats</li>
+<li>Multiple separate instances can run on a single page</li>
+<li>Multiple users can be in a chat</li>
+<li>Left / Right / Center support of individual users</li>
+<li>Callback for all message events (to monitor chat)</li>
 </ul>
-<h2 id="demo">Demo</h2>
-<p><a href="../examples/index.html">Example Code and Demo</a></p>
+<h2 id="demo--examples">Demo &amp; Examples</h2>
+<p>Examples are here 
+<a href="../examples/index.html">Example Code and Demo</a>
+Example include using ESM, UMD modules, running multiple chats on the same page, and integration with LLM providers such as Ollama, LMStudio, OpenAI compatible providers.</p>
 <h2 id="installation">Installation</h2>
 <p>To use quikchat in your project, follow these steps:</p>
 <p>Include the quikchat.js JavaScript file in your project.
@@ -123,72 +131,98 @@ html</p>
 <pre><code class="language-html">&lt;script src=&quot;https://unpkg.com/quikchat&quot;&gt;&lt;/script&gt;
 &lt;link rel=&quot;stylesheet&quot; href=&quot;https://unpkg.com/quikchat/dist/quikchat.css&quot; /&gt;
 </code></pre>
-<p>Create a container element in your HTML where you want the chat interface to appear:</p>
+<p>Create a container element in your HTML where you want the chat interface to appear.  The quikchat widget will take 100% of the paretn container height and width.  If the parent container width or height is not specified the quikchat widget may grow as content is added.  If the parent container is resized, quikchat will resize with the parent container.</p>
 <pre><code class="language-html">&lt;div id=&quot;chat-container&quot;&gt;&lt;/div&gt;
 </code></pre>
 <p>Initialize quikchat in your JavaScript code by providing the container element and a callback function for message events:</p>
-<pre><code class="language-javascript">const chat = new quikchat(&#39;#chat-container&#39;, messageCallback);
-//Use the provided methods to interact with the chat control:
+<pre><code class="language-javascript">chat = new quikchat(
+      &quot;#chat-container&quot;,   // this can be a css selector such as &quot;#chat-container&quot; or DOM element
+      {
+      theme: &#39;quikchat-theme-light&#39;, // theme see css
+        titleArea: { title: &#39;My Chat&#39;, align: &#39;left&#39;, show: true }, // internal title area 
+        onSend: (chat, msg) =&gt; { // this callback is triggered with the user hits the Send button 
+            // messages are not automatically echoed to the chat after onSend.  This 
+            // allows filtering / other processing of the message before posting.
+            chat.messageAddNew(msg, &#39;me&#39;, &#39;right&#39;); // echo the message to the chat area 
+            // now call an LLM or do other actions
+            // ... callLLM(msg) ... do other logic if needed.
+        }
+      });
 
-// Add a message
-chat.addMessage(&#39;Hello!&#39;, &#39;User&#39;, &#39;left&#39;);  // user should appear left or right justified
+// Add a message at any point not just from call back
+chat.addMessage(&#39;Hello!&#39;, &#39;You&#39;, &#39;left&#39;);  // user should appear left or right justified
+
+//... other logic
+let messageHistory = chat.historyGet(); // get all the messages (see docs for filters)
+console.log(messageHistory); // do something with messages
+
+// show / hide the title area
+chat.titleAreaHide();  // hides the title area for a bare chat
+
+// hide the input area
+chat.inputAreaHide(); // hides the input area so chat is now just a message stream.
+
+// change themes
+chat.changeTheme(&quot;quikchat-theme-dark&quot;); // change theme on the fly (see quikchat.css for examples)
 </code></pre>
 <h2 id="theming">Theming</h2>
-<p>QuikChat also allows theming using CSS of all the messages, and user area, and overal widget.</p>
-<p>Below is the prebuilt &#39;light&#39; theme.  To change the theme, make a new set of classes with different values but the same css selector naming (e.g. change &quot;quikchat-theme-light&quot; to &quot;my-theme&quot;) and save as a style.  Then pass the &quot;my-theme&quot; to the constructor.</p>
+<p>QuikChat allows theming using CSS of all the messages, and user area, and overal widget.</p>
+<p>Below is the prebuilt &#39;light&#39; theme.  To change the theme, make a new set of classes with different values but the same css selector naming (e.g. change &quot;quikchat-theme-light&quot; to &quot;my-theme&quot;) and save as a style.  Then pass the &quot;my-theme&quot; to the constructor or to the changeTheme() function.</p>
 <p>Themes can be changed at anytime by calling
 myChatWidget.changeTheme(newTheme) where myChatWidget is the instance of your widget. </p>
 <p>If several widgets are on the same page, each can have a separate theme.</p>
-<pre><code class="language-css">
+<pre><code class="language-css">/* quikchat theme light */
 .quikchat-theme-light {
-    border: 1px solid #cccccc;
-    border-radius: 10px;
-    padding: 5px;
-    background-color: #f9f9f9;
-  }
-
+  border: 1px solid #cccccc;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+}
+  
 .quikchat-theme-light .quikchat-title-area {
-color: #333;
+  padding: 8px;
+  color: #333;
 }
-
+  
 .quikchat-theme-light .quikchat-messages-area {
-background-color: #ffffffe2;
-color: #333;
+  background-color: #ffffffe2;
+  color: #333;
 }
-
+  
 .quikchat-theme-light .quikchat-message-1 {
-background-color: #fffffff0;
-color: #005662;
+  background-color: #fffffff0;
+  color: #005662;
 }
-
+  
 .quikchat-theme-light .quikchat-message-2 {
-background-color: #eeeeeee9;
-color: #353535;
+  background-color: #eeeeeee9;
+  color: #353535;
 }
-
+  
 .quikchat-theme-light .quikchat-input-area {
-background-color: #f0f0f0;
+  background-color: #f9f9f9;
+  border-bottom-left-radius : 10px;
+  border-bottom-right-radius : 10px;
 }
 
 .quikchat-theme-light .quikchat-input-textbox {
-background-color: #ffffff;
-border: 1px solid #ccc;
-border-radius: 4px;
-font-size: 14px;
-color: #333;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
 }
-
+  
 .quikchat-theme-light .quikchat-input-send-btn {
-background-color: #4caf50;
-color: white;
-border: none;
-border-radius: 4px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
 }
 </code></pre>
 <h2 id="building-from-source">Building from Source</h2>
-<p>Make sure to run npm install.  Then run npm run build.
-Note that at run time quikchat has no dependancies, but at build time several tools are used for packing and minifying code.</p>
-<h2 id="contributors">Contributors</h2>
+<p>quikchat is built with <a href="rollup.js">https://rollupjs.org/</a>.</p>
+<p>Make sure to run npm install.  Then run npm run build.</p>
+<p>Note that at run time quikchat has no dependancies, but at build time several tools are used for packing and minifying code.</p>
 <h2 id="license">License</h2>
 <p>quikchat is licensed under the BSD-2 License.</p>
 </body></html>

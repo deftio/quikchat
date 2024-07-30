@@ -267,7 +267,7 @@
         messageDiv.classList.add(this._messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
         var userDiv = document.createElement('div');
         userDiv.innerHTML = input.userString;
-        userDiv.style = "width: 100%; text-align: ".concat(input.align, "; font-size: 1em; font-weight:700; color: #444;");
+        userDiv.style = "width: 100%; text-align: ".concat(input.align, "; font-size: 1em; font-weight:700;");
         var contentDiv = document.createElement('div');
         contentDiv.style = "width: 100%; text-align: ".concat(input.align, ";");
         contentDiv.innerHTML = input.content;

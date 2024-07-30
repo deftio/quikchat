@@ -50,6 +50,7 @@
 
         const chat1 = new quikchat('#chat-container1');
         const chat2 = new quikchat('#chat-container2');
+        chat2.changeTheme("quikchat-theme-dark");
         cb1 = (chatInstance, content) => {
             chatInstance.messageAddNew(content,"User1","right")  // echo input to own message area
             chat1.messageAddNew(content,"User1","left")         // post to other chat

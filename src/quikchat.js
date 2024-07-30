@@ -152,7 +152,7 @@ class quikchat {
      
         const userDiv = document.createElement('div');
         userDiv.innerHTML = input.userString;
-        userDiv.style = `width: 100%; text-align: ${input.align}; font-size: 1em; font-weight:700; color: #444;`;
+        userDiv.style = `width: 100%; text-align: ${input.align}; font-size: 1em; font-weight:700;`;
 
         const contentDiv = document.createElement('div');
         contentDiv.style = `width: 100%; text-align: ${input.align};`;

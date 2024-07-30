@@ -83,6 +83,7 @@
                     <br><br>
                     <button class="btn btn-primary" type="submit">Save Settings</button><br>
                     Saving settings, stores the prompt, api key, and base url in a cookie on your local machine. No information is sent to any server.
+                    <div id="response"></div>
                 </form>
             </div>
             <div class="col-7" id="chatContainer">
@@ -98,11 +99,12 @@
             const baseUrl = document.getElementById('baseUrl').value || 'https://api.openai.com/v1/chat/completions';
             const prompt = document.getElementById('prompt').value || 'Tell me a story';
             const responseDiv = document.getElementById('response');
-
+            responseDiv.innerHTML = '';
             chatInstance.messageAddNew(userInput, "user", "right");
-
+            console.log (baseUrl)
+            console.log (apiKey)
             const data = {
-                model: 'gpt-4o',
+                model: 'gpt-4o-mini',
                 messages: [
                     { role: 'system', content: prompt }, // this is the base prompt
                     ...chatInstance.historyGet() // get the chat history and add it to the prompt

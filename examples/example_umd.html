@@ -57,21 +57,20 @@
     <script >
         document.addEventListener('DOMContentLoaded', () => {
             const parentDiv = document.querySelector('.parent');
-            window.chatBox = new quikchat(parentDiv, {
+            window.chatBox = new quikchat(parentDiv, 
+            (chat, msg) => {
+                chat.messageAddNew(msg, 'me', 'right'); // echo the message to the chat area
+                // now do something with the message
+
+                // this is just a simple example of a bot response
+                // bw (bitwrench) is a utility library that is included in the demo but not related to quikchatjs
+                // this just creates a random message from the bot
+                const botmsg = bw.loremIpsum(bw.random(25, 50), bw.random(0, 100))
+                chat.messageAddNew(botmsg, 'bot', 'left');
+            },
+            {
                 theme: 'quikchat-theme-light',
                 titleArea: { title: 'QuikChatJS', align: 'left', show: true },
-                onSend: (chat, msg) => {
-
-                    chat.messageAddNew(msg, 'me', 'right'); // echo the message to the chat area
-
-                    // now do something with the message
-
-                    // this is just a simple example of a bot response
-                    // bw (bitwrench) is a utility library that is included in the demo but not related to quikchatjs
-                    // this just creates a random message from the bot
-                    const botmsg = bw.loremIpsum(bw.random(25, 50), bw.random(0, 100))
-                    chat.messageAddNew(botmsg, 'bot', 'left');
-                }
             });
             chatBox.messageAddNew('Hello, how are you?', 'bot', 'left');
             chatBox.messageAddNew('I am fine, thank you.', 'user', 'right');

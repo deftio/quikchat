@@ -89,11 +89,11 @@ var quikchat = /*#__PURE__*/function () {
    * @param {*} meta 
    */
   function quikchat(parentElement) {
-    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    var onSend = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
+    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     _classCallCheck(this, quikchat);
     var defaultOpts = {
       theme: 'quikchat-theme-light',
-      onSend: function onSend() {},
       trackHistory: true,
       titleArea: {
         title: "Chat",
@@ -109,10 +109,10 @@ var quikchat = /*#__PURE__*/function () {
     if (typeof parentElement === 'string') {
       parentElement = document.querySelector(parentElement);
     }
-    console.log(parentElement, meta);
+    //console.log(parentElement, meta);
     this._parentElement = parentElement;
     this._theme = meta.theme;
-    this._onSend = meta.onSend ? meta.onSend : function () {};
+    this._onSend = onSend ? onSend : function () {}; // call back function for onSend
     this._createWidget();
     // title area
     if (meta.titleArea) {

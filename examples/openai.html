@@ -174,11 +174,14 @@
             }
         };
 
-        let chatInstance = new quikchat('#chatBox', {
-            theme: 'quikchat-theme-light',
-            onSend: handleAIRequest,
-            titleArea: { title: "Chat Area", "show": false, "align": "left" },
-        });
+        let chatInstance = new quikchat('#chatBox', 
+            handleAIRequest
+            // optional styling below
+            //,{
+            //    theme: 'quikchat-theme-light',
+            //    titleArea: { title: "Chat Area", "show": false, "align": "left" },
+            //}
+            );
 
         // set remember the api key to a local cookie 
         document.getElementById('settingsForm').addEventListener('submit', function (e) {

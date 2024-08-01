@@ -53,17 +53,17 @@
     </div>
     <script>
         const completionsChat = new quikchat('#chat-container1',
+            getOllamaCompletionCallback,
             {
                 theme: 'quikchat-theme-light',
-                onSend: getOllamaCompletionCallback,
                 titleArea: { title: "Completions Chat", "show": true, "align": "left" },
             });
         completionsChat.messageAddNew("How can I help? ", "bot", "left");
 
         const streamingChat = new quikchat('#chat-container2',
+            getOllamaStreamingCallback,
             {
                 theme: 'quikchat-theme-light',
-                onSend: getOllamaStreamingCallback,
                 titleArea: { title: "Streaming Chat", "show": true, "align": "left" },
             });
         streamingChat.messageAddNew("How can I help? ", "bot", "left"); 

@@ -31,7 +31,7 @@
     <div class="container">
         <div class="col-10">
             <br>
-            <h2 class="">Ollama quikchat Demo with Conversational Memory</h2>
+            <h2 class="">Ollama + Quikchat Demo with Conversational Memory</h2>
             <p>This example demonstrates how to use quikchat with a local LLM using Ollama where quikchat provides the
                 chat history to Ollama provides the llm model. This allows the chat to "remember" what is being
                 discussed. <br>This example assumes <a href='https://ollama.com/'>ollama</a> is installed and running on port 11434 locally.  Also it assume the llama3.1 model is available.  This example will not work on the github pages demo website you must run this locally.</p>
@@ -42,17 +42,17 @@
     <script>
 
         // set up chat instance
-        const streamingChat = new quikchat('#chat-container', {
+        const streamingChat = new quikchat('#chat-container',
+            ollamaStreamingCallback, {
             theme: 'quikchat-theme-light',
-            onSend: getOllamaStreamingCallback,
-            titleArea: { title: "Memory Chat", "show": true, "align": "left" },
+            titleArea: { title: "Memory Chat", "show": true, "align": "left" }
         });
         streamingChat.messageAddNew("How can I help? ", "bot", "left", "system");
 
         // this calls the Ollama Streaming API with token streaming.
         // note that a very similar function can be used to call OpenAI, Mistral, or, Claude etc.
         // this is a pure js implementation that hits the API directly and doesn't use any libraries.
-        function getOllamaStreamingCallback(chatInstance, userInput) {
+        function ollamaStreamingCallback(chatInstance, userInput) {
             let startPrompt = {
                 "content":
                 `You are a skilled assistant.  Respond to user input with detailed 
@@ -82,7 +82,7 @@
                 return reader.read().then(function processResult(result) {
                     if (result.done) { return; }
                     let x = new TextDecoder().decode(result.value, { stream: true });
-                    let y = JSON.parse(x); // deocde the JSON
+                    let y = JSON.parse(x.trim()); // deocde the JSON
                     let content = y.message.content;//.message.content;
                     if (start) {
                         id = chatInstance.messageAddNew(content, "bot", "left"); // start a new chat message

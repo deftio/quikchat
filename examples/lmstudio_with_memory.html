@@ -42,17 +42,17 @@
     <script>
 
         // set up chat instance
-        const streamingChat = new quikchat('#chat-container', {
+        const streamingChat = new quikchat('#chat-container',localLLMStreamingCallback,
+        {
             theme: 'quikchat-theme-light',
-            onSend: getLocalLLMStreamingCallback,
-            titleArea: { title: "Memory Chat", "show": true, "align": "left" },
+            titleArea: { title: "Memory Chat", "show": true, "align": "left" }
         });
         streamingChat.messageAddNew("How can I help? ", "bot", "left", "system");
 
         // this calls the Ollama Streaming API with token streaming.
         // note that a very similar function can be used to call OpenAI, Mistral, or, Claude etc.
         // this is a pure js implementation that hits the API directly and doesn't use any libraries.
-        function getLocalLLMStreamingCallback(chatInstance, userInput) {
+        function localLLMStreamingCallback(chatInstance, userInput) {
             let startPrompt = {
                 "content":
                 `You are a skilled assistant.  Respond to user input with detailed 

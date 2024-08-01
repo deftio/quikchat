@@ -5,11 +5,10 @@ class quikchat {
      * @param string or DOM element  parentElement 
      * @param {*} meta 
      */
-    constructor(parentElement, options = {}) 
+    constructor(parentElement, onSend =  ()=>{} , options = {}) 
     {
         const defaultOpts = {
             theme: 'quikchat-theme-light',
-            onSend: () => { },
             trackHistory: true,
             titleArea: { title: "Chat", show: false, align: "center" },
             messagesArea: { alternating : true },
@@ -19,10 +18,10 @@ class quikchat {
         if (typeof parentElement === 'string') {
             parentElement = document.querySelector(parentElement);
         }
-        console.log(parentElement, meta);
+        //console.log(parentElement, meta);
         this._parentElement = parentElement;
         this._theme = meta.theme;
-        this._onSend = meta.onSend ? meta.onSend : () => { };
+        this._onSend = onSend ? onSend : () => { }; // call back function for onSend
         this._createWidget();
         // title area
         if (meta.titleArea) {

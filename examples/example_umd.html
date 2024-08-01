@@ -64,10 +64,13 @@
 
                     chat.messageAddNew(msg, 'me', 'right'); // echo the message to the chat area
 
-                    // do something with the message
+                    // now do something with the message
+
+                    // this is just a simple example of a bot response
                     // bw (bitwrench) is a utility library that is included in the demo but not related to quikchatjs
-                    // this just creates a random number of messages from the bot
-                    chat.messageAddNew(bw.loremIpsum(bw.random(0, 50), bw.random(33, 100)), 'bot', 'left');
+                    // this just creates a random message from the bot
+                    const botmsg = bw.loremIpsum(bw.random(25, 50), bw.random(0, 100))
+                    chat.messageAddNew(botmsg, 'bot', 'left');
                 }
             });
             chatBox.messageAddNew('Hello, how are you?', 'bot', 'left');

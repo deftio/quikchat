@@ -1,6 +1,6 @@
 {
   "name": "quikchat",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "quikchat is a simple vanilla (no dependancies) JavaScript chat control for browsers ",
   "main": "dist/quikchat.umd.min.js",
   "module": "dist/quikchat.min.js",
@@ -30,5 +30,9 @@
     "rollup": "^4.18.1",
     "rollup-plugin-css-only": "^4.5.2",
     "rollup-plugin-postcss": "^4.0.2"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   }
 }

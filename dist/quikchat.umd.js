@@ -93,20 +93,27 @@
      * @param {*} meta 
      */
     function quikchat(parentElement) {
-      var meta = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      _classCallCheck(this, quikchat);
+      var defaultOpts = {
         theme: 'quikchat-theme-light',
         onSend: function onSend() {},
         trackHistory: true,
         titleArea: {
-          title: "Title Area",
+          title: "Chat",
           show: false,
           align: "center"
+        },
+        messagesArea: {
+          alternating: true
         }
       };
-      _classCallCheck(this, quikchat);
+      var meta = _objectSpread2(_objectSpread2({}, defaultOpts), options); // merge options with defaults
+
       if (typeof parentElement === 'string') {
         parentElement = document.querySelector(parentElement);
       }
+      console.log(parentElement, meta);
       this._parentElement = parentElement;
       this._theme = meta.theme;
       this._onSend = meta.onSend ? meta.onSend : function () {};
@@ -114,12 +121,17 @@
       // title area
       if (meta.titleArea) {
         this.titleAreaSetContents(meta.titleArea.title, meta.titleArea.align);
-        if (meta.titleArea.show == true) {
+        if (meta.titleArea.show === true) {
           this.titleAreaShow();
         } else {
           this.titleAreaHide();
         }
       }
+      // messages area
+      if (meta.messagesArea) {
+        this.messagesAreaAlternateColors(meta.messagesArea.alternating);
+      }
+      // plumbing
       this._attachEventListeners();
       this.trackHistory = meta.trackHistory || true;
       this._historyLimit = 10000000;
@@ -248,6 +260,30 @@
         var minWidth = fontSize * sendButtonText.length + 16;
         this._sendButton.style.minWidth = "".concat(minWidth, "px");
       }
+
+      //messagesArea functions
+    }, {
+      key: "messagesAreaAlternateColors",
+      value: function messagesAreaAlternateColors() {
+        var alt = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+        if (alt) {
+          this._messagesArea.classList.add('quikchat-messages-area-alt');
+        } else {
+          this._messagesArea.classList.remove('quikchat-messages-area-alt');
+        }
+        return alt === true;
+      }
+    }, {
+      key: "messagesAreaAlternateColorsToggle",
+      value: function messagesAreaAlternateColorsToggle() {
+        this._messagesArea.classList.toggle('quikchat-messages-area-alt');
+      }
+    }, {
+      key: "messagesAreaAlternateColorsGet",
+      value: function messagesAreaAlternateColorsGet() {
+        return this._messagesArea.classList.contains('quikchat-messages-area-alt');
+      }
+      // message functions
     }, {
       key: "messageAddFull",
       value: function messageAddFull() {
@@ -467,10 +503,65 @@
       key: "version",
       value: function version() {
         return {
-          "version": "1.0.4",
+          "version": "1.1.0",
           "license": "BSD-2",
           "url": "https://github/deftio/quikchat"
         };
+      }
+
+      /**
+       * quikchat.loremIpsum() - Generate a simple string of Lorem Ipsum text (sample typographer's text) of numChars in length.
+       * borrowed from github.com/deftio/bitwrench.js
+       * @param {number} numChars - The number of characters to generate (random btw 25 and 150 if undefined).    
+       * @param {number} [startSpot=0] - The starting index in the Lorem Ipsum text. If undefined, a random startSpot will be generated.
+       * @param {boolean} [startWithCapitalLetter=true] - If true, capitalize the first character or inject a capital letter if the first character isn't a capital letter.
+       * 
+       * @returns {string} A string of Lorem Ipsum text.
+       * 
+       * @example 
+       * // Returns 200 characters of Lorem Ipsum starting from index 50
+       * loremIpsum(200, 50);
+       * 
+       * @example 
+       * //Returns a 200 Lorem Ipsum characters starting from a random index
+       * loremIpsum(200);
+       */
+    }, {
+      key: "loremIpsum",
+      value: function loremIpsum(numChars) {
+        var startSpot = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+        var startWithCapitalLetter = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
+        var loremText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. ";
+        if (typeof numChars !== "number") {
+          numChars = Math.floor(Math.random() * 150) + 25;
+        }
+        if (startSpot === undefined) {
+          startSpot = Math.floor(Math.random() * loremText.length);
+        }
+        startSpot = startSpot % loremText.length;
+
+        // Move startSpot to the next non-whitespace and non-punctuation character
+        while (loremText[startSpot] === ' ' || /[.,:;!?]/.test(loremText[startSpot])) {
+          startSpot = (startSpot + 1) % loremText.length;
+        }
+        var l = loremText.substring(startSpot) + loremText.substring(0, startSpot);
+        if (typeof numChars !== "number") {
+          numChars = l.length;
+        }
+        var s = "";
+        while (numChars > 0) {
+          s += numChars < l.length ? l.substring(0, numChars) : l;
+          numChars -= l.length;
+        }
+        if (s[s.length - 1] === " ") {
+          s = s.substring(0, s.length - 1) + "."; // always end on non-whitespace. "." was chosen arbitrarily.
+        }
+        if (startWithCapitalLetter) {
+          var c = s[0].toUpperCase();
+          c = /[A-Z]/.test(c) ? c : "M";
+          s = c + s.substring(1);
+        }
+        return s;
       }
     }]);
   }();

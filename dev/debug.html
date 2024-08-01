@@ -32,15 +32,17 @@
 
         /* these are not part of the widget, just for the demo test */
         .system-btn {
-            padding: 8px 12px;
-            background-color: #918434;
+            padding: 12px 8px;
+            background-color: #443491;
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             white-space: nowrap;
         }
+
     </style>
+    <style id="testStyles"></style>
 </head>
 
 <body>
@@ -52,6 +54,7 @@
     <button class="system-btn" onclick="chatBox.titleAreaToggle()">Toggle Title</button>
     <button class="system-btn" onclick="chatBox.inputAreaToggle()">Toggle Input</button>
     <button class="system-btn" id="themeBtn">Change Themes</button>
+    <button class="system-btn" onclick="chatBox.messagesAreaAlternateColorsToggle()">Toggle Alternating Colors</button>"
     <script type="module">
         import quikchat from '../src/quikchat.js';
         document.addEventListener('DOMContentLoaded', () => {
@@ -93,7 +96,7 @@
         document.getElementById('themeBtn').addEventListener('click', cycleThemes);
 
 
-        // Generate random text using bitwrench and lorem ipsum
+        // Generate streaming random text using bitwrench and lorem ipsum
         // this has nothing to do with quikchatjs, just a demo of generating random text
         let generateText = (x,cb) =>{
             // Generate a random number of times to call getText, up to a maximum of x
@@ -114,6 +117,7 @@
             }, 250);
             return intervalId;
         }
+        window.qc = quikchat;
         window.generateText = generateText;
 
         

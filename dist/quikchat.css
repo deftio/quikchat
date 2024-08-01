@@ -91,16 +91,24 @@
     background-color: lightsalmon;
 }
 
+.quikchat-theme-debug .quikchat-messages-area-alt .quikchat-message:nth-child(odd) {
+    background-color: lightseagreen;
+    color: #eee;
+}
+.quikchat-theme-debug .quikchat-messages-area-alt .quikchat-message:nth-child(even) {
+    background-color: lightpink;
+    color: #444;
+}
+/*
 .quikchat-theme-debug .quikchat-message-1 {
     background-color: lightseagreen;
     color: #eee;
 }
-
 .quikchat-theme-debug .quikchat-message-2 {
     background-color: lightpink;
     color: #444;
 }
-
+*/
 .quikchat-theme-debug .quikchat-input-area {
     background-color: lightgreen;
     border-bottom-left-radius : 10px;
@@ -144,6 +152,15 @@
     color: #eceff1;
 }
 
+.quikchat-theme-dark .quikchat-messages-area-alt .quikchat-message:nth-child(odd) {
+    background-color: #404040e5;
+    color: #eceff1;
+}
+.quikchat-theme-darl .quikchat-messages-area-alt .quikchat-message:nth-child(even) {
+    background-color: #5a5a5a;
+    color: #fbfbfb;
+}
+/*
 .quikchat-theme-dark .quikchat-message-1 {
     background-color: #404040e5;
     color: #eceff1;
@@ -153,6 +170,7 @@
     background-color: #5a5a5a;
     color: #fbfbfb;
 }
+*/
 
 .quikchat-theme-dark .quikchat-input-area {
     padding: 8px;
@@ -189,46 +207,54 @@
     border: 1px solid #cccccc;
     border-radius: 10px;
     background-color: #f9f9f9;
-  }
+}
   
-  .quikchat-theme-light .quikchat-title-area {
+.quikchat-theme-light .quikchat-title-area {
     padding: 8px;
     color: #333;
-  }
+}
   
-  .quikchat-theme-light .quikchat-messages-area {
+.quikchat-theme-light .quikchat-messages-area {
     background-color: #ffffffe2;
     color: #333;
-  }
+}
   
-  .quikchat-theme-light .quikchat-message-1 {
+.quikchat-theme-light .quikchat-messages-area-alt .quikchat-message:nth-child(odd) {
     background-color: #fffffff0;
     color: #005662;
-  }
-  
-  .quikchat-theme-light .quikchat-message-2 {
+}
+.quikchat-theme-light .quikchat-messages-area-alt .quikchat-message:nth-child(even) {
     background-color: #eeeeeee9;
     color: #353535;
-  }
-  
-  .quikchat-theme-light .quikchat-input-area {
+}
+/*
+.quikchat-theme-light .quikchat-message-1 {
+    background-color: #fffffff0;
+    color: #005662;
+}
+.quikchat-theme-light .quikchat-message-2 {
+    background-color: #eeeeeee9;
+    color: #353535;
+}
+*/
+.quikchat-theme-light .quikchat-input-area {
     background-color: #f9f9f9;
     border-bottom-left-radius : 10px;
     border-bottom-right-radius : 10px;
 }
   
-  .quikchat-theme-light .quikchat-input-textbox {
+.quikchat-theme-light .quikchat-input-textbox {
     background-color: #ffffff;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 14px;
     color: #333;
-  }
+}
   
-  .quikchat-theme-light .quikchat-input-send-btn {
+.quikchat-theme-light .quikchat-input-send-btn {
     background-color: #4caf50;
     color: white;
     border: none;
     border-radius: 4px;
-  }
+}
   

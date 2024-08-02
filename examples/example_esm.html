@@ -32,9 +32,10 @@
         }
 
         /* these are not part of the widget, just for the demo test */
+         /* these are not part of the widget, just for the demo test */
         .system-btn {
-            padding: 8px 8px;
-            background-color: #918434;
+            padding: 12px 8px;
+            background-color: #443491;
             color: white;
             border: none;
             border-radius: 4px;
@@ -50,9 +51,11 @@
         input area can be hidden.</p>
     <div class="parent"></div>
     <br>
+    <br>
     <button class="system-btn" onclick="chatBox.titleAreaToggle()">Toggle Title</button>
     <button class="system-btn" onclick="chatBox.inputAreaToggle()">Toggle Input</button>
     <button class="system-btn" id="themeBtn">Change Themes</button>
+    <button class="system-btn" onclick="chatBox.messagesAreaAlternateColorsToggle()">Alternating Colors</button>
     <script type="module">
         import quikchat from '../dist/quikchat.esm.min.js';
         document.addEventListener('DOMContentLoaded', () => {

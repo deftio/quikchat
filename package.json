@@ -24,8 +24,24 @@
     "examples": "examples"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --coverage",
     "build": "node ./tools/updateVersion && npx docbat -i README.md -o index.html && rollup -c"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "transform": {
+      "^.+\\.js$": "babel-jest"
+    },
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/**/*.js"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "html",
+      "text",
+      "lcov"
+    ]
   },
   "keywords": [
     "chat",
@@ -36,12 +52,18 @@
     "chatboxcontrol"
   ],
   "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.25.3",
+    "@babel/preset-react": "^7.24.7",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
+    "babel-jest": "^29.7.0",
     "clean-css-cli": "^5.6.3",
     "cssnano": "^7.0.4",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "rollup": "^4.18.1",
     "rollup-plugin-css-only": "^4.5.2",
     "rollup-plugin-postcss": "^4.0.2"

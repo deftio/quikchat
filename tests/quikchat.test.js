@@ -1,7 +1,6 @@
 import quikchat from '../src/quikchat';
-//window.HTMLElement.prototype.scrollIntoView = function() {};
-Element.prototype.scrollIntoView = () => {}; // hack to prevent scrollIntoView not in jsdom error
-
+// Prevent scrollIntoView error in jsdom
+Element.prototype.scrollIntoView = () => {};
 
 describe('quikchat', () => {
     let parentElement;
@@ -81,5 +80,56 @@ describe('quikchat', () => {
         expect(text).toMatch(/^[A-Z][a-z]/); // Starts with capital letter
     });
 
+    test('should toggle message area alternating colors', () => {
+        chatInstance.messagesAreaAlternateColors(true);
+        expect(chatInstance.messagesAreaAlternateColorsGet()).toBe(true);
+        chatInstance.messagesAreaAlternateColors(false);
+        expect(chatInstance.messagesAreaAlternateColorsGet()).toBe(false);
+    });
 
+    test('should append content to an existing message', () => {
+        const content = 'Hello, world!';
+        const appendedContent = ' How are you?';
+        const msgId = chatInstance.messageAddNew(content);
+        chatInstance.messageAppendContent(msgId, appendedContent);
+        expect(chatInstance.messageGetContent(msgId)).toBe(content + appendedContent);
+    });
+
+    test('should replace content of an existing message', () => {
+        const content = 'Hello, world!';
+        const newContent = 'Hi there!';
+        const msgId = chatInstance.messageAddNew(content);
+        chatInstance.messageReplaceContent(msgId, newContent);
+        expect(chatInstance.messageGetContent(msgId)).toBe(newContent);
+    });
+
+    test('should clear message history', () => {
+        chatInstance.messageAddNew('Message 1');
+        chatInstance.messageAddNew('Message 2');
+        expect(chatInstance.historyGetLength()).toBe(2);
+        chatInstance.historyClear();
+        expect(chatInstance.historyGetLength()).toBe(0);
+    });
+
+    test('should get specific history messages', () => {
+        chatInstance.messageAddNew('Message 1');
+        chatInstance.messageAddNew('Message 2');
+        const history = chatInstance.historyGet(0, 1);
+        expect(history.length).toBe(1);
+        expect(history[0].content).toBe('Message 1');
+    });
+
+    test('should set callback on send', () => {
+        const callback = jest.fn();
+        chatInstance.setCallbackOnSend(callback);
+        chatInstance._sendButton.click();
+        expect(callback).toHaveBeenCalled();
+    });
+
+    test('should set callback on message added', () => {
+        const callback = jest.fn();
+        chatInstance.setCallbackonMessageAdded(callback);
+        chatInstance.messageAddNew('Test message');
+        expect(callback).toHaveBeenCalled();
+    });
 });

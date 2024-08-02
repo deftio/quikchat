@@ -4,13 +4,13 @@ Quikchat is a vanilla (no dependancies) JavaScript chat control that can be easi
 
 ## Features
 
-* Callback function for message events
-* Responsive design for various screen sizes and resizes with parent container
 * Themeable with CSS (examples for light and dark)
+* Callback function for all message events (allows monitoring)
+* Responsive design for various screen sizes and resizes with parent container
 * Hideable/Showable Title and Text Entry areas allows flexibility of usage
-* Full history storage and retrieval
+* Full message history storage and retrieval
 * History can be fed directly to OpenAI / Mistral / Ollama compatible APIs for context aware chats
-* Available via NPM and CDN
+* Available via NPM and CDN & github
 * Provided in UMD and ESM formats
 * Multiple separate instances can run on a single page
 * Multiple users can be in a chat

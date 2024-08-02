@@ -144,6 +144,10 @@ var quikchat = /*#__PURE__*/function () {
       this._sendButton = this._inputArea.querySelector('.quikchat-input-send-btn');
       this.msgid = 0;
     }
+
+    /**
+     * Attach event listeners to the widget
+     */
   }, {
     key: "_attachEventListeners",
     value: function _attachEventListeners() {
@@ -165,7 +169,15 @@ var quikchat = /*#__PURE__*/function () {
           _this._onSend(_this, _this._textEntry.value.trim());
         }
       });
+      this._messagesArea.addEventListener('scroll', function () {
+        var _this$_messagesArea = _this._messagesArea,
+          scrollTop = _this$_messagesArea.scrollTop,
+          scrollHeight = _this$_messagesArea.scrollHeight,
+          clientHeight = _this$_messagesArea.clientHeight;
+        _this.userScrolledUp = scrollTop + clientHeight < scrollHeight;
+      });
     }
+
     // set the onSend function callback.
   }, {
     key: "setCallbackOnSend",
@@ -304,8 +316,11 @@ var quikchat = /*#__PURE__*/function () {
       messageDiv.appendChild(userDiv);
       messageDiv.appendChild(contentDiv);
       this._messagesArea.appendChild(messageDiv);
-      //this._messagesArea.lastChild.scrollIntoView();
-      this._messagesArea.lastElementChild.scrollIntoView();
+
+      // Scroll to the last message only if the user is not actively scrolling up
+      if (!this.userScrolledUp) {
+        this._messagesArea.lastElementChild.scrollIntoView();
+      }
       this._textEntry.value = '';
       this._adjustMessagesAreaHeight();
       var timestamp = new Date().toISOString();
@@ -401,7 +416,7 @@ var quikchat = /*#__PURE__*/function () {
   }, {
     key: "messageAppendContent",
     value: function messageAppendContent(n, content) {
-      var sucess = false;
+      var success = false;
       try {
         this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0'))).lastChild.innerHTML += content;
         // update history
@@ -410,31 +425,44 @@ var quikchat = /*#__PURE__*/function () {
         })[0];
         item.content += content;
         item.updatedtime = new Date().toISOString();
-        sucess = true;
-        //this._messagesArea.lastChild.scrollIntoView();
-        this._messagesArea.lastElementChild.scrollIntoView();
+        success = true;
+
+        // Scroll to the last message only if the user is not actively scrolling up
+        if (!this.userScrolledUp) {
+          this._messagesArea.lastElementChild.scrollIntoView();
+        }
       } catch (error) {
-        console.log("{String(n)} : Message ID not found");
+        console.log("".concat(String(n), " : Message ID not found"));
       }
+      return success;
     }
+
     /* replace message content
     */
   }, {
     key: "messageReplaceContent",
     value: function messageReplaceContent(n, content) {
-      var sucess = false;
+      var success = false;
       try {
         this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0'))).lastChild.innerHTML = content;
         // update history
-        this._history.filter(function (item) {
+        var item = this._history.filter(function (item) {
           return item.msgid === n;
-        })[0].content = content;
-        sucess = true;
+        })[0];
+        item.content = content;
+        item.updatedtime = new Date().toISOString();
+        success = true;
+
+        // Scroll to the last message only if the user is not actively scrolling up
+        if (!this.userScrolledUp) {
+          this._messagesArea.lastElementChild.scrollIntoView();
+        }
       } catch (error) {
-        console.log("{String(n)} : Message ID not found");
+        console.log("".concat(String(n), " : Message ID not found"));
       }
-      return sucess;
+      return success;
     }
+
     // history functions
     /**
      * 
@@ -497,7 +525,7 @@ var quikchat = /*#__PURE__*/function () {
     key: "version",
     value: function version() {
       return {
-        "version": "1.1.0",
+        "version": "1.1.1",
         "license": "BSD-2",
         "url": "https://github/deftio/quikchat"
       };

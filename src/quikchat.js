@@ -5,16 +5,15 @@ class quikchat {
      * @param string or DOM element  parentElement 
      * @param {*} meta 
      */
-    constructor(parentElement, onSend =  ()=>{} , options = {}) 
-    {
+    constructor(parentElement, onSend = () => { }, options = {}) {
         const defaultOpts = {
             theme: 'quikchat-theme-light',
             trackHistory: true,
             titleArea: { title: "Chat", show: false, align: "center" },
-            messagesArea: { alternating : true },
+            messagesArea: { alternating: true },
         };
         const meta = { ...defaultOpts, ...options }; // merge options with defaults
-        
+
         if (typeof parentElement === 'string') {
             parentElement = document.querySelector(parentElement);
         }
@@ -68,6 +67,9 @@ class quikchat {
         this.msgid = 0;
     }
 
+    /**
+     * Attach event listeners to the widget
+     */
     _attachEventListeners() {
         this._sendButton.addEventListener('click', () => this._onSend(this, this._textEntry.value.trim()));
         window.addEventListener('resize', () => this._handleContainerResize());
@@ -77,10 +79,16 @@ class quikchat {
             if (event.shiftKey && event.keyCode === 13) {
                 // Prevent default behavior (adding new line)
                 event.preventDefault();
-                this._onSend(this, this._textEntry.value.trim())
+                this._onSend(this, this._textEntry.value.trim());
             }
         });
+
+        this._messagesArea.addEventListener('scroll', () => {
+            const { scrollTop, scrollHeight, clientHeight } = this._messagesArea;
+            this.userScrolledUp = scrollTop + clientHeight < scrollHeight;
+        });
     }
+   
     // set the onSend function callback.
     setCallbackOnSend(callback) {
         this._onSend = callback;
@@ -157,7 +165,7 @@ class quikchat {
         else {
             this._messagesArea.classList.remove('quikchat-messages-area-alt');
         }
-        return alt===true;
+        return alt === true;
     }
     messagesAreaAlternateColorsToggle() {
         this._messagesArea.classList.toggle('quikchat-messages-area-alt');
@@ -186,24 +194,32 @@ class quikchat {
         messageDiv.appendChild(userDiv);
         messageDiv.appendChild(contentDiv);
         this._messagesArea.appendChild(messageDiv);
-        //this._messagesArea.lastChild.scrollIntoView();
-        this._messagesArea.lastElementChild.scrollIntoView()
+
+        // Scroll to the last message only if the user is not actively scrolling up
+        if (!this.userScrolledUp) {
+            this._messagesArea.lastElementChild.scrollIntoView();
+        }
 
         this._textEntry.value = '';
         this._adjustMessagesAreaHeight();
         const timestamp = new Date().toISOString();
         const updatedtime = timestamp;
+
         if (this.trackHistory) {
             this._history.push({ msgid, ...input, timestamp, updatedtime, messageDiv });
             if (this._history.length > this._historyLimit) {
                 this._history.shift();
             }
         }
+
         if (this._onMessageAdded) {
             this._onMessageAdded(this, msgid);
-        };
+        }
+
         return msgid;
     }
+
+   
     messageAddNew(content = "", userString = "user", align = "right", role = "user") {
         return this.messageAddFull(
             { content: content, userString: userString, align: align, role: role }
@@ -259,37 +275,49 @@ class quikchat {
 
     /* append message to the message content
     */
+
     messageAppendContent(n, content) {
-        let sucess = false;
+        let success = false;
         try {
             this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML += content;
             // update history
             let item = this._history.filter((item) => item.msgid === n)[0];
             item.content += content;
             item.updatedtime = new Date().toISOString();
-            sucess = true;
-            //this._messagesArea.lastChild.scrollIntoView();
-            this._messagesArea.lastElementChild.scrollIntoView()
+            success = true;
+
+            // Scroll to the last message only if the user is not actively scrolling up
+            if (!this.userScrolledUp) {
+                this._messagesArea.lastElementChild.scrollIntoView();
+            }
+        } catch (error) {
+            console.log(`${String(n)} : Message ID not found`);
         }
-        catch (error) {
-            console.log(`{String(n)} : Message ID not found`);
-        }
+        return success;
     }
+    
     /* replace message content
     */
     messageReplaceContent(n, content) {
-        let sucess = false;
+        let success = false;
         try {
             this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML = content;
             // update history
-            this._history.filter((item) => item.msgid === n)[0].content = content;
-            sucess = true;
+            let item = this._history.filter((item) => item.msgid === n)[0];
+            item.content = content;
+            item.updatedtime = new Date().toISOString();
+            success = true;
+
+            // Scroll to the last message only if the user is not actively scrolling up
+            if (!this.userScrolledUp) {
+                this._messagesArea.lastElementChild.scrollIntoView();
+            }
+        } catch (error) {
+            console.log(`${String(n)} : Message ID not found`);
         }
-        catch (error) {
-            console.log(`{String(n)} : Message ID not found`);
-        }
-        return sucess;
+        return success;
     }
+    
     // history functions
     /**
      * 
@@ -345,7 +373,7 @@ class quikchat {
     }
 
     static version() {
-        return { "version": "1.1.0", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
+        return { "version": "1.1.1", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
     }
 
     /**
@@ -366,13 +394,13 @@ class quikchat {
      * loremIpsum(200);
      */
 
-     static loremIpsum (numChars, startSpot = undefined, startWithCapitalLetter = true) {
+    static loremIpsum(numChars, startSpot = undefined, startWithCapitalLetter = true) {
         const loremText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. ";
 
         if (typeof numChars !== "number") {
             numChars = Math.floor(Math.random() * (150)) + 25;
         }
-        
+
         if (startSpot === undefined) {
             startSpot = Math.floor(Math.random() * loremText.length);
         }

@@ -1,12 +1,14 @@
 # QuikChat JS TODO list
 
-* show/remove timestamps
+* show/hide timestamps
 * add support for right to left languages by making css with [send] on left
 * provide minified css
-* rename project.. 
+* rename project...
 * example Anthropic
 * example Mistral
-* example React
+* example React Component
+* test suite automate
+* github badges
 * fix scroll to bottom behavior
 * (done 1.1.0) move callback from {meta} to 2nd param of constructor
 * (done 1.1.0) add loremIpsum Generator

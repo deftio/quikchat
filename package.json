@@ -1,7 +1,17 @@
 {
   "name": "quikchat",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "quikchat is a simple vanilla (no dependancies) JavaScript chat control for browsers ",
+  "author": "deftio (https://github.com/deftio",
+  "license": "BSD-2-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/deftio/quikchat.git"
+  },
+  "bugs": {
+    "url": "git://github.com/deftio/quikchat/issues"
+  },
+  "homepage": "https://github.com/deftio/quikchat",
   "main": "dist/quikchat.umd.min.js",
   "module": "dist/quikchat.min.js",
   "unpkg": "dist/quikchat.umd.min.js",
@@ -9,17 +19,22 @@
   "files": [
     "dist"
   ],
-  "author": "deftio",
   "type": "module",
   "directories": {
-    "example": "examples"
+    "examples": "examples"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node ./tools/updateVersion && npx docbat -i README.md -o index.html && rollup -c"
   },
-  "keywords": [],
-  "license": "BSD-2-Clause",
+  "keywords": [
+    "chat",
+    "chatcontrol",
+    "vanillajs",
+    "llm-chat",
+    "chatbox",
+    "chatboxcontrol"
+  ],
   "devDependencies": {
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^26.0.1",

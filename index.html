@@ -103,20 +103,21 @@ Any manual edits may be lost.
 <h2 id="features">Features</h2>
 <ul>
 <li>Themeable with CSS (examples for light and dark)</li>
-<li>Callback function for all message events (allows monitoring)</li>
 <li>Responsive design for various screen sizes and resizes with parent container</li>
 <li>Hideable/Showable Title and Text Entry areas allows flexibility of usage</li>
 <li>Full message history storage and retrieval</li>
 <li>History can be fed directly to OpenAI / Mistral / Ollama compatible APIs for context aware chats</li>
-<li>Available via NPM and CDN &amp; github</li>
-<li>Provided in UMD and ESM formats</li>
+<li>Available via NPM, CDN or source via github</li>
+<li>Provided in UMD and ESM formats (minified)</li>
 <li>Multiple separate instances can run on a single page</li>
 <li>Multiple users can be in a chat</li>
+<li>Messages can be searched, appended to (streamed token completion), replaced, or removed.</li>
 <li>Left / Right / Center support of individual users</li>
 <li>Callback for all message events (to monitor chat)</li>
 </ul>
 <h2 id="demo--examples">Demo &amp; Examples</h2>
-<p>Examples are here 
+<p><a href="https://deftio.github.io/quikchat/examples/example_umd.html">Simple Demo</a></p>
+<p>Full Examples are in the repo examples folder: 
 <a href="./examples/index.html">Example Code and Demo</a>
 Example include using ESM, UMD modules, running multiple chats on the same page, and integration with LLM providers such as Ollama, LMStudio, OpenAI compatible providers.</p>
 <h2 id="installation">Installation</h2>
@@ -135,21 +136,23 @@ html</p>
 <pre><code class="language-html">&lt;div id=&quot;chat-container&quot;&gt;&lt;/div&gt;
 </code></pre>
 <p>Initialize quikchat in your JavaScript code by providing the container element and a callback function for message events:</p>
+<p>See /examples for full working code.</p>
 <pre><code class="language-javascript">chat = new quikchat(
       &quot;#chat-container&quot;,   // this can be a css selector such as &quot;#chat-container&quot; or DOM element
       {
-      theme: &#39;quikchat-theme-light&#39;, // theme see css
-        titleArea: { title: &#39;My Chat&#39;, align: &#39;left&#39;, show: true }, // internal title area 
-        onSend: (chat, msg) =&gt; { // this callback is triggered with the user hits the Send button 
-            // messages are not automatically echoed to the chat after onSend.  This 
+      theme: &#39;quikchat-theme-light&#39;, // settheme see quikchat.css
+      (chat, msg) =&gt; { // this callback triggered when user hits the Send
+            // messages are not automatically echoed.
             // allows filtering / other processing of the message before posting.
-            chat.messageAddNew(msg, &#39;me&#39;, &#39;right&#39;); // echo the message to the chat area 
+            chat.messageAddNew(msg, &#39;me&#39;, &#39;right&#39;); // echo msg to chat area 
             // now call an LLM or do other actions
             // ... callLLM(msg) ... do other logic if needed.
+            // or callLLM(chat.historyGet());  // pass full history (can also filter)
         }
+        titleArea: { title: &#39;My Chat&#39;, align: &#39;left&#39;, show: true }, // internal title area 
       });
 
-// Add a message at any point not just from call back
+// Add a message at any point not just from callback
 chat.addMessage(&#39;Hello!&#39;, &#39;You&#39;, &#39;left&#39;);  // user should appear left or right justified
 
 //... other logic
@@ -162,7 +165,7 @@ chat.titleAreaHide();  // hides the title area for a bare chat
 // hide the input area
 chat.inputAreaHide(); // hides the input area so chat is now just a message stream.
 
-// change themes
+// change themes at any time
 chat.changeTheme(&quot;quikchat-theme-dark&quot;); // change theme on the fly (see quikchat.css for examples)
 </code></pre>
 <h2 id="theming">Theming</h2>
@@ -187,17 +190,18 @@ myChatWidget.changeTheme(newTheme) where myChatWidget is the instance of your wi
   background-color: #ffffffe2;
   color: #333;
 }
-  
-.quikchat-theme-light .quikchat-message-1 {
-  background-color: #fffffff0;
-  color: #005662;
+ 
+/* support for alternating row styles */
+.quikchat-theme-light .quikchat-messages-area-alt .quikchat-message:nth-child(odd) {
+    background-color: #fffffff0;
+    color: #005662;
 }
-  
-.quikchat-theme-light .quikchat-message-2 {
-  background-color: #eeeeeee9;
-  color: #353535;
+.quikchat-theme-light .quikchat-messages-area-alt .quikchat-message:nth-child(even) {
+    background-color: #eeeeeee9;
+    color: #353535;
 }
-  
+
+/* input area / text entry / send button */
 .quikchat-theme-light .quikchat-input-area {
   background-color: #f9f9f9;
   border-bottom-left-radius : 10px;
@@ -220,9 +224,11 @@ myChatWidget.changeTheme(newTheme) where myChatWidget is the instance of your wi
 }
 </code></pre>
 <h2 id="building-from-source">Building from Source</h2>
-<p>quikchat is built with <a href="rollup.js">https://rollupjs.org/</a>.</p>
+<p>quikchat is built with <a href="https://rollupjs.org/">rollup.js</a>.</p>
 <p>Make sure to run npm install.  Then run npm run build.</p>
 <p>Note that at run time quikchat has no dependancies, but at build time several tools are used for packing and minifying code.</p>
 <h2 id="license">License</h2>
 <p>quikchat is licensed under the BSD-2 License.</p>
+<h2 id="home-page">Home Page</h2>
+<p><a href="https://githhub.com/deftio/quikchat">quikchat homepage and source code</a></p>
 </body></html>

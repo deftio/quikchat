@@ -5,21 +5,22 @@ Quikchat is a vanilla (no dependancies) JavaScript chat control that can be easi
 ## Features
 
 * Themeable with CSS (examples for light and dark)
-* Callback function for all message events (allows monitoring)
 * Responsive design for various screen sizes and resizes with parent container
 * Hideable/Showable Title and Text Entry areas allows flexibility of usage
 * Full message history storage and retrieval
 * History can be fed directly to OpenAI / Mistral / Ollama compatible APIs for context aware chats
-* Available via NPM and CDN & github
-* Provided in UMD and ESM formats
+* Available via NPM, CDN or source via github
+* Provided in UMD and ESM formats (minified)
 * Multiple separate instances can run on a single page
 * Multiple users can be in a chat
+* Messages can be searched, appended to (streamed token completion), replaced, or removed.
 * Left / Right / Center support of individual users
 * Callback for all message events (to monitor chat)
 
 ## Demo & Examples
+[Simple Demo](https://deftio.github.io/quikchat/examples/example_umd.html)
 
-Examples are here 
+Full Examples are in the repo examples folder: 
 [Example Code and Demo](./examples/index.html)
 Example include using ESM, UMD modules, running multiple chats on the same page, and integration with LLM providers such as Ollama, LMStudio, OpenAI compatible providers.
 
@@ -51,22 +52,25 @@ Create a container element in your HTML where you want the chat interface to app
 
 Initialize quikchat in your JavaScript code by providing the container element and a callback function for message events:
 
+See /examples for full working code.
+
 ```javascript
 chat = new quikchat(
       "#chat-container",   // this can be a css selector such as "#chat-container" or DOM element
       {
-      theme: 'quikchat-theme-light', // theme see css
-        titleArea: { title: 'My Chat', align: 'left', show: true }, // internal title area 
-        onSend: (chat, msg) => { // this callback is triggered with the user hits the Send button 
-            // messages are not automatically echoed to the chat after onSend.  This 
+      theme: 'quikchat-theme-light', // settheme see quikchat.css
+      (chat, msg) => { // this callback triggered when user hits the Send
+            // messages are not automatically echoed.
             // allows filtering / other processing of the message before posting.
-            chat.messageAddNew(msg, 'me', 'right'); // echo the message to the chat area 
+            chat.messageAddNew(msg, 'me', 'right'); // echo msg to chat area 
             // now call an LLM or do other actions
             // ... callLLM(msg) ... do other logic if needed.
+            // or callLLM(chat.historyGet());  // pass full history (can also filter)
         }
+        titleArea: { title: 'My Chat', align: 'left', show: true }, // internal title area 
       });
 
-// Add a message at any point not just from call back
+// Add a message at any point not just from callback
 chat.addMessage('Hello!', 'You', 'left');  // user should appear left or right justified
 
 //... other logic
@@ -79,7 +83,7 @@ chat.titleAreaHide();  // hides the title area for a bare chat
 // hide the input area
 chat.inputAreaHide(); // hides the input area so chat is now just a message stream.
 
-// change themes
+// change themes at any time
 chat.changeTheme("quikchat-theme-dark"); // change theme on the fly (see quikchat.css for examples)
 ```
 
@@ -111,17 +115,18 @@ If several widgets are on the same page, each can have a separate theme.
   background-color: #ffffffe2;
   color: #333;
 }
-  
-.quikchat-theme-light .quikchat-message-1 {
-  background-color: #fffffff0;
-  color: #005662;
+ 
+/* support for alternating row styles */
+.quikchat-theme-light .quikchat-messages-area-alt .quikchat-message:nth-child(odd) {
+    background-color: #fffffff0;
+    color: #005662;
 }
-  
-.quikchat-theme-light .quikchat-message-2 {
-  background-color: #eeeeeee9;
-  color: #353535;
+.quikchat-theme-light .quikchat-messages-area-alt .quikchat-message:nth-child(even) {
+    background-color: #eeeeeee9;
+    color: #353535;
 }
-  
+
+/* input area / text entry / send button */
 .quikchat-theme-light .quikchat-input-area {
   background-color: #f9f9f9;
   border-bottom-left-radius : 10px;
@@ -146,7 +151,7 @@ If several widgets are on the same page, each can have a separate theme.
 
 ## Building from Source
 
-quikchat is built with [https://rollupjs.org/](rollup.js).
+quikchat is built with [rollup.js](https://rollupjs.org/).
 
 Make sure to run npm install.  Then run npm run build.
 
@@ -155,3 +160,10 @@ Note that at run time quikchat has no dependancies, but at build time several to
 ## License
 
 quikchat is licensed under the BSD-2 License.
+
+## Home Page
+
+[quikchat homepage and source code](https://githhub.com/deftio/quikchat)
+
+ 
+

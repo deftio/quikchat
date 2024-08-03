@@ -531,7 +531,7 @@
       key: "version",
       value: function version() {
         return {
-          "version": "1.1.2",
+          "version": "1.1.3",
           "license": "BSD-2",
           "url": "https://github/deftio/quikchat"
         };

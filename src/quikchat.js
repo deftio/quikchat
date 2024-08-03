@@ -373,7 +373,7 @@ class quikchat {
     }
 
     static version() {
-        return { "version": "1.1.2", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
+        return { "version": "1.1.3", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
     }
 
     /**

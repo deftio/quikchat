@@ -36,7 +36,7 @@
         <div class="row">
             <div class="col-11">
                 <h2 class="">Ollama QuikChat Demo</h2>
-                <p>This is a demo of two chat widgets that can send messages to each other. One chat widget is connected
+                <p>This is a demo of two chat widgets connected to the local LLM via Ollama. One chat widget is connected
                     to the Ollama completion API, and the other is connected to the Ollama streaming API.</p>
                 Neither chat has conversational memory, so each respose is independent of the previous chat message.
                 <br><br>
@@ -52,6 +52,7 @@
         </div>
     </div>
     <script>
+        // chat widget for the Ollama completion API 
         const completionsChat = new quikchat('#chat-container1',
             getOllamaCompletionCallback,
             {
@@ -60,6 +61,7 @@
             });
         completionsChat.messageAddNew("How can I help? ", "bot", "left");
 
+        // chat widget for the Ollama streaming API
         const streamingChat = new quikchat('#chat-container2',
             getOllamaStreamingCallback,
             {

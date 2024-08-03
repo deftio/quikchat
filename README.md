@@ -66,15 +66,18 @@ chat = new quikchat(
             // messages are not automatically echoed.
             // allows filtering / other processing of the message before posting.
             chat.messageAddNew(msg, 'me', 'right'); // echo msg to chat area 
-            // now call an LLM or do other actions
+
+            // now call an LLM or do other actions with msg
             // ... callLLM(msg) ... do other logic if needed.
             // or callLLM(chat.historyGet());  // pass full history (can also filter)
         }
-        titleArea: { title: 'My Chat', align: 'left', show: true }, // internal title area 
+        titleArea: { title: 'My Chat', align: 'left', show: true }, // internal title area if desired
       });
 
 // Add a message at any point not just from callback
-chat.addMessage('Hello!', 'You', 'left');  // user should appear left or right justified
+chat.messageAddNew('Hello!', 'You', 'left');  // user should appear left or right justified
+chat.messageAddNew('Hello!', 'Them', 'right');  // user should appear left or right justified
+
 
 //... other logic
 let messageHistory = chat.historyGet(); // get all the messages (see docs for filters)
@@ -159,6 +162,14 @@ quikchat is built with [rollup.js](https://rollupjs.org/).
 Make sure to run npm install.  Then run npm run build.
 
 Note that at run time quikchat has no dependancies, but at build time several tools are used for packing and minifying code.
+
+## Testing
+
+quikchat is tested with the jest framwork.  To run unit tests and see coverage run:
+
+```bash
+npm run test
+```
 
 ## License
 

@@ -50,8 +50,7 @@
 
 <body>
     <h2>Quikchatjs Simple Example (UMD)</h2>
-    <p>This is a test of a themeable chat widget with a title area, messages area, and input area. The title area and
-        input area can be hidden.</p>
+    <p>This themeable chat widget with a title area, messages area, and input area.</p>
     <div class="parent"></div>
     <br>
     <br>
@@ -70,7 +69,7 @@
 
                 // this is just a simple example of a bot response
                 // bw (bitwrench) is a utility library that is included in the demo but not related to quikchatjs
-                // this just creates a random message from the bot
+                // this just creates a random message 
                 const botmsg = bw.loremIpsum(bw.random(25, 50), bw.random(0, 100))
                 chat.messageAddNew(botmsg, 'bot', 'left');
             },

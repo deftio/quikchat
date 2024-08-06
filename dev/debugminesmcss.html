@@ -10,7 +10,7 @@
         rel="icon" />
 
     <script src="https://www.unpkg.com/bitwrench@1.2.16/bitwrench.min.js"></script>
-    <link href="../dist/quikchat.css" rel="stylesheet" />
+    <link href="../dist/quikchat.min.css" rel="stylesheet" />
     <style>
         body {
             margin: 0;
@@ -45,6 +45,7 @@
 
 <body>
     <h2>QuikChat Styles and Debug Page</h2>
+    -- this page uses the minified css files for fast testing --
     <p>This is a test of a themeable chat widget with a title area, messages area, and input area. The title area and
         input area can be hidden.</p>
     <div class="chatContainerStyles" id="chatContainer"></div>
@@ -54,7 +55,7 @@
     <button class="system-btn" id="themeBtn">Change Themes</button>
     <button class="system-btn" onclick="chatBox.messagesAreaAlternateColorsToggle()">Toggle Alternating Colors</button>
     <script type="module">
-        import quikchat from '../src/quikchat.js';
+        import quikchat from '../dist/quikchat.esm.min.js';
         document.addEventListener('DOMContentLoaded', () => {
             const chatDiv = document.querySelector('#chatContainer');
             window.chatBox = new quikchat(chatDiv,

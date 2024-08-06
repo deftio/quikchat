@@ -29,7 +29,6 @@
     flex-grow: 1;
     padding: 8px;
     overflow-y: auto;
-    border-radius: 1rem;
     width: 100%;
 }
 
@@ -37,7 +36,6 @@
     padding: 4px;
     white-space: pre-wrap;
     word-wrap: break-word;
-    border-radius: 4px;
 }
 
 .quikchat-input-area {
@@ -47,8 +45,7 @@
     min-height: 56px;
     height: 4em;
     width: 100%;
-    box-sizing: border-box !important;
-
+   /* box-sizing: border-box !important; */
 }
   
 .quikchat-input-textbox {
@@ -88,16 +85,19 @@
 
 
 .quikchat-theme-debug .quikchat-messages-area {
+    border-radius: 1em;
     background-color: lightsalmon;
 }
 
 .quikchat-theme-debug .quikchat-messages-area-alt .quikchat-message:nth-child(odd) {
     background-color: lightseagreen;
     color: #eee;
+    border-radius: 4px;
 }
 .quikchat-theme-debug .quikchat-messages-area-alt .quikchat-message:nth-child(even) {
     background-color: lightpink;
     color: #444;
+    border-radius: 4px;
 }
 /*
 .quikchat-theme-debug .quikchat-message-1 {
@@ -133,7 +133,7 @@
 /* quikchat theme dark                */
 .quikchat-theme-dark {
     border: 1px solid #555555;
-    border-radius: 8px;
+    border-radius: 10px;
     background-color: #212121;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     color: #eceff1;
@@ -150,15 +150,18 @@
 .quikchat-theme-dark .quikchat-messages-area {
     background-color: #212121;
     color: #eceff1;
+    border-radius: 1em;
 }
 
 .quikchat-theme-dark .quikchat-messages-area-alt .quikchat-message:nth-child(odd) {
     background-color: #404040e5;
     color: #eceff1;
+    border-radius: 4px;
 }
 .quikchat-theme-darl .quikchat-messages-area-alt .quikchat-message:nth-child(even) {
     background-color: #5a5a5a;
     color: #fbfbfb;
+    border-radius: 4px;
 }
 /*
 .quikchat-theme-dark .quikchat-message-1 {
@@ -217,15 +220,18 @@
 .quikchat-theme-light .quikchat-messages-area {
     background-color: #ffffffe2;
     color: #333;
+    border-radius: 1em;
 }
   
 .quikchat-theme-light .quikchat-messages-area-alt .quikchat-message:nth-child(odd) {
     background-color: #fffffff0;
     color: #005662;
+    border-radius: 4px;
 }
 .quikchat-theme-light .quikchat-messages-area-alt .quikchat-message:nth-child(even) {
     background-color: #eeeeeee9;
     color: #353535;
+    border-radius: 4px;
 }
 /*
 .quikchat-theme-light .quikchat-message-1 {

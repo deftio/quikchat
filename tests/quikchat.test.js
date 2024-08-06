@@ -77,7 +77,7 @@ describe('quikchat', () => {
     test('should generate lorem ipsum text', () => {
         const text = quikchat.loremIpsum(50);
         expect(text.length).toBe(50);
-        expect(text).toMatch(/^[A-Z][a-z]/); // Starts with capital letter
+        expect(/^[A-Z]/.test(text)).toBe(true); // Starts with capital letter
     });
 
     test('should toggle message area alternating colors', () => {

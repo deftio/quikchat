@@ -11,6 +11,7 @@
 * clean up scroll to bottom behavior (in progress)
 * add stats api (num messages, users, total chars written etc)
 * add user mgmt
+* add callbacks : onMessageAppend, onMessageReplace
 
 ==========
 

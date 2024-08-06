@@ -1,5 +1,6 @@
 [![License](https://img.shields.io/badge/License-BSD%202--Clause-blue.svg)](https://opensource.org/licenses/BSD-2-Clause)
 [![NPM version](https://img.shields.io/npm/v/quikchat.svg?style=flat-square)](https://www.npmjs.com/package/quikchat)
+![CI](https://github.com/deftio/quikchat/actions/workflows/ci.yml/badge.svg)
 
 # QuikChat (js)
 

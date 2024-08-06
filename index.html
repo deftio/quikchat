@@ -121,8 +121,8 @@ Any manual edits may be lost.
 <h2 id="demo--examples">Demo &amp; Examples</h2>
 <p><a href="https://deftio.github.io/quikchat/examples/example_umd.html">Simple Demo</a></p>
 <p>Full Examples are in the repo examples folder: 
-<a href="./examples/index.html">Example Code and Demo</a>
-Example include using ESM, UMD modules, running multiple chats on the same page, and integration with LLM providers such as Ollama, LMStudio, OpenAI compatible providers.</p>
+<a href="./examples/index.html">Example Code and Demo</a>.</p>
+<p>Examples include using ESM, UMD modules, theming, running multiple chats on the same page, and integration with LLM providers such as Ollama, LMStudio, OpenAI compatible providers.</p>
 <h2 id="installation">Installation</h2>
 <p>To use quikchat in your project, follow these steps:</p>
 <p>Include the quikchat.js JavaScript file in your project.
@@ -136,14 +136,17 @@ html</p>
 &lt;link rel=&quot;stylesheet&quot; href=&quot;https://unpkg.com/quikchat/dist/quikchat.css&quot; /&gt;
 </code></pre>
 <p>Create a container element in your HTML where you want the chat interface to appear.  The quikchat widget will take 100% of the paretn container height and width.  If the parent container width or height is not specified the quikchat widget may grow as content is added.  If the parent container is resized, quikchat will resize with the parent container.</p>
-<pre><code class="language-html">&lt;div id=&quot;chat-container&quot;&gt;&lt;/div&gt;
+<pre><code class="language-html">&lt;style&gt;
+#chat-container {width: 100%; height: 50vh;}  /* use any width / height as appropriate for your app */
+&lt;/style&gt;
+&lt;div id=&quot;chat-container&quot;&gt;&lt;/div&gt;
 </code></pre>
 <p>Initialize quikchat in your JavaScript code by providing the container element and a callback function for message events:</p>
 <p>See /examples for full working code.</p>
 <pre><code class="language-javascript">chat = new quikchat(
       &quot;#chat-container&quot;,   // this can be a css selector such as &quot;#chat-container&quot; or DOM element
       {
-      theme: &#39;quikchat-theme-light&#39;, // settheme see quikchat.css
+      theme: &#39;quikchat-theme-light&#39;, // set theme, see quikchat.css
       (chat, msg) =&gt; { // this callback triggered when user hits the Send
             // messages are not automatically echoed.
             // allows filtering / other processing of the message before posting.

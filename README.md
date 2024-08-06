@@ -25,8 +25,9 @@ Quikchat is a vanilla (no dependancies) JavaScript chat control that can be easi
 [Simple Demo](https://deftio.github.io/quikchat/examples/example_umd.html)
 
 Full Examples are in the repo examples folder: 
-[Example Code and Demo](./examples/index.html)
-Example include using ESM, UMD modules, running multiple chats on the same page, and integration with LLM providers such as Ollama, LMStudio, OpenAI compatible providers.
+[Example Code and Demo](./examples/index.html).
+
+Examples include using ESM, UMD modules, theming, running multiple chats on the same page, and integration with LLM providers such as Ollama, LMStudio, OpenAI compatible providers.
 
 ## Installation
 
@@ -51,6 +52,9 @@ html
 Create a container element in your HTML where you want the chat interface to appear.  The quikchat widget will take 100% of the paretn container height and width.  If the parent container width or height is not specified the quikchat widget may grow as content is added.  If the parent container is resized, quikchat will resize with the parent container.
 
 ```html
+<style>
+#chat-container {width: 100%; height: 50vh;}  /* use any width / height as appropriate for your app */
+</style>
 <div id="chat-container"></div>
 ```
 
@@ -62,7 +66,7 @@ See /examples for full working code.
 chat = new quikchat(
       "#chat-container",   // this can be a css selector such as "#chat-container" or DOM element
       {
-      theme: 'quikchat-theme-light', // settheme see quikchat.css
+      theme: 'quikchat-theme-light', // set theme, see quikchat.css
       (chat, msg) => { // this callback triggered when user hits the Send
             // messages are not automatically echoed.
             // allows filtering / other processing of the message before posting.

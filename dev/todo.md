@@ -19,7 +19,7 @@
 * (done 1.1.3) moved all border-radius to themes
 * (done 1.1.3) updated docs / index.html
 * (done 1.1.3) updated readme generator from npx to /node-modules (still using docbat)
-* (done 1.1.3)
+* (done 1.1.3) add ci via github actions
 
 * (done 1.1.2) updated styles and docs
 * (done 1.1.2) add jest test suite

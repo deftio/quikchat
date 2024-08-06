@@ -40,8 +40,12 @@
         <p>These chat containers can send messages to each other showing that each chat control is a separate instance. </p>
 
         <div class="row">
-            <div class="col-6"><div class="chat-container" id="chat-container1"></div> </div>
-            <div class="col-6"><div class="chat-container" id="chat-container2"></div> </div>
+            <div class="col-6">
+                <div class="chat-container" id="chat-container1"></div>
+            </div>
+            <div class="col-6">
+                <div class="chat-container" id="chat-container2"></div>
+            </div>
         </div>
     </div>
 
@@ -49,26 +53,34 @@
     <script>
 
         const chat1 = new quikchat('#chat-container1');
-        const chat2 = new quikchat('#chat-container2');
-        chat2.changeTheme("quikchat-theme-dark");
-        cb1 = (chatInstance, content) => {
-            chatInstance.messageAddNew(content,"User1","right")  // echo input to own message area
-            chat1.messageAddNew(content,"User1","left")         // post to other chat
-        }
-        cb2 = (chatInstance, content) => {
-            chatInstance.messageAddNew(content,"User2","right") // echo input to own message area
-            chat2.messageAddNew(content,"User2","left")        // post to other chat
-        }
-        chat1.setCallbackOnSend(cb2);
-        chat2.setCallbackOnSend(cb1);
-        
-        // some starter messages..
-        chat1.messageAddNew("Hello, User2!","User1","left"); // writes to chat1
-        // now write the same to the other chat
-        chat2.messageAddNew("Hello, User1!","User1","right");
+        chat1.titleAreaSetContents("Sue Smith Chat Window","left"); // optional title area
+        chat1.titleAreaShow();  // show the title area (default is hidden)
 
-        chat2.messageAddNew("Hello, User1!","User2","left");
-        chat1.messageAddNew("Hello, User2!","User2","right");
+        const chat2 = new quikchat('#chat-container2');
+        chat2.titleAreaSetContents("Pat Park Chat Window","left"); // optional title area
+        chat2.titleAreaShow();  // show the title area (can hide with chat2.titleAreaHide())
+  
+        chat2.changeTheme("quikchat-theme-dark"); // change theme of chat2 to show different themes on same page
+       
+        // callback functions to send messages to each other
+        cb1 = (chatInstance, content) => {
+            chatInstance.messageAddNew(content,"Sue Smith","right")  // echo input to own message area
+            chat2.messageAddNew(content,"Sue Smith","left")         // post to other chat
+        }
+        // set the callback functions
+        cb2 = (chatInstance, content) => {
+            chatInstance.messageAddNew(content,"Pat Park","right") // echo input to own message area
+            chat1.messageAddNew(content,"Pat Park","left")        // post to other chat
+        }
+        chat1.setCallbackOnSend(cb1);
+        chat2.setCallbackOnSend(cb2);
+        
+        // some starter messages for each chat
+        chat1.messageAddNew("Hello, Pat!","Sue Smith","right"); // writes to chat1
+        chat1.messageAddNew("Hello, Sue!","Pat Park","left");
+
+        chat2.messageAddNew("Hello, Pat!","Sue Smith","left"); // writes to chat2
+        chat2.messageAddNew("Hello, Sue!","Pat Park","right");
 
         
         

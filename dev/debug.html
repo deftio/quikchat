@@ -9,24 +9,24 @@
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90' style='fill:blue'>&#x1F4AC;</text></svg>"
         rel="icon" />
 
-    <script src="https://www.unpkg.com/bitwrench@1.2.16/bitwrench.min.js"></script>
     <link href="../dist/quikchat.css" rel="stylesheet" />
     <style>
         body {
             margin: 0;
             padding: 5%;
             height: 100%;
-            width: 100%;
+            width: 100vw;
             font-family: 'Open Sans', sans-serif;
             font-weight: 300;
+            box-sizing: border-box;
         }
 
         .chatContainerStyles {
             height: 60vh;
-            width: 100%;
+            width: 80%;
         }
 
-        /* these are not part of the widget, just for the demo test */
+        /* these are not part of the widget, just for the demo buttons */
         .system-btn {
             margin-top: 2px;
             margin-bottom:  2px;
@@ -62,10 +62,8 @@
                     chat.messageAddNew(userContent, 'me', 'right'); // echo the message to the chat area
 
                     // do something with the message
-                    // bw (bitwrench) is a utility library that is included in the demo but not related to quikchatjs
-                    // this just creates a random number of messages from the bot
-                    let x = chat.messageAddNew(bw.loremIpsum(bw.random(10, 50), bw.random(33, 100)), 'bot', 'left');
-                    
+                    // this just creates a random of messages using the built-in lorem ipsum generator
+                    chat.messageAddNew(quikchat.loremIpsum(), 'bot', 'left');
                 },
                 {
                     theme: 'quikchat-theme-light',

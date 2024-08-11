@@ -13,7 +13,6 @@
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90' style='fill:blue'>&#x1F4AC;</text></svg>"
         rel="icon" />
 
-    <script src="https://www.unpkg.com/bitwrench@1.2.16/bitwrench.min.js"></script>
     <link href="../dist/quikchat.css" rel="stylesheet" />
     <script src="../dist/quikchat.umd.min.js"></script>
     <style>
@@ -24,9 +23,10 @@
             width: 100%;
             font-family: 'Open Sans', sans-serif;
             font-weight: 300;
+            box-sizing: border-box;
         }
 
-        .parent {
+        .chatContainer {
             height: 45vh;
             width: 100%;
             margin: 0 auto;
@@ -51,7 +51,7 @@
 <body>
     <h2>Quikchatjs Simple Example (UMD)</h2>
     <p>This themeable chat widget with a title area, messages area, and input area.</p>
-    <div class="parent"></div>
+    <div class="chatContainer" id="chatContainerInstance"></div>
     <br>
     <br>
     <button class="system-btn" onclick="chatBox.titleAreaToggle()">Toggle Title</button>
@@ -61,17 +61,15 @@
     <br>
     <script >
         document.addEventListener('DOMContentLoaded', () => {
-            const parentDiv = document.querySelector('.parent');
+            const parentDiv = document.querySelector('#chatContainerInstance');
             window.chatBox = new quikchat(parentDiv, 
             (chat, msg) => {
                 chat.messageAddNew(msg, 'me', 'right'); // echo the message to the chat area
                 // now do something with the message
 
-                // this is just a simple example of a bot response
-                // bw (bitwrench) is a utility library that is included in the demo but not related to quikchatjs
-                // this just creates a random message 
-                const botmsg = bw.loremIpsum(bw.random(25, 50), bw.random(0, 100))
-                chat.messageAddNew(botmsg, 'bot', 'left');
+                // example of a bot response using the built-in lorem ipsum generator
+                const botResponse = quikchat.loremIpsum();
+                chat.messageAddNew(botResponse, 'bot', 'left');
             },
             {
                 theme: 'quikchat-theme-light',

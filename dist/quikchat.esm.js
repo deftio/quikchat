@@ -509,6 +509,11 @@ var quikchat = /*#__PURE__*/function () {
     value: function historyGetMessageContent(n) {
       return this._history[n].message;
     }
+
+    /**
+     * 
+     * @param {string} newTheme 
+     */
   }, {
     key: "changeTheme",
     value: function changeTheme(newTheme) {
@@ -516,16 +521,26 @@ var quikchat = /*#__PURE__*/function () {
       this._chatWidget.classList.add(newTheme);
       this._theme = newTheme;
     }
+
+    /**
+     *  Get the current theme
+     * @returns {string} - The current theme
+     */
   }, {
     key: "theme",
     get: function get() {
       return this._theme;
     }
+
+    /**
+     * 
+     * @returns {object} - Returns the version and license information for the library.
+     */
   }], [{
     key: "version",
     value: function version() {
       return {
-        "version": "1.1.3",
+        "version": "1.1.4",
         "license": "BSD-2",
         "url": "https://github/deftio/quikchat"
       };

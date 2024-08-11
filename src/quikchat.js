@@ -361,19 +361,30 @@ class quikchat {
         return this._history[n].message;
     }
 
-
+    /**
+     * 
+     * @param {string} newTheme 
+     */
     changeTheme(newTheme) {
         this._chatWidget.classList.remove(this._theme);
         this._chatWidget.classList.add(newTheme);
         this._theme = newTheme;
     }
 
+    /**
+     *  Get the current theme
+     * @returns {string} - The current theme
+     */
     get theme() {
         return this._theme;
     }
 
+    /**
+     * 
+     * @returns {object} - Returns the version and license information for the library.
+     */
     static version() {
-        return { "version": "1.1.3", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
+        return { "version": "1.1.4", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
     }
 
     /**

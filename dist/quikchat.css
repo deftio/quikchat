@@ -23,6 +23,7 @@
     padding: 8px;
     font-weight: 600;
     font-size: 1.3em;
+    box-sizing: border-box;
 }
 
 .quikchat-messages-area {
@@ -30,12 +31,14 @@
     padding: 8px;
     overflow-y: auto;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .quikchat-message {
     padding: 4px;
     white-space: pre-wrap;
     word-wrap: break-word;
+    box-sizing: border-box;
 }
 
 .quikchat-input-area {
@@ -45,7 +48,7 @@
     min-height: 56px;
     height: 4em;
     width: 100%;
-   /* box-sizing: border-box !important; */
+    box-sizing: border-box;
 }
   
 .quikchat-input-textbox {
@@ -54,6 +57,7 @@
     resize: none;
     padding: 4px;
     height: 100%;
+    box-sizing: border-box;
 }
 
 .quikchat-input-send-btn {
@@ -63,6 +67,7 @@
     min-width: 5rem;
     cursor: pointer;
     white-space: nowrap;
+    box-sizing: border-box;
 }
   
 /* ***************************************** */

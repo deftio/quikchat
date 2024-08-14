@@ -1,5 +1,5 @@
 # travisci configuration for coverage testing 
-
+dist: jammy
 language: node_js
 node_js:
   - "18"  # Specify the version of Node.js you want to use

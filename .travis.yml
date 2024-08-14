@@ -2,32 +2,15 @@
 
 language: node_js
 node_js:
-  - "20"
-#dist: trusty # needs Ubuntu Trusty
-# Note: if you switch to sudo: false, you'll need to launch Chrome with --no-sandbox.
-# See https://github.com/travis-ci/travis-ci/issues/8836
-sudo: required
-addons:
-  chrome: stable # have Travis install Chrome stable.
-cache: npm
-#  yarn: true
-#  directories:
-#    - node_modules
-#install:
-#  - npm
+  - "20"  # Specify the version of Node.js you want to use
+
+cache:
+  directories:
+    - node_modules
+
+install:
+  - npm install
+
 script:
-  - npm run test
+  - npm test
 
-
-#language: node_js
-#node_js:
-#  - "4.0.0"
-#
-#before_install:
-#  - npm install coveralls
-#
-#after_success: npm run coveralls
-#
-#branches:
-#  only:
-#    - master

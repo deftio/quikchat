@@ -2,7 +2,7 @@
 
 language: node_js
 node_js:
-  - "20"  # Specify the version of Node.js you want to use
+  - "18"  # Specify the version of Node.js you want to use
 
 cache:
   directories:

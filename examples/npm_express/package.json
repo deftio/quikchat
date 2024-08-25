@@ -1,0 +1,18 @@
+{
+  "name": "quikchat-express",
+  "version": "1.0.0",
+  "description": "quikchat expressjs example",
+  "main": "server.js",
+  "scripts": {
+    "test": "node server.js",
+    "start": "node server.js"
+  },
+  "author": "deftio",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "expressjs": "^1.0.1"
+  }
+}

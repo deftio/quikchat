@@ -384,7 +384,7 @@ class quikchat {
      * @returns {object} - Returns the version and license information for the library.
      */
     static version() {
-        return { "version": "1.1.4", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
+        return { "version": "1.1.5", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
     }
 
     /**

@@ -11,7 +11,8 @@ class quikchat {
             trackHistory: true,
             titleArea: { title: "Chat", show: false, align: "center" },
             messagesArea: { alternating: true },
-        };
+            inputArea: { show: true }
+        }; 
         const meta = { ...defaultOpts, ...options }; // merge options with defaults
 
         if (typeof parentElement === 'string') {
@@ -34,6 +35,14 @@ class quikchat {
         // messages area
         if (meta.messagesArea) {
             this.messagesAreaAlternateColors(meta.messagesArea.alternating);
+        }
+
+        // input area
+        if (meta.inputArea) {
+            if (meta.inputArea.show === true) 
+                this.inputAreaShow();
+            else 
+                this.inputAreaHide();
         }
         // plumbing
         this._attachEventListeners();
@@ -384,7 +393,7 @@ class quikchat {
      * @returns {object} - Returns the version and license information for the library.
      */
     static version() {
-        return { "version": "1.1.5", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
+        return { "version": "1.1.6", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
     }
 
     /**

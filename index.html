@@ -111,12 +111,13 @@ Any manual edits may be lost.
 <li>Full message history storage and retrieval</li>
 <li>History can be fed directly to OpenAI / Mistral / Ollama compatible APIs for context aware chats</li>
 <li>Available via NPM, CDN or source via github</li>
-<li>Provided in UMD and ESM formats (minified)</li>
+<li>Provided in UMD and ESM formats (+ minified)</li>
 <li>Multiple separate instances can run on a single page</li>
 <li>Multiple users can be in a chat</li>
 <li>Messages can be searched, appended to (streamed token completion), replaced, or removed.</li>
 <li>Left / Right / Center support of individual users</li>
 <li>Callback for all message events (to monitor chat)</li>
+<li>Example backends for Python FastApi and Nodejs (see examples for working full projects)</li>
 </ul>
 <h2 id="demo--examples">Demo &amp; Examples</h2>
 <p><a href="https://deftio.github.io/quikchat/examples/example_umd.html">Simple Demo</a></p>
@@ -144,24 +145,23 @@ html</p>
 <p>Initialize quikchat in your JavaScript code by providing the container element and a callback function for message events:</p>
 <p>See /examples for full working code.</p>
 <pre><code class="language-javascript">chat = new quikchat(
-      &quot;#chat-container&quot;,   // this can be a css selector such as &quot;#chat-container&quot; or DOM element
-      {
-      theme: &#39;quikchat-theme-light&#39;, // set theme, see quikchat.css
+      &quot;#chat-container&quot;,//a css selector such as &quot;#chat-container&quot; or DOM element
       (chat, msg) =&gt; { // this callback triggered when user hits the Send
             // messages are not automatically echoed.
-            // allows filtering / other processing of the message before posting.
+            // this allows filtering of the message before posting.
             chat.messageAddNew(msg, &#39;me&#39;, &#39;right&#39;); // echo msg to chat area 
-
             // now call an LLM or do other actions with msg
             // ... callLLM(msg) ... do other logic if needed.
             // or callLLM(chat.historyGet());  // pass full history (can also filter)
-        }
+      },
+      {
+        theme: &#39;quikchat-theme-light&#39;, // set theme, see quikchat.css
         titleArea: { title: &#39;My Chat&#39;, align: &#39;left&#39;, show: true }, // internal title area if desired
       });
 
 // Add a message at any point not just from callback
-chat.messageAddNew(&#39;Hello!&#39;, &#39;You&#39;, &#39;left&#39;);  // user should appear left or right justified
-chat.messageAddNew(&#39;Hello!&#39;, &#39;Them&#39;, &#39;right&#39;);  // user should appear left or right justified
+chat.messageAddNew(&#39;Hello!&#39;, &#39;You&#39;, &#39;left&#39;);    //  should appear left justified
+chat.messageAddNew(&#39;Hello!&#39;, &#39;Them&#39;, &#39;right&#39;);  //  should appear  right justified
 
 
 //... other logic

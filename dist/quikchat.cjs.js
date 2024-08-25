@@ -102,6 +102,9 @@ var quikchat = /*#__PURE__*/function () {
       },
       messagesArea: {
         alternating: true
+      },
+      inputArea: {
+        show: true
       }
     };
     var meta = _objectSpread2(_objectSpread2({}, defaultOpts), options); // merge options with defaults
@@ -126,6 +129,11 @@ var quikchat = /*#__PURE__*/function () {
     // messages area
     if (meta.messagesArea) {
       this.messagesAreaAlternateColors(meta.messagesArea.alternating);
+    }
+
+    // input area
+    if (meta.inputArea) {
+      if (meta.inputArea.show === true) this.inputAreaShow();else this.inputAreaHide();
     }
     // plumbing
     this._attachEventListeners();
@@ -542,7 +550,7 @@ var quikchat = /*#__PURE__*/function () {
     key: "version",
     value: function version() {
       return {
-        "version": "1.1.5",
+        "version": "1.1.6",
         "license": "BSD-2",
         "url": "https://github/deftio/quikchat"
       };

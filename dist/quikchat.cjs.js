@@ -266,7 +266,7 @@ var quikchat = /*#__PURE__*/function () {
     value: function _handleContainerResize() {
       this._adjustMessagesAreaHeight();
       this._adjustSendButtonWidth();
-      //console.log('Container resized');
+      return true;
     }
   }, {
     key: "_adjustSendButtonWidth",
@@ -275,6 +275,7 @@ var quikchat = /*#__PURE__*/function () {
       var fontSize = parseFloat(getComputedStyle(this._sendButton).fontSize);
       var minWidth = fontSize * sendButtonText.length + 16;
       this._sendButton.style.minWidth = "".concat(minWidth, "px");
+      return true;
     }
 
     //messagesArea functions
@@ -510,14 +511,14 @@ var quikchat = /*#__PURE__*/function () {
     key: "historyGetMessage",
     value: function historyGetMessage(n) {
       if (n >= 0 && n < this._history.length) {
-        this._history[n];
+        return this._history[n];
       }
       return {};
     }
   }, {
     key: "historyGetMessageContent",
     value: function historyGetMessageContent(n) {
-      return this._history[n].message;
+      if (n >= 0 && n < this._history.length) return this._history[n].content;else return "";
     }
 
     /**

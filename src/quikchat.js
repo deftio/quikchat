@@ -156,7 +156,7 @@ class quikchat {
     _handleContainerResize() {
         this._adjustMessagesAreaHeight();
         this._adjustSendButtonWidth();
-        //console.log('Container resized');
+        return true;
     }
 
     _adjustSendButtonWidth() {
@@ -164,6 +164,7 @@ class quikchat {
         const fontSize = parseFloat(getComputedStyle(this._sendButton).fontSize);
         const minWidth = fontSize * sendButtonText.length + 16;
         this._sendButton.style.minWidth = `${minWidth}px`;
+        return true;
     }
 
     //messagesArea functions
@@ -360,14 +361,17 @@ class quikchat {
 
     historyGetMessage(n) {
         if (n >= 0 && n < this._history.length) {
-            this._history[n];
+            return this._history[n];
         }
         return {};
 
     }
 
     historyGetMessageContent(n) {
-        return this._history[n].message;
+        if (n >= 0 && n < this._history.length) 
+            return this._history[n].content;
+        else
+            return "";
     }
 
     /**

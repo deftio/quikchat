@@ -13,15 +13,27 @@
 * add callbacks : onMessageAppend, onMessageReplace
 
 ==========
-1.1.5
+
+## 1.1.7
+
+* added get/restore full message history including timestamps
+* updated messageAddFull to accept timestamp setting for history restore
+* added /examples/historyDemo.html
+
+## 1.1.6
+
+* added show/hide input on construction
+* added more test coverage (approx 87%)
+
+## 1.1.5
 
 * added  examples for nodejs and python backends including streaming
 
-1.1.4
+## 1.1.4
 
 * added  travisci build support
 
-1.1.3
+## 1.1.3
 
 * added onMessageNew callback
 * minified css (/dist/quikchat.min.css)
@@ -31,21 +43,20 @@
 * add ci via github actions
 * added build passing badge based on github actions
 
-
-1.1.2 
+## 1.1.2 
 
 * updated styles and docs
 * add jest test suite
 * add npm and version badges in readme
 * added fixes in github pages for demos
 
-1.1.1 
+## 1.1.1 
 
 * move callback from {meta} to 2nd param of constructor
 * add loremIpsum Generator
 * addedfix alternate light and dark to use css nth-child, added messagesAreaAlternateColors()
 
-1.0.4
+## 1.0.4
 
 * make robust the add/remove/update message (harden id scheme for messages)
 * example ChatGPT

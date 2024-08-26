@@ -184,7 +184,7 @@ class quikchat {
         return this._messagesArea.classList.contains('quikchat-messages-area-alt');
     }
     // message functions
-    messageAddFull(input = { content: "", userString: "user", align: "right", role: "user", userID: -1 }) {
+    messageAddFull(input = { content: "", userString: "user", align: "right", role: "user", userID: -1, timestamp: false, updatedtime: false }) {
         const msgid = this.msgid;
         const messageDiv = document.createElement('div');
         const msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
@@ -212,8 +212,10 @@ class quikchat {
 
         this._textEntry.value = '';
         this._adjustMessagesAreaHeight();
-        const timestamp = new Date().toISOString();
-        const updatedtime = timestamp;
+        // add timestamp now, unless it is passed in 
+
+        const timestamp = input.timestamp ?  input.timestamp : new Date().toISOString() 
+        const updatedtime = input.updatedtime ? input.updatedtime : timestamp;
 
         if (this.trackHistory) {
             this._history.push({ msgid, ...input, timestamp, updatedtime, messageDiv });
@@ -350,8 +352,13 @@ class quikchat {
         return this._history.slice(n, m);
     }
 
+    historyGetAllCopy() {
+        return this._history.slice();
+    }
+
     historyClear() {
         this.msgid = 0;
+        this._messagesArea.innerHTML = "";
         this._history = [];
     }
 
@@ -374,6 +381,19 @@ class quikchat {
             return "";
     }
 
+    // expects an array of messages to be in the format of the history object
+    historyRestoreAll(messageList) {
+        // clear all messages and history
+        this.historyClear();
+
+        // clear the messages div 
+        this._messagesArea.innerHTML = "";
+
+        // add all messages
+        messageList.forEach((message) => {
+            this.messageAddFull(message);
+        });
+    }
     /**
      * 
      * @param {string} newTheme 
@@ -397,7 +417,7 @@ class quikchat {
      * @returns {object} - Returns the version and license information for the library.
      */
     static version() {
-        return { "version": "1.1.6", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
+        return { "version": "1.1.7", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
     }
 
     /**

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuikChatJS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+        rel="stylesheet">
+    <link
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90' style='fill:blue'>&#x1F4AC;</text></svg>"
+        rel="icon" />
+
+    <link href="../dist/quikchat.css" rel="stylesheet" />
+    <script src="../dist/quikchat.umd.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 5%;
+            height: 100%;
+            width: 100%;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 300;
+            box-sizing: border-box;
+        }
+
+        .chatContainer {
+            height: 100%;
+            width: 30%;
+            margin: 0;
+            padding: 0;
+            left: 0;
+        }
+
+        .historyContainer {
+            height: 100%;
+            width: 30%;
+            margin: 0;
+            padding: 0;
+            left: 0;
+            top: 0;
+        }
+        #chatContainerInstance, #sampleHistory,  #chatHistory {
+           overflow: scroll;
+           width: 100%;
+           height: 90%;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            height: 55vh;
+        }
+        /* these are not part of the widget, just for the demo test */
+        .system-btn {
+            margin-top: 2px;
+            margin-bottom: 2px;
+            padding: 12px 8px;
+            background-color: #443491;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Quikchatjs History Get / Restore example</h2>
+    <p>This demo shows saving and restore of full message history</p>
+    <div class="container">
+        <div class="chatContainer">
+            <h3 class="title">Chat Widget</h3>
+            <div id="chatContainerInstance"></div>
+        </div>
+        <div class="historyContainer">
+            <h3 class="title">Sample History</h3>
+            <div id="sampleHistory"></div>
+        </div>
+        <div class="historyContainer" >
+            <h3 class="title">Chat History Snapshot</h3>
+            <div id="chatHistory"></div>
+        </div>
+    </div>
+    <div id="status"></div>
+    <br>
+    <br>
+    <button class="system-btn" onclick="sampleHistoryBtn()">Restore Sample History</button>
+    <button class="system-btn" onclick="getHistoryBtn()">Get Chatbox History</button>
+    <button class="system-btn" onclick="restoreHistoryBtn()">Restore History Snaphot</button>
+    <button class="system-btn" onclick="clearHistoryBtn()">Clear Chat and Snapshot History</button>
+    <script>
+        const parentDiv = document.querySelector('#chatContainerInstance');
+        window.chatBox = new quikchat(parentDiv,
+            (chat, msg) => {
+                chat.messageAddNew(msg, 'me', 'right'); // echo the message to the chat area
+                chat.messageAddNew(quikchat.loremIpsum(), 'bot', 'left');
+            },
+            {
+                theme: 'quikchat-theme-light',
+            });
+
+        // now we need to create some sample content for the sampleHistory Box.  
+        chatBox.messageAddNew("Welcome to the History Demo", 'bot', 'left');
+        chatBox.messageAddNew("How does it work?", 'me', 'right');
+        chatBox.messageAddNew("Click on the buttons below to get or restore the history of the chat.", 'bot', 'left');
+        chatBox.messageAddNew("Great, I'll try it out.", 'me', 'right');
+
+        const sampleHistory =  chatBox.historyGetAllCopy();
+        document.querySelector('#sampleHistory').innerText = JSON.stringify(sampleHistory, null, 2);
+        // clear the current chat box so it has no history
+        chatBox.historyClear();
+        window.currentHistory = chatBox.historyGetAllCopy();
+
+        // now the buttons..  At any time we want to restore the sample history
+        function sampleHistoryBtn() {
+            chatBox.historyRestoreAll(sampleHistory);
+            document.querySelector("#status").innerText = "Sample History Restored to Chat";   
+        }
+
+        function getHistoryBtn() {
+            window.currentHistory = chatBox.historyGetAllCopy();
+            document.querySelector('#chatHistory').innerText = JSON.stringify(currentHistory, null, 2);
+            document.querySelector("#status").innerText = "Current History Snapshot Saved to right side panel"   
+        }
+
+        function restoreHistoryBtn() {
+            chatBox.historyRestoreAll(window.currentHistory);
+            document.querySelector("#status").innerText = "Chat History Snapshot Restored to Chat";   
+        }
+        function clearHistoryBtn() {
+            chatBox.historyClear();  // clear the current chat box history
+            // clear Chat History Snapshot Div
+            document.querySelector('#chatHistory').innerText = "";
+            document.querySelector("#status").innerText = "Chat History Cleared and History Snapshot Cleared";
+
+        }
+        // need to make sure timestamps are handled correctly
+
+    </script>
+
+</body>

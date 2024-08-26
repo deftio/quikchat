@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">87.3% </span>
+                <span class="strong">85.22% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>172/197</span>
+                <span class='fraction'>173/203</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">57.83% </span>
+                <span class="strong">57.47% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>48/83</span>
+                <span class='fraction'>50/87</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">83.33% </span>
+                <span class="strong">78.43% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>40/48</span>
+                <span class='fraction'>40/51</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">87.76% </span>
+                <span class="strong">85.56% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>165/188</span>
+                <span class='fraction'>166/194</span>
             </div>
         
             
@@ -530,7 +530,27 @@
 <a name='L465'></a><a href='#L465'>465</a>
 <a name='L466'></a><a href='#L466'>466</a>
 <a name='L467'></a><a href='#L467'>467</a>
-<a name='L468'></a><a href='#L468'>468</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L468'></a><a href='#L468'>468</a>
+<a name='L469'></a><a href='#L469'>469</a>
+<a name='L470'></a><a href='#L470'>470</a>
+<a name='L471'></a><a href='#L471'>471</a>
+<a name='L472'></a><a href='#L472'>472</a>
+<a name='L473'></a><a href='#L473'>473</a>
+<a name='L474'></a><a href='#L474'>474</a>
+<a name='L475'></a><a href='#L475'>475</a>
+<a name='L476'></a><a href='#L476'>476</a>
+<a name='L477'></a><a href='#L477'>477</a>
+<a name='L478'></a><a href='#L478'>478</a>
+<a name='L479'></a><a href='#L479'>479</a>
+<a name='L480'></a><a href='#L480'>480</a>
+<a name='L481'></a><a href='#L481'>481</a>
+<a name='L482'></a><a href='#L482'>482</a>
+<a name='L483'></a><a href='#L483'>483</a>
+<a name='L484'></a><a href='#L484'>484</a>
+<a name='L485'></a><a href='#L485'>485</a>
+<a name='L486'></a><a href='#L486'>486</a>
+<a name='L487'></a><a href='#L487'>487</a>
+<a name='L488'></a><a href='#L488'>488</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -744,6 +764,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-yes">18x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-yes">18x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -883,6 +905,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -903,6 +930,19 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1183,7 +1223,7 @@ class quikchat {
         return this._messagesArea.classList.contains('quikchat-messages-area-alt');
     }
     // message functions
-    messageAddFull(input = <span class="branch-0 cbranch-no" title="branch not covered" >{ content: "", userString: "user", align: "right", role: "user", userID: -1 })</span> {
+    messageAddFull(input = <span class="branch-0 cbranch-no" title="branch not covered" >{ content: "", userString: "user", align: "right", role: "user", userID: -1, timestamp: false, updatedtime: false })</span> {
         const msgid = this.msgid;
         const messageDiv = document.createElement('div');
         const msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
@@ -1211,8 +1251,10 @@ class quikchat {
 &nbsp;
         this._textEntry.value = '';
         this._adjustMessagesAreaHeight();
-        const timestamp = new Date().toISOString();
-        const updatedtime = timestamp;
+        // add timestamp now, unless it is passed in 
+&nbsp;
+        const timestamp = input.timestamp ?  <span class="branch-0 cbranch-no" title="branch not covered" >input.timestamp </span>: new Date().toISOString() 
+        const updatedtime = input.updatedtime ? <span class="branch-0 cbranch-no" title="branch not covered" >input.updatedtime </span>: timestamp;
 &nbsp;
         <span class="missing-if-branch" title="else path not taken" >E</span>if (this.trackHistory) {
             this._history.push({ msgid, ...input, timestamp, updatedtime, messageDiv });
@@ -1349,8 +1391,13 @@ class quikchat {
         return this._history.slice(n, m);
     }
 &nbsp;
+<span class="fstat-no" title="function not covered" >    hi</span>storyGetAllCopy() {
+<span class="cstat-no" title="statement not covered" >        return this._history.slice();</span>
+    }
+&nbsp;
     historyClear() {
         this.msgid = 0;
+        this._messagesArea.innerHTML = "";
         this._history = [];
     }
 &nbsp;
@@ -1373,6 +1420,19 @@ class quikchat {
 <span class="cstat-no" title="statement not covered" >            <span class="missing-if-branch" title="else path not taken" >E</span>return "";</span>
     }
 &nbsp;
+    // expects an array of messages to be in the format of the history object
+<span class="fstat-no" title="function not covered" >    hi</span>storyRestoreAll(messageList) {
+        // clear all messages and history
+<span class="cstat-no" title="statement not covered" >        this.historyClear();</span>
+&nbsp;
+        // clear the messages div 
+<span class="cstat-no" title="statement not covered" >        this._messagesArea.innerHTML = "";</span>
+&nbsp;
+        // add all messages
+<span class="cstat-no" title="statement not covered" >        messageList.forEach(<span class="fstat-no" title="function not covered" >(m</span>essage) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >            this.messageAddFull(message);</span>
+        });
+    }
     /**
      * 
      * @param {string} newTheme 
@@ -1396,7 +1456,7 @@ class quikchat {
      * @returns {object} - Returns the version and license information for the library.
      */
     static version() {
-        return { "version": "1.1.6", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
+        return { "version": "1.1.7", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
     }
 &nbsp;
     /**
@@ -1471,7 +1531,7 @@ export default quikchat;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2024-08-25T21:26:58.883Z
+                at 2024-08-26T08:13:18.641Z
             </div>
         <script src="prettify.js"></script>
         <script>

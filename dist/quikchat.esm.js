@@ -307,7 +307,9 @@ var quikchat = /*#__PURE__*/function () {
         userString: "user",
         align: "right",
         role: "user",
-        userID: -1
+        userID: -1,
+        timestamp: false,
+        updatedtime: false
       };
       var msgid = this.msgid;
       var messageDiv = document.createElement('div');
@@ -332,8 +334,10 @@ var quikchat = /*#__PURE__*/function () {
       }
       this._textEntry.value = '';
       this._adjustMessagesAreaHeight();
-      var timestamp = new Date().toISOString();
-      var updatedtime = timestamp;
+      // add timestamp now, unless it is passed in 
+
+      var timestamp = input.timestamp ? input.timestamp : new Date().toISOString();
+      var updatedtime = input.updatedtime ? input.updatedtime : timestamp;
       if (this.trackHistory) {
         this._history.push(_objectSpread2(_objectSpread2({
           msgid: msgid
@@ -495,9 +499,15 @@ var quikchat = /*#__PURE__*/function () {
       return this._history.slice(n, m);
     }
   }, {
+    key: "historyGetAllCopy",
+    value: function historyGetAllCopy() {
+      return this._history.slice();
+    }
+  }, {
     key: "historyClear",
     value: function historyClear() {
       this.msgid = 0;
+      this._messagesArea.innerHTML = "";
       this._history = [];
     }
   }, {
@@ -519,6 +529,22 @@ var quikchat = /*#__PURE__*/function () {
       if (n >= 0 && n < this._history.length) return this._history[n].content;else return "";
     }
 
+    // expects an array of messages to be in the format of the history object
+  }, {
+    key: "historyRestoreAll",
+    value: function historyRestoreAll(messageList) {
+      var _this2 = this;
+      // clear all messages and history
+      this.historyClear();
+
+      // clear the messages div 
+      this._messagesArea.innerHTML = "";
+
+      // add all messages
+      messageList.forEach(function (message) {
+        _this2.messageAddFull(message);
+      });
+    }
     /**
      * 
      * @param {string} newTheme 
@@ -549,7 +575,7 @@ var quikchat = /*#__PURE__*/function () {
     key: "version",
     value: function version() {
       return {
-        "version": "1.1.6",
+        "version": "1.1.7",
         "license": "BSD-2",
         "url": "https://github/deftio/quikchat"
       };

@@ -28,7 +28,7 @@ Quikchat is a vanilla (no dependancies) JavaScript chat control that can be easi
 [List of Examples on Github](https://deftio.github.io/quikchat/examples/index.html)
 
 
-Full Examples are in the repo examples folder: 
+Full Examples are in the repo examples folder (relative link): 
 [Example Code and Demo](./examples/index.html).
 
 Examples include using ESM, UMD modules, theming, running multiple chats on the same page, and integration with LLM providers such as Ollama, LMStudio, OpenAI compatible providers.

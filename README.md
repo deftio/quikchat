@@ -25,6 +25,8 @@ Quikchat is a vanilla (no dependancies) JavaScript chat control that can be easi
 ## Demo & Examples
 
 [Simple Demo](https://deftio.github.io/quikchat/examples/example_umd.html)
+[List of Examples on Github](https://deftio.github.io/quikchat/examples/index.html)
+
 
 Full Examples are in the repo examples folder: 
 [Example Code and Demo](./examples/index.html).

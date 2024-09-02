@@ -186,7 +186,7 @@ quikchat is licensed under the BSD-2 License.
 
 ## Home Page
 
-[quikchat homepage and source code](https://githhub.com/deftio/quikchat)
+[quikchat homepage and source code](https://github.com/deftio/quikchat)
 
    
    

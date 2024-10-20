@@ -309,7 +309,8 @@ var quikchat = /*#__PURE__*/function () {
         role: "user",
         userID: -1,
         timestamp: false,
-        updatedtime: false
+        updatedtime: false,
+        scrollIntoView: false
       };
       var msgid = this.msgid;
       var messageDiv = document.createElement('div');
@@ -329,7 +330,7 @@ var quikchat = /*#__PURE__*/function () {
       this._messagesArea.appendChild(messageDiv);
 
       // Scroll to the last message only if the user is not actively scrolling up
-      if (!this.userScrolledUp) {
+      if (!this.userScrolledUp || input.scrollIntoView) {
         this._messagesArea.lastElementChild.scrollIntoView();
       }
       this._textEntry.value = '';
@@ -362,12 +363,16 @@ var quikchat = /*#__PURE__*/function () {
       var userString = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "user";
       var align = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "right";
       var role = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "user";
-      return this.messageAddFull({
+      var scrollIntoView = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+      var retvalue = this.messageAddFull({
         content: content,
         userString: userString,
         align: align,
-        role: role
+        role: role,
+        scrollIntoView: scrollIntoView
       });
+      // this.messageScrollToBottom();
+      return retvalue;
     }
   }, {
     key: "messageRemove",
@@ -475,7 +480,11 @@ var quikchat = /*#__PURE__*/function () {
       }
       return success;
     }
-
+  }, {
+    key: "messageScrollToBottom",
+    value: function messageScrollToBottom() {
+      this._messagesArea.lastElementChild.scrollIntoView();
+    }
     // history functions
     /**
      * 
@@ -575,7 +584,7 @@ var quikchat = /*#__PURE__*/function () {
     key: "version",
     value: function version() {
       return {
-        "version": "1.1.7",
+        "version": "1.1.8",
         "license": "BSD-2",
         "url": "https://github/deftio/quikchat"
       };

@@ -184,7 +184,7 @@ class quikchat {
         return this._messagesArea.classList.contains('quikchat-messages-area-alt');
     }
     // message functions
-    messageAddFull(input = { content: "", userString: "user", align: "right", role: "user", userID: -1, timestamp: false, updatedtime: false }) {
+    messageAddFull(input = { content: "", userString: "user", align: "right", role: "user", userID: -1, timestamp: false, updatedtime: false, scrollIntoView: false }) {
         const msgid = this.msgid;
         const messageDiv = document.createElement('div');
         const msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
@@ -206,7 +206,7 @@ class quikchat {
         this._messagesArea.appendChild(messageDiv);
 
         // Scroll to the last message only if the user is not actively scrolling up
-        if (!this.userScrolledUp) {
+        if ((!this.userScrolledUp) || input.scrollIntoView) {
             this._messagesArea.lastElementChild.scrollIntoView();
         }
 
@@ -232,10 +232,13 @@ class quikchat {
     }
 
    
-    messageAddNew(content = "", userString = "user", align = "right", role = "user") {
-        return this.messageAddFull(
-            { content: content, userString: userString, align: align, role: role }
+    messageAddNew(content = "", userString = "user", align = "right", role = "user", scrollIntoView = false) {
+        let retvalue = this.messageAddFull(
+            { content: content, userString: userString, align: align, role: role, scrollIntoView: scrollIntoView }
         );
+        // this.messageScrollToBottom();
+        return retvalue;
+
     }
     messageRemove(n) {
         // use css selector to remove the message
@@ -330,6 +333,9 @@ class quikchat {
         return success;
     }
     
+    messageScrollToBottom() {
+        this._messagesArea.lastElementChild.scrollIntoView();
+    }
     // history functions
     /**
      * 
@@ -417,7 +423,7 @@ class quikchat {
      * @returns {object} - Returns the version and license information for the library.
      */
     static version() {
-        return { "version": "1.1.7", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
+        return { "version": "1.1.8", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
     }
 
     /**

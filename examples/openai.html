@@ -32,7 +32,9 @@
             margin-top: 1rem;
             font-weight: 600;
         }
-        #prompt, input {
+
+        #prompt,
+        input {
             width: 100%;
             padding: 8px;
             border: 1px solid #ccc;
@@ -57,6 +59,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="row">
@@ -65,7 +68,7 @@
                 <p>This example demonstrates how to use QuikChat with OpenAI's GPT-4o model. You can use this example
                     with any API that supports token streaming. The example uses the OpenAI API to generate responses to
                     user prompts.</p>
-                    <p></p>
+                <p></p>
             </div>
             <div class="col-5" id="settings">
                 <h3>Settings</h3>
@@ -82,7 +85,8 @@
                         value="https://api.openai.com/v1/chat/completions">
                     <br><br>
                     <button class="btn btn-primary" type="submit">Save Settings</button><br>
-                    Saving settings, stores the prompt, api key, and base url in a cookie on your local machine. No information is sent to any server.
+                    Saving settings, stores the prompt, api key, and base url in a cookie on your local machine. No
+                    information is sent to any server.
                     <div id="response"></div>
                 </form>
             </div>
@@ -101,8 +105,8 @@
             const responseDiv = document.getElementById('response');
             responseDiv.innerHTML = '';
             chatInstance.messageAddNew(userInput, "user", "right");
-            console.log (baseUrl)
-            console.log (apiKey)
+            console.log(baseUrl)
+            console.log(apiKey)
             const data = {
                 model: 'gpt-4o-mini',
                 messages: [
@@ -174,28 +178,27 @@
             }
         };
 
-        let chatInstance = new quikchat('#chatBox', 
+        let chatInstance = new quikchat('#chatBox',
             handleAIRequest
             // optional styling below
             //,{
             //    theme: 'quikchat-theme-light',
             //    titleArea: { title: "Chat Area", "show": false, "align": "left" },
             //}
-            );
+        );
 
-        // set remember the api key to a local cookie 
+        // set remember the api key to a local cookie
         document.getElementById('settingsForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
-            //save the prompt to a cookie.
-            //this only saves the form to the user's local machine.  It is not sent or stored on
-            //any server.
-            const prompt = document.getElementById('prompt').value;
-            const apiKey = document.getElementById('apiKey').value;
-            const baseUrl = document.getElementById('baseUrl').value;
-            document.cookie = `prompt=${prompt}`;
-            document.cookie = `apiKey=${apiKey}`;
-            document.cookie = `baseUrl=${baseUrl}`;
+            // Save the prompt, apiKey, and baseUrl to cookies
+            const prompt = encodeURIComponent(document.getElementById('prompt').value);
+            const apiKey = encodeURIComponent(document.getElementById('apiKey').value);
+            const baseUrl = encodeURIComponent(document.getElementById('baseUrl').value);
+
+            document.cookie = `prompt=${prompt}; path=/`;
+            document.cookie = `apiKey=${apiKey}; path=/`;
+            document.cookie = `baseUrl=${baseUrl}; path=/`;
         });
 
         // load the api key from the cookie on document load
@@ -204,13 +207,13 @@
             cookies.forEach(cookie => {
                 const [name, value] = cookie.split('=');
                 if (name.trim() === 'prompt') {
-                    document.getElementById('prompt').value = value;
+                    document.getElementById('prompt').value = decodeURIComponent(value);
                 }
                 if (name.trim() === 'apiKey') {
-                    document.getElementById('apiKey').value = value;
+                    document.getElementById('apiKey').value = decodeURIComponent(value);
                 }
                 if (name.trim() === 'baseUrl') {
-                    document.getElementById('baseUrl').value = value;
+                    document.getElementById('baseUrl').value = decodeURIComponent(value);
                 }
             });
         });

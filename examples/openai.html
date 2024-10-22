@@ -42,6 +42,9 @@
             font-weight: 300;
         }
 
+        button {
+            margin-bottom: 4px;
+        }
 
         button:hover {
             background-color: #0056b3;
@@ -91,7 +94,13 @@
                 </form>
             </div>
             <div class="col-7" id="chatContainer">
-                <h3>Chat</h3>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Chat</h3>
+                    <div>
+                        <button id="exportChat" class="btn btn-primary me-2">Export Chat History</button>
+                        <button id="exportChatAndPrompt" class="btn btn-primary">Export History And Prompt</button>
+                    </div>
+                </div>
                 <div id="chatBox" class="chat-container"></div>
             </div>
         </div>
@@ -217,6 +226,39 @@
                 }
             });
         });
+
+        // Export chat history to a text file
+        // Add the export functionality
+        document.getElementById('exportChat').addEventListener('click', function () {
+            const chatHistory = chatInstance.historyGetAllCopy();
+            const blob = new Blob([JSON.stringify(chatHistory, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const dateTime = new Date().toISOString().replace(/[:.]/g, '-');
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `quikchat-history-${dateTime}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // Export chat history and prompt to a text file    
+        document.getElementById('exportChatAndPrompt').addEventListener('click', function () {
+            const exportData = {} 
+            exportData["history"]= chatInstance.historyGetAllCopy();
+            exportData["prompt"] = document.getElementById('prompt').value;
+    
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const dateTime = new Date().toISOString().replace(/[:.]/g, '-');
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `quikchat-history-${dateTime}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
     </script>
 </body>
 

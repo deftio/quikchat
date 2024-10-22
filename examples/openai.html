@@ -81,7 +81,8 @@
                         placeholder="">You are a helpful assistant.  Answer the user's questions but say 'I don't know that' if you don't know the answer.</textarea>
                     <label for="apiKey">API Key</label>
                     <input type="text" id="apiKey" name="apiKey"
-                        placeholder="sk-01234-put-your-api-key-here. It-is-not-stored-on-any-server.">
+                        placeholder="sk-01234-put-your-api-key-here. It-is-not-stored-on-any-server."
+                        onblur="maskInput()" onfocus="unmaskInput()">
                     <label for="baseUrl">Base URL (optional):</label>
                     <input type="text" id="baseUrl" name="baseUrl"
                         placeholder="https://api.openai.com/v1/chat/completions"
@@ -196,6 +197,20 @@
             //}
         );
 
+        // Mask the API key input
+        function maskInput() {
+            var input = document.getElementById("apiKey");
+            if (input.value !== "") {
+                input.type = "password";  // Change to password to show bullets
+            }
+        }
+
+        // Unmask the API key input
+        function unmaskInput() {
+            var input = document.getElementById("apiKey");
+            input.type = "text";  // Change back to text to show input and placeholder
+        }
+
         // set remember the api key to a local cookie
         document.getElementById('settingsForm').addEventListener('submit', function (e) {
             e.preventDefault();
@@ -220,6 +235,7 @@
                 }
                 if (name.trim() === 'apiKey') {
                     document.getElementById('apiKey').value = decodeURIComponent(value);
+                    maskInput();
                 }
                 if (name.trim() === 'baseUrl') {
                     document.getElementById('baseUrl').value = decodeURIComponent(value);
@@ -244,10 +260,10 @@
 
         // Export chat history and prompt to a text file    
         document.getElementById('exportChatAndPrompt').addEventListener('click', function () {
-            const exportData = {} 
-            exportData["history"]= chatInstance.historyGetAllCopy();
+            const exportData = {}
+            exportData["history"] = chatInstance.historyGetAllCopy();
             exportData["prompt"] = document.getElementById('prompt').value;
-    
+
             const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const dateTime = new Date().toISOString().replace(/[:.]/g, '-');

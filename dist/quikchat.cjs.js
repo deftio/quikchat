@@ -312,7 +312,7 @@ var quikchat = /*#__PURE__*/function () {
         userID: -1,
         timestamp: false,
         updatedtime: false,
-        scrollIntoView: false
+        scrollIntoView: true
       };
       var msgid = this.msgid;
       var messageDiv = document.createElement('div');
@@ -325,7 +325,7 @@ var quikchat = /*#__PURE__*/function () {
       userDiv.innerHTML = input.userString;
       userDiv.style = "width: 100%; text-align: ".concat(input.align, "; font-size: 1em; font-weight:700;");
       var contentDiv = document.createElement('div');
-      contentDiv.style = "width: 100%; text-align: ".concat(input.align, ";");
+      contentDiv.style = "width: 100%;"; // text-align: ${input.align};`;
       contentDiv.innerHTML = input.content;
       messageDiv.appendChild(userDiv);
       messageDiv.appendChild(contentDiv);
@@ -333,10 +333,11 @@ var quikchat = /*#__PURE__*/function () {
 
       // Scroll to the last message only if the user is not actively scrolling up
       if (!this.userScrolledUp || input.scrollIntoView) {
-        this._messagesArea.lastElementChild.scrollIntoView();
+        this.messageScrollToBottom();
       }
       this._textEntry.value = '';
       this._adjustMessagesAreaHeight();
+      this._handleShortLongMessageCSS(messageDiv, input.align); // Handle CSS for short/long messages
       // add timestamp now, unless it is passed in 
 
       var timestamp = input.timestamp ? input.timestamp : new Date().toISOString();
@@ -365,7 +366,7 @@ var quikchat = /*#__PURE__*/function () {
       var userString = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "user";
       var align = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "right";
       var role = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "user";
-      var scrollIntoView = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+      var scrollIntoView = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
       var retvalue = this.messageAddFull({
         content: content,
         userString: userString,
@@ -482,10 +483,76 @@ var quikchat = /*#__PURE__*/function () {
       }
       return success;
     }
+
+    /**
+     * Scrolls the messages area to the bottom.
+     */
   }, {
     key: "messageScrollToBottom",
     value: function messageScrollToBottom() {
       this._messagesArea.lastElementChild.scrollIntoView();
+    }
+
+    /**
+     * For right sided or centered messages, we need to handle the CSS for short and long messages.
+     * for short messages we use simple justifying, for long messages we need to wrap and perform multiline
+     * formatting. 
+     * 
+     * @param {*} messageElement 
+     * @returns nothing
+     */
+  }, {
+    key: "_handleShortLongMessageCSS",
+    value: function _handleShortLongMessageCSS(messageElement, align) {
+      console.log(messageElement);
+      // Reset classes
+      messageElement.classList.remove('left-singleline', 'left-multiline', 'center-singleline', 'center-multiline', 'right-singleline', 'right-multiline');
+      var contentDiv = messageElement.lastChild;
+      window.lastDiv = contentDiv; // for debugging   
+      // Determine if the message is short or long
+
+      var computedStyle = window.getComputedStyle(contentDiv);
+
+      // Get the element's height
+      var elementHeight = contentDiv.offsetHeight;
+
+      // Calculate or estimate line height
+      var lineHeight;
+      if (computedStyle.lineHeight === "normal") {
+        var fontSize = parseFloat(computedStyle.fontSize);
+        lineHeight = fontSize * 1.2; // approximate "normal" as 1.2 times font-size
+      } else {
+        lineHeight = parseFloat(computedStyle.lineHeight);
+      }
+
+      // Check if the element height is more than one line-height
+      var isMultiLine = elementHeight > lineHeight;
+
+      // Using scrollHeight and clientHeight to check for overflow (multi-line)
+      switch (align) {
+        case 'center':
+          if (isMultiLine) {
+            messageElement.classList.add('center-multiline');
+          } else {
+            messageElement.classList.add('center-singleline');
+          }
+          break;
+        case 'right':
+          if (isMultiLine) {
+            messageElement.classList.add('right-multiline');
+          } else {
+            messageElement.classList.add('right-singleline');
+          }
+          break;
+        case 'left':
+        default:
+          if (isMultiLine) {
+            messageElement.classList.add('left-multiline');
+          } else {
+            messageElement.classList.add('left-singleline');
+          }
+          break;
+      }
     }
     // history functions
     /**
@@ -586,9 +653,10 @@ var quikchat = /*#__PURE__*/function () {
     key: "version",
     value: function version() {
       return {
-        "version": "1.1.8",
+        "version": "1.1.9",
         "license": "BSD-2",
-        "url": "https://github/deftio/quikchat"
+        "url": "https://github/deftio/quikchat",
+        "fun": true
       };
     }
 

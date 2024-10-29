@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-
+<!-- quikchat.js simple debug page 
+    M A Chatterjee 2024-04-05
+ -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +11,7 @@
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90' style='fill:blue'>&#x1F4AC;</text></svg>"
         rel="icon" />
 
+    <!-- use the raw initial stylesheet -->
     <link href="../dist/quikchat.css" rel="stylesheet" />
     <style>
         body {
@@ -55,6 +58,7 @@
     <button class="system-btn" onclick="chatBox.messagesAreaAlternateColorsToggle()">Toggle Alternating Colors</button>
     <script type="module">
         import quikchat from '../src/quikchat.js';
+        window.quikchat = quikchat;  // user can access quikchat from the console
         document.addEventListener('DOMContentLoaded', () => {
             const chatDiv = document.querySelector('#chatContainer');
             window.chatBox = new quikchat(chatDiv,
@@ -75,6 +79,11 @@
             chatBox.messageAddNew('How can I help you today?', 'bot', 'left');
             chatBox.messageAddNew('I am just trying to test the chat control.', 'user', 'right');
             chatBox.messageAddNew('That\'s great!\nlets see how things are working.', 'bot', 'left');
+            chatBox.messageAddNew('Long Message : ' + quikchat.loremIpsum(700,0), 'user', 'right');
+            chatBox.messageAddNew(quikchat.loremIpsum(70,0), 'user', 'center');
+            chatBox.messageAddNew('Long Message : ' + quikchat.loremIpsum(700,0), 'user', 'center');
+            chatBox.messageAddNew(quikchat.loremIpsum(70,0), 'user', 'center');
+            chatBox.messageAddNew('Long Message : ' + quikchat.loremIpsum(700,0), 'user', 'center');
             chatBox.changeTheme("quikchat-theme-light");
 
         });

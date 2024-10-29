@@ -12,7 +12,7 @@ class quikchat {
             titleArea: { title: "Chat", show: false, align: "center" },
             messagesArea: { alternating: true },
             inputArea: { show: true }
-        }; 
+        };
         const meta = { ...defaultOpts, ...options }; // merge options with defaults
 
         if (typeof parentElement === 'string') {
@@ -39,9 +39,9 @@ class quikchat {
 
         // input area
         if (meta.inputArea) {
-            if (meta.inputArea.show === true) 
+            if (meta.inputArea.show === true)
                 this.inputAreaShow();
-            else 
+            else
                 this.inputAreaHide();
         }
         // plumbing
@@ -97,7 +97,7 @@ class quikchat {
             this.userScrolledUp = scrollTop + clientHeight < scrollHeight;
         });
     }
-   
+
     // set the onSend function callback.
     setCallbackOnSend(callback) {
         this._onSend = callback;
@@ -184,7 +184,7 @@ class quikchat {
         return this._messagesArea.classList.contains('quikchat-messages-area-alt');
     }
     // message functions
-    messageAddFull(input = { content: "", userString: "user", align: "right", role: "user", userID: -1, timestamp: false, updatedtime: false, scrollIntoView: false }) {
+    messageAddFull(input = { content: "", userString: "user", align: "right", role: "user", userID: -1, timestamp: false, updatedtime: false, scrollIntoView: true }) {
         const msgid = this.msgid;
         const messageDiv = document.createElement('div');
         const msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
@@ -198,7 +198,7 @@ class quikchat {
         userDiv.style = `width: 100%; text-align: ${input.align}; font-size: 1em; font-weight:700;`;
 
         const contentDiv = document.createElement('div');
-        contentDiv.style = `width: 100%; text-align: ${input.align};`;
+        contentDiv.style = `width: 100%;`; // text-align: ${input.align};`;
         contentDiv.innerHTML = input.content;
 
         messageDiv.appendChild(userDiv);
@@ -207,14 +207,15 @@ class quikchat {
 
         // Scroll to the last message only if the user is not actively scrolling up
         if ((!this.userScrolledUp) || input.scrollIntoView) {
-            this._messagesArea.lastElementChild.scrollIntoView();
+            this.messageScrollToBottom();
         }
 
         this._textEntry.value = '';
         this._adjustMessagesAreaHeight();
+        this._handleShortLongMessageCSS(messageDiv, input.align); // Handle CSS for short/long messages
         // add timestamp now, unless it is passed in 
 
-        const timestamp = input.timestamp ?  input.timestamp : new Date().toISOString() 
+        const timestamp = input.timestamp ? input.timestamp : new Date().toISOString()
         const updatedtime = input.updatedtime ? input.updatedtime : timestamp;
 
         if (this.trackHistory) {
@@ -231,8 +232,8 @@ class quikchat {
         return msgid;
     }
 
-   
-    messageAddNew(content = "", userString = "user", align = "right", role = "user", scrollIntoView = false) {
+
+    messageAddNew(content = "", userString = "user", align = "right", role = "user", scrollIntoView = true) {
         let retvalue = this.messageAddFull(
             { content: content, userString: userString, align: align, role: role, scrollIntoView: scrollIntoView }
         );
@@ -310,7 +311,7 @@ class quikchat {
         }
         return success;
     }
-    
+
     /* replace message content
     */
     messageReplaceContent(n, content) {
@@ -332,9 +333,79 @@ class quikchat {
         }
         return success;
     }
-    
+
+    /**
+     * Scrolls the messages area to the bottom.
+     */
     messageScrollToBottom() {
         this._messagesArea.lastElementChild.scrollIntoView();
+    }
+
+    /**
+     * For right sided or centered messages, we need to handle the CSS for short and long messages.
+     * for short messages we use simple justifying, for long messages we need to wrap and perform multiline
+     * formatting. 
+     * 
+     * @param {*} messageElement 
+     * @returns nothing
+     */
+    _handleShortLongMessageCSS(messageElement, align) {
+        console.log(messageElement);
+        // Reset classes
+        messageElement.classList.remove(
+            'left-singleline', 'left-multiline', 
+            'center-singleline', 'center-multiline', 
+            'right-singleline', 'right-multiline');
+        let contentDiv = messageElement.lastChild;
+        window.lastDiv = contentDiv; // for debugging   
+        // Determine if the message is short or long
+
+        const computedStyle = window.getComputedStyle(contentDiv);
+
+        // Get the element's height
+        const elementHeight = contentDiv.offsetHeight;
+      
+        // Calculate or estimate line height
+        let lineHeight;
+        if (computedStyle.lineHeight === "normal") {
+          const fontSize = parseFloat(computedStyle.fontSize);
+          lineHeight = fontSize * 1.2; // approximate "normal" as 1.2 times font-size
+        } else {
+          lineHeight = parseFloat(computedStyle.lineHeight);
+        }
+      
+        // Check if the element height is more than one line-height
+        const isMultiLine =  elementHeight > lineHeight;
+
+        // Using scrollHeight and clientHeight to check for overflow (multi-line)
+        switch (align) {
+            case 'center':
+                if (isMultiLine) {
+                    messageElement.classList.add('center-multiline');
+                }
+                else {
+                    messageElement.classList.add('center-singleline');
+                }
+                break;
+            case 'right':
+                if (isMultiLine) {
+                    messageElement.classList.add('right-multiline');
+                }
+                else {
+                    messageElement.classList.add('right-singleline');
+                }
+                break;
+            case 'left':
+            default:
+                if (isMultiLine) {
+                    messageElement.classList.add('left-multiline');
+                }
+                else {
+                    messageElement.classList.add('left-singleline');
+                }
+                break;
+        }
+
     }
     // history functions
     /**
@@ -381,7 +452,7 @@ class quikchat {
     }
 
     historyGetMessageContent(n) {
-        if (n >= 0 && n < this._history.length) 
+        if (n >= 0 && n < this._history.length)
             return this._history[n].content;
         else
             return "";
@@ -423,7 +494,7 @@ class quikchat {
      * @returns {object} - Returns the version and license information for the library.
      */
     static version() {
-        return { "version": "1.1.8", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
+        return { "version": "1.1.9", "license": "BSD-2", "url": "https://github/deftio/quikchat", "fun" : true };
     }
 
     /**

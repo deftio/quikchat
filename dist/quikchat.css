@@ -104,16 +104,54 @@
     color: #444;
     border-radius: 4px;
 }
-/*
-.quikchat-theme-debug .quikchat-message-1 {
-    background-color: lightseagreen;
-    color: #eee;
+
+/********** User Messages **********
+ *  Single / Multiline
+ */
+
+ .quikchat-theme-debug .quikchat-messages-area .quikchat-message {
+    padding-left : 8px;
+    padding-right: 8px;
+    border-radius: 0.5em;
+ }
+
+/* Short (single) User Messages that are right sided */
+.quikchat-theme-debug .quikchat-messages-area .quikchat-message.right-singleline {
+    text-align: right; /* Right-align text */
+    margin-left: 5%; /* Increased left padding */
 }
-.quikchat-theme-debug .quikchat-message-2 {
-    background-color: lightpink;
-    color: #444;
+
+/* Multiline (long) User Messages */
+.quikchat-theme-debug .quikchat-messages-area .quikchat-message.right-multiline {
+    text-align: left; /* Left-align text */
+    margin-left: 5%; /* Standard left padding */
 }
-*/
+
+/* Short (single) User Messages that are right sided */
+.quikchat-theme-debug .quikchat-messages-area .quikchat-message.center-singleline {
+    text-align: center; /* Right-align text */
+    margin-left: 5%; /* Increased left margin */
+    margin-right: 5%; /* Standard right margin */
+}
+
+/* Multiline (long) User Messages */
+.quikchat-theme-debug .quikchat-messages-area .quikchat-message.center-multiline {
+    text-align: left; /* Left-align text */
+    margin-left: 5%; /* Standard left padding */
+    margin-right: 5%; /* Standard right padding */
+}
+/* Short (single) User Messages that are right sided */
+.quikchat-theme-debug .quikchat-messages-area .quikchat-message.left-singleline {
+    text-align: left; /* Right-align text */
+    margin-right: 5%; 
+}
+
+/* Multiline (long) User Messages */
+.quikchat-theme-debug .quikchat-messages-area-alt .quikchat-message.left-multiline {
+    text-align: left; /* Left-align text */
+    margin-right: 5%; /* Standard left padding */
+}
+
 .quikchat-theme-debug .quikchat-input-area {
     background-color: lightgreen;
     border-bottom-left-radius : 10px;
@@ -168,17 +206,53 @@
     color: #fbfbfb;
     border-radius: 4px;
 }
-/*
-.quikchat-theme-dark .quikchat-message-1 {
-    background-color: #404040e5;
-    color: #eceff1;
+
+/********** User Messages **********
+ *  Single / Multiline
+ */
+
+ .quikchat-theme-dark .quikchat-messages-area .quikchat-message {
+    padding-left : 8px;
+    padding-right: 8px;
+    border-radius: 0.5em;
+ }
+
+/* Short (single) User Messages that are right sided */
+.quikchat-theme-dark .quikchat-messages-area .quikchat-message.right-singleline {
+    text-align: right; /* Right-align text */
+    margin-left: 5%; /* Increased left padding */
 }
 
-.quikchat-theme-dark .quikchat-message-2 {
-    background-color: #5a5a5a;
-    color: #fbfbfb;
+/* Multiline (long) User Messages */
+.quikchat-theme-dark .quikchat-messages-area .quikchat-message.right-multiline {
+    text-align: left; /* Left-align text */
+    margin-left: 5%; /* Standard left padding */
 }
-*/
+
+/* Short (single) User Messages that are right sided */
+.quikchat-theme-dark .quikchat-messages-area .quikchat-message.center-singleline {
+    text-align: center; /* Right-align text */
+    margin-left: 5%; /* Increased left margin */
+    margin-right: 5%; /* Standard right margin */
+}
+
+/* Multiline (long) User Messages */
+.quikchat-theme-dark .quikchat-messages-area .quikchat-message.center-multiline {
+    text-align: left; /* Left-align text */
+    margin-left: 5%; /* Standard left padding */
+    margin-right: 5%; /* Standard right padding */
+}
+/* Short (single) User Messages that are right sided */
+.quikchat-theme-dark .quikchat-messages-area .quikchat-message.left-singleline {
+    text-align: left; /* Right-align text */
+    margin-right: 5%; 
+}
+
+/* Multiline (long) User Messages */
+.quikchat-theme-dark .quikchat-messages-area-alt .quikchat-message.left-multiline {
+    text-align: left; /* Left-align text */
+    margin-right: 5%; /* Standard left padding */
+}
 
 .quikchat-theme-dark .quikchat-input-area {
     padding: 8px;
@@ -231,23 +305,61 @@
 .quikchat-theme-light .quikchat-messages-area-alt .quikchat-message:nth-child(odd) {
     background-color: #fffffff0;
     color: #005662;
-    border-radius: 4px;
 }
 .quikchat-theme-light .quikchat-messages-area-alt .quikchat-message:nth-child(even) {
     background-color: #eeeeeee9;
     color: #353535;
-    border-radius: 4px;
 }
-/*
-.quikchat-theme-light .quikchat-message-1 {
-    background-color: #fffffff0;
-    color: #005662;
+
+/********** User Messages **********
+ *  Single / Multiline
+ */
+
+ .quikchat-theme-light .quikchat-messages-area .quikchat-message {
+    padding-left : 8px;
+    padding-right: 8px;
+    border-radius: 0.5em;
+ }
+
+/* Short (single) User Messages that are right sided */
+.quikchat-theme-light .quikchat-messages-area .quikchat-message.right-singleline {
+    text-align: right; /* Right-align text */
+    margin-left: 5%; /* Increased left padding */
 }
-.quikchat-theme-light .quikchat-message-2 {
-    background-color: #eeeeeee9;
-    color: #353535;
+
+/* Multiline (long) User Messages */
+.quikchat-theme-light .quikchat-messages-area .quikchat-message.right-multiline {
+    text-align: left; /* Left-align text */
+    margin-left: 5%; /* Standard left padding */
 }
-*/
+
+/* Short (single) User Messages that are right sided */
+.quikchat-theme-light .quikchat-messages-area .quikchat-message.center-singleline {
+    text-align: center; /* Right-align text */
+    margin-left: 5%; /* Increased left margin */
+    margin-right: 5%; /* Standard right margin */
+}
+
+/* Multiline (long) User Messages */
+.quikchat-theme-light .quikchat-messages-area .quikchat-message.center-multiline {
+    text-align: left; /* Left-align text */
+    margin-left: 5%; /* Standard left padding */
+    margin-right: 5%; /* Standard right padding */
+}
+/* Short (single) User Messages that are right sided */
+.quikchat-theme-light .quikchat-messages-area .quikchat-message.left-singleline {
+    text-align: left; /* Right-align text */
+    margin-right: 5%; 
+}
+
+/* Multiline (long) User Messages */
+.quikchat-theme-light .quikchat-messages-area-alt .quikchat-message.left-multiline {
+    text-align: left; /* Left-align text */
+    margin-right: 5%; /* Standard left padding */
+}
+/*****
+ *  Input Area
+ */
 .quikchat-theme-light .quikchat-input-area {
     background-color: #f9f9f9;
     border-bottom-left-radius : 10px;

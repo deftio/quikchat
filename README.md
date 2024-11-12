@@ -6,6 +6,8 @@
 
 Quikchat is a vanilla (no dependancies) JavaScript chat control that can be easily integrated into web applications. It provides a customizable chat interface with support for hiding and showing a title area and the input area.
 
+[Article on Using Quickchat](https://medium.com/gitconnected/quikchat-4be8d4a849e5?sk=ac745ae60a3521a9fbca6b748d4da48a)
+
 ## Features
 
 * Themeable with CSS (examples for light and dark)

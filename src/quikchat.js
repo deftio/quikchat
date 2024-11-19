@@ -350,7 +350,7 @@ class quikchat {
      * @returns nothing
      */
     _handleShortLongMessageCSS(messageElement, align) {
-        console.log(messageElement);
+        // console.log(messageElement);
         // Reset classes
         messageElement.classList.remove(
             'left-singleline', 'left-multiline', 
@@ -494,7 +494,7 @@ class quikchat {
      * @returns {object} - Returns the version and license information for the library.
      */
     static version() {
-        return { "version": "1.1.9", "license": "BSD-2", "url": "https://github/deftio/quikchat", "fun" : true };
+        return { "version": "1.1.10", "license": "BSD-2", "url": "https://github/deftio/quikchat", "fun" : true };
     }
 
     /**

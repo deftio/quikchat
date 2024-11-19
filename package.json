@@ -1,6 +1,6 @@
 {
   "name": "quikchat",
-  "version": "1.1.9",
+  "version": "1.1.10",
   "description": "quikchat is a simple vanilla (no dependancies) JavaScript chat control for browsers ",
   "author": "deftio (https://github.com/deftio",
   "license": "BSD-2-Clause",

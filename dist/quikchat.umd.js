@@ -508,7 +508,7 @@
     }, {
       key: "_handleShortLongMessageCSS",
       value: function _handleShortLongMessageCSS(messageElement, align) {
-        console.log(messageElement);
+        // console.log(messageElement);
         // Reset classes
         messageElement.classList.remove('left-singleline', 'left-multiline', 'center-singleline', 'center-multiline', 'right-singleline', 'right-multiline');
         var contentDiv = messageElement.lastChild;
@@ -657,7 +657,7 @@
       key: "version",
       value: function version() {
         return {
-          "version": "1.1.9",
+          "version": "1.1.10",
           "license": "BSD-2",
           "url": "https://github/deftio/quikchat",
           "fun": true

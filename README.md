@@ -56,6 +56,34 @@ html
 <link rel="stylesheet" href="https://unpkg.com/quikchat/dist/quikchat.css" />
 ```
 
+Or import as a module:
+
+```javascript
+import quikchat from '../dist/quikchat.esm.min.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+    const parentDiv = document.querySelector('#chatContainerInstance');
+    window.chatBox = new quikchat(parentDiv, 
+    (chat, msg) => {
+        chat.messageAddNew(msg, 'me', 'right'); // echo the message to the chat area
+
+        // example of a bot response using the built-in lorem ipsum generator
+        const botResponse = quikchat.loremIpsum();
+        chat.messageAddNew(botResponse, 'bot', 'left');
+    },
+    { // options
+        theme: 'quikchat-theme-light',
+        titleArea: { title: 'QuikChatJS', align: 'left', show: true },
+    });
+    chatBox.messageAddNew('Hello, how are you?', 'bot', 'left');
+    chatBox.messageAddNew('I am fine, thank you.', 'user', 'right');
+    chatBox.messageAddNew('How can I help you today?', 'bot', 'left');
+    chatBox.changeTheme("quikchat-theme-light");
+    console.log("quikchat version: "+quikchat.version().version);
+
+});
+```
+
 Create a container element in your HTML where you want the chat interface to appear.  The quikchat widget will take 100% of the paretn container height and width.  If the parent container width or height is not specified the quikchat widget may grow as content is added.  If the parent container is resized, quikchat will resize with the parent container.
 
 ```html
@@ -87,7 +115,7 @@ chat = new quikchat(
 
 // Add a message at any point not just from callback
 chat.messageAddNew('Hello!', 'You', 'left');    //  should appear left justified
-chat.messageAddNew('Hello!', 'Them', 'right');  //  should appear  right justified
+chat.messageAddNew('Hello!', 'Me', 'right');  //  should appear  right justified
 
 
 //... other logic

@@ -11,7 +11,9 @@ class quikchat {
             trackHistory: true,
             titleArea: { title: "Chat", show: false, align: "center" },
             messagesArea: { alternating: true },
-            inputArea: { show: true }
+            inputArea: { show: true },
+            sendOnEnter: true,
+            sendOnShiftEnter: false
         };
         const meta = { ...defaultOpts, ...options }; // merge options with defaults
 
@@ -49,6 +51,10 @@ class quikchat {
         this.trackHistory = meta.trackHistory || true;
         this._historyLimit = 10000000;
         this._history = [];
+
+        // send on enter / shift enter
+        this.sendOnEnter = meta.sendOnEnter;
+        this.sendOnShiftEnter = meta.sendOnShiftEnter;
     }
 
     _createWidget() {
@@ -80,15 +86,23 @@ class quikchat {
      * Attach event listeners to the widget
      */
     _attachEventListeners() {
-        this._sendButton.addEventListener('click', () => this._onSend(this, this._textEntry.value.trim()));
+        this._sendButton.addEventListener('click', (event) => { event.preventDefault(); this._onSend(this, this._textEntry.value.trim()) });
         window.addEventListener('resize', () => this._handleContainerResize());
         this._chatWidget.addEventListener('resize', () => this._handleContainerResize());
         this._textEntry.addEventListener('keydown', (event) => {
-            // Check if Shift + Enter is pressed
+
+            // Check if Shift + Enter is pressed then we just do carraige
             if (event.shiftKey && event.keyCode === 13) {
                 // Prevent default behavior (adding new line)
-                event.preventDefault();
-                this._onSend(this, this._textEntry.value.trim());
+                if (this.sendOnShiftEnter) {
+                    event.preventDefault();
+                    this._onSend(this, this._textEntry.value.trim());
+                }
+            } else if (event.keyCode === 13) {// Enter but not Shift + Enter
+                if (this.sendOnEnter) {
+                    event.preventDefault();
+                    this._onSend(this, this._textEntry.value.trim());
+                }
             }
         });
 
@@ -189,48 +203,63 @@ class quikchat {
         const messageDiv = document.createElement('div');
         const msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
         const userIdClass = 'quikchat-userid-' + String(input.userString).padStart(10, '0'); // hash this..
-        messageDiv.classList.add('quikchat-message', msgidClass);
+        messageDiv.classList.add('quikchat-message', msgidClass, 'quikchat-structure');
         this.msgid++;
         messageDiv.classList.add(this._messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
-
+    
         const userDiv = document.createElement('div');
         userDiv.innerHTML = input.userString;
-        userDiv.style = `width: 100%; text-align: ${input.align}; font-size: 1em; font-weight:700;`;
-
+        userDiv.classList.add('quikchat-user-label');
+        userDiv.style.textAlign = input.align;
+    
         const contentDiv = document.createElement('div');
-        contentDiv.style = `width: 100%;`; // text-align: ${input.align};`;
+        contentDiv.classList.add('quikchat-message-content');
+    
+        // Determine text alignment for right-aligned messages
+        if (input.align === "right") {
+            const isMultiLine = input.content.includes("\n");
+            const isLong = input.content.length > 50; // Adjust length threshold
+    
+            if (isMultiLine || isLong) {
+                contentDiv.classList.add("quikchat-right-multiline");
+            } else {
+                contentDiv.classList.add("quikchat-right-singleline");
+            }
+        }
+    
         contentDiv.innerHTML = input.content;
-
+    
         messageDiv.appendChild(userDiv);
         messageDiv.appendChild(contentDiv);
         this._messagesArea.appendChild(messageDiv);
-
+    
         // Scroll to the last message only if the user is not actively scrolling up
         if ((!this.userScrolledUp) || input.scrollIntoView) {
             this.messageScrollToBottom();
         }
-
+    
         this._textEntry.value = '';
         this._adjustMessagesAreaHeight();
         this._handleShortLongMessageCSS(messageDiv, input.align); // Handle CSS for short/long messages
-        // add timestamp now, unless it is passed in 
-
-        const timestamp = input.timestamp ? input.timestamp : new Date().toISOString()
+    
+        // Add timestamp now, unless it is passed in 
+        const timestamp = input.timestamp ? input.timestamp : new Date().toISOString();
         const updatedtime = input.updatedtime ? input.updatedtime : timestamp;
-
+    
         if (this.trackHistory) {
             this._history.push({ msgid, ...input, timestamp, updatedtime, messageDiv });
             if (this._history.length > this._historyLimit) {
                 this._history.shift();
             }
         }
-
+    
         if (this._onMessageAdded) {
             this._onMessageAdded(this, msgid);
         }
-
+    
         return msgid;
     }
+    
 
 
     messageAddNew(content = "", userString = "user", align = "right", role = "user", scrollIntoView = true) {
@@ -353,8 +382,8 @@ class quikchat {
         // console.log(messageElement);
         // Reset classes
         messageElement.classList.remove(
-            'left-singleline', 'left-multiline', 
-            'center-singleline', 'center-multiline', 
+            'left-singleline', 'left-multiline',
+            'center-singleline', 'center-multiline',
             'right-singleline', 'right-multiline');
         let contentDiv = messageElement.lastChild;
         window.lastDiv = contentDiv; // for debugging   
@@ -364,18 +393,18 @@ class quikchat {
 
         // Get the element's height
         const elementHeight = contentDiv.offsetHeight;
-      
+
         // Calculate or estimate line height
         let lineHeight;
         if (computedStyle.lineHeight === "normal") {
-          const fontSize = parseFloat(computedStyle.fontSize);
-          lineHeight = fontSize * 1.2; // approximate "normal" as 1.2 times font-size
+            const fontSize = parseFloat(computedStyle.fontSize);
+            lineHeight = fontSize * 1.2; // approximate "normal" as 1.2 times font-size
         } else {
-          lineHeight = parseFloat(computedStyle.lineHeight);
+            lineHeight = parseFloat(computedStyle.lineHeight);
         }
-      
+
         // Check if the element height is more than one line-height
-        const isMultiLine =  elementHeight > lineHeight;
+        const isMultiLine = elementHeight > lineHeight;
 
         // Using scrollHeight and clientHeight to check for overflow (multi-line)
         switch (align) {
@@ -494,7 +523,7 @@ class quikchat {
      * @returns {object} - Returns the version and license information for the library.
      */
     static version() {
-        return { "version": "1.1.10", "license": "BSD-2", "url": "https://github/deftio/quikchat", "fun" : true };
+        return { "version": "1.1.11", "license": "BSD-2", "url": "https://github/deftio/quikchat", "fun": true };
     }
 
     /**

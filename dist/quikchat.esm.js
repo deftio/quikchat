@@ -103,7 +103,9 @@ var quikchat = /*#__PURE__*/function () {
       },
       inputArea: {
         show: true
-      }
+      },
+      sendOnEnter: true,
+      sendOnShiftEnter: false
     };
     var meta = _objectSpread2(_objectSpread2({}, defaultOpts), options); // merge options with defaults
 
@@ -138,6 +140,10 @@ var quikchat = /*#__PURE__*/function () {
     this.trackHistory = meta.trackHistory || true;
     this._historyLimit = 10000000;
     this._history = [];
+
+    // send on enter / shift enter
+    this.sendOnEnter = meta.sendOnEnter;
+    this.sendOnShiftEnter = meta.sendOnShiftEnter;
   }
   return _createClass(quikchat, [{
     key: "_createWidget",
@@ -160,8 +166,9 @@ var quikchat = /*#__PURE__*/function () {
     key: "_attachEventListeners",
     value: function _attachEventListeners() {
       var _this = this;
-      this._sendButton.addEventListener('click', function () {
-        return _this._onSend(_this, _this._textEntry.value.trim());
+      this._sendButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        _this._onSend(_this, _this._textEntry.value.trim());
       });
       window.addEventListener('resize', function () {
         return _this._handleContainerResize();
@@ -170,11 +177,19 @@ var quikchat = /*#__PURE__*/function () {
         return _this._handleContainerResize();
       });
       this._textEntry.addEventListener('keydown', function (event) {
-        // Check if Shift + Enter is pressed
+        // Check if Shift + Enter is pressed then we just do carraige
         if (event.shiftKey && event.keyCode === 13) {
           // Prevent default behavior (adding new line)
-          event.preventDefault();
-          _this._onSend(_this, _this._textEntry.value.trim());
+          if (_this.sendOnShiftEnter) {
+            event.preventDefault();
+            _this._onSend(_this, _this._textEntry.value.trim());
+          }
+        } else if (event.keyCode === 13) {
+          // Enter but not Shift + Enter
+          if (_this.sendOnEnter) {
+            event.preventDefault();
+            _this._onSend(_this, _this._textEntry.value.trim());
+          }
         }
       });
       this._messagesArea.addEventListener('scroll', function () {
@@ -316,14 +331,27 @@ var quikchat = /*#__PURE__*/function () {
       var messageDiv = document.createElement('div');
       var msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
       'quikchat-userid-' + String(input.userString).padStart(10, '0'); // hash this..
-      messageDiv.classList.add('quikchat-message', msgidClass);
+      messageDiv.classList.add('quikchat-message', msgidClass, 'quikchat-structure');
       this.msgid++;
       messageDiv.classList.add(this._messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
       var userDiv = document.createElement('div');
       userDiv.innerHTML = input.userString;
-      userDiv.style = "width: 100%; text-align: ".concat(input.align, "; font-size: 1em; font-weight:700;");
+      userDiv.classList.add('quikchat-user-label');
+      userDiv.style.textAlign = input.align;
       var contentDiv = document.createElement('div');
-      contentDiv.style = "width: 100%;"; // text-align: ${input.align};`;
+      contentDiv.classList.add('quikchat-message-content');
+
+      // Determine text alignment for right-aligned messages
+      if (input.align === "right") {
+        var isMultiLine = input.content.includes("\n");
+        var isLong = input.content.length > 50; // Adjust length threshold
+
+        if (isMultiLine || isLong) {
+          contentDiv.classList.add("quikchat-right-multiline");
+        } else {
+          contentDiv.classList.add("quikchat-right-singleline");
+        }
+      }
       contentDiv.innerHTML = input.content;
       messageDiv.appendChild(userDiv);
       messageDiv.appendChild(contentDiv);
@@ -336,8 +364,8 @@ var quikchat = /*#__PURE__*/function () {
       this._textEntry.value = '';
       this._adjustMessagesAreaHeight();
       this._handleShortLongMessageCSS(messageDiv, input.align); // Handle CSS for short/long messages
-      // add timestamp now, unless it is passed in 
 
+      // Add timestamp now, unless it is passed in 
       var timestamp = input.timestamp ? input.timestamp : new Date().toISOString();
       var updatedtime = input.updatedtime ? input.updatedtime : timestamp;
       if (this.trackHistory) {
@@ -651,7 +679,7 @@ var quikchat = /*#__PURE__*/function () {
     key: "version",
     value: function version() {
       return {
-        "version": "1.1.10",
+        "version": "1.1.11",
         "license": "BSD-2",
         "url": "https://github/deftio/quikchat",
         "fun": true

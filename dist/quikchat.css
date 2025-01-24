@@ -40,6 +40,25 @@
     word-wrap: break-word;
     box-sizing: border-box;
 }
+/* Core Right-Side Message Alignment */
+.quikchat-message.right {
+    display: inline-block;
+    max-width: 60%;
+    padding: 8px 12px;
+    text-align: right; /* Default for short messages */
+}
+
+/* Right-aligned short messages */
+.quikchat-message.right .quikchat-right-singleline {
+    text-align: right;
+}
+
+/* Right-aligned long/multi-line messages */
+.quikchat-message.right .quikchat-right-multiline {
+    text-align: left;
+    word-wrap: break-word;
+}
+
 
 .quikchat-input-area {
     display: flex;

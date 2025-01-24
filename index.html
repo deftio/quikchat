@@ -138,6 +138,31 @@ html</p>
 <pre><code class="language-html">&lt;script src=&quot;https://unpkg.com/quikchat&quot;&gt;&lt;/script&gt;
 &lt;link rel=&quot;stylesheet&quot; href=&quot;https://unpkg.com/quikchat/dist/quikchat.css&quot; /&gt;
 </code></pre>
+<p>Or import as a module:</p>
+<pre><code class="language-javascript">import quikchat from &#39;../dist/quikchat.esm.min.js&#39;;
+
+document.addEventListener(&#39;DOMContentLoaded&#39;, () =&gt; {
+    const parentDiv = document.querySelector(&#39;#chatContainerInstance&#39;);
+    window.chatBox = new quikchat(parentDiv, 
+    (chat, msg) =&gt; {
+        chat.messageAddNew(msg, &#39;me&#39;, &#39;right&#39;); // echo the message to the chat area
+
+        // example of a bot response using the built-in lorem ipsum generator
+        const botResponse = quikchat.loremIpsum();
+        chat.messageAddNew(botResponse, &#39;bot&#39;, &#39;left&#39;);
+    },
+    { // options
+        theme: &#39;quikchat-theme-light&#39;,
+        titleArea: { title: &#39;QuikChatJS&#39;, align: &#39;left&#39;, show: true },
+    });
+    chatBox.messageAddNew(&#39;Hello, how are you?&#39;, &#39;bot&#39;, &#39;left&#39;);
+    chatBox.messageAddNew(&#39;I am fine, thank you.&#39;, &#39;user&#39;, &#39;right&#39;);
+    chatBox.messageAddNew(&#39;How can I help you today?&#39;, &#39;bot&#39;, &#39;left&#39;);
+    chatBox.changeTheme(&quot;quikchat-theme-light&quot;);
+    console.log(&quot;quikchat version: &quot;+quikchat.version().version);
+
+});
+</code></pre>
 <p>Create a container element in your HTML where you want the chat interface to appear.  The quikchat widget will take 100% of the paretn container height and width.  If the parent container width or height is not specified the quikchat widget may grow as content is added.  If the parent container is resized, quikchat will resize with the parent container.</p>
 <pre><code class="language-html">&lt;style&gt;
 #chat-container {width: 100%; height: 50vh;}  /* use any width / height as appropriate for your app */
@@ -163,7 +188,7 @@ html</p>
 
 // Add a message at any point not just from callback
 chat.messageAddNew(&#39;Hello!&#39;, &#39;You&#39;, &#39;left&#39;);    //  should appear left justified
-chat.messageAddNew(&#39;Hello!&#39;, &#39;Them&#39;, &#39;right&#39;);  //  should appear  right justified
+chat.messageAddNew(&#39;Hello!&#39;, &#39;Me&#39;, &#39;right&#39;);  //  should appear  right justified
 
 
 //... other logic

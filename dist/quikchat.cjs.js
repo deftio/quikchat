@@ -460,6 +460,24 @@ var quikchat = /*#__PURE__*/function () {
       return content;
     }
 
+    /* returns the DOM Content element of a given message
+    */
+  }, {
+    key: "messageGetContentDOMElement",
+    value: function messageGetContentDOMElement(n) {
+      var contentElement = null;
+      // now use css selector to get the message
+      try {
+        //contentElement = this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild;
+        contentElement = this._history.filter(function (item) {
+          return item.msgid === n;
+        })[0].messageDiv.lastChild;
+      } catch (error) {
+        console.log("{String(n)} : Message ID not found");
+      }
+      return contentElement;
+    }
+
     /* append message to the message content
     */
   }, {
@@ -681,7 +699,7 @@ var quikchat = /*#__PURE__*/function () {
     key: "version",
     value: function version() {
       return {
-        "version": "1.1.11",
+        "version": "1.1.12",
         "license": "BSD-2",
         "url": "https://github/deftio/quikchat",
         "fun": true
@@ -741,6 +759,44 @@ var quikchat = /*#__PURE__*/function () {
         s = c + s.substring(1);
       }
       return s;
+    }
+  }, {
+    key: "tempMessageGenerator",
+    value: function tempMessageGenerator(domElement, content, interval) {
+      var cb = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+      interval = Math.max(interval, 100); // Ensure at least 100ms interval
+
+      var count = 0;
+      var defaultCB = function defaultCB(msg, count) {
+        msg += ".";
+        return msg;
+      };
+      if (cb && typeof cb !== 'function') {
+        cb = null;
+      }
+      cb = cb || defaultCB;
+
+      // if its a string, then get the element (css sel) or its an DOM element already 
+      var el = domElement;
+      if (typeof el === 'string') {
+        el = document.querySelector(el);
+      }
+      var element = el;
+
+      // Ensure the element exists
+      if (!element) return;
+      element.innerHTML = content;
+      var currentMsg = content;
+      var intervalId = setInterval(function () {
+        if (element.innerHTML !== currentMsg) {
+          clearInterval(intervalId); // Stop updating if content is changed externally
+          return;
+        }
+        currentMsg = String(cb(currentMsg, count)); // Use callback return value if provided
+
+        count++;
+        element.innerHTML = currentMsg;
+      }, interval);
     }
   }]);
 }();

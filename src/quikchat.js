@@ -318,6 +318,21 @@ class quikchat {
         return content;
     }
 
+    /* returns the DOM Content element of a given message
+    */
+    messageGetContentDOMElement(n) {
+        let contentElement = null;
+        // now use css selector to get the message
+        try {
+            //contentElement = this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild;
+            contentElement = this._history.filter((item) => item.msgid === n)[0].messageDiv.lastChild;
+        }
+        catch (error) {
+            console.log(`{String(n)} : Message ID not found`);
+        }
+        return contentElement;
+    }
+
     /* append message to the message content
     */
 
@@ -523,7 +538,7 @@ class quikchat {
      * @returns {object} - Returns the version and license information for the library.
      */
     static version() {
-        return { "version": "1.1.11", "license": "BSD-2", "url": "https://github/deftio/quikchat", "fun": true };
+        return { "version": "1.1.12", "license": "BSD-2", "url": "https://github/deftio/quikchat", "fun": true };
     }
 
     /**
@@ -587,6 +602,46 @@ class quikchat {
         return s;
     };
 
+    static tempMessageGenerator (domElement, content, interval, cb = null) {
+        interval = Math.max(interval, 100); // Ensure at least 100ms interval
+    
+        let count = 0;
+
+        let defaultCB = (msg, count) => {msg += "."; return msg; };
+
+        if (cb && typeof cb !== 'function') {
+            cb = null;
+        }
+
+        cb = cb || defaultCB;
+        
+        // if its a string, then get the element (css sel) or its an DOM element already 
+        let el  = domElement;
+        if (typeof el === 'string') {
+            el = document.querySelector(el);
+        } 
+
+        const element = el;
+
+    
+        // Ensure the element exists
+        if (!element) return;
+    
+        element.innerHTML = content;
+        let currentMsg = content;
+    
+        const intervalId = setInterval(() => {
+            if (element.innerHTML !== currentMsg) {
+                clearInterval(intervalId); // Stop updating if content is changed externally
+                return;
+            }
+            
+            currentMsg = String( cb(currentMsg, count)) ;// Use callback return value if provided
+            
+            count++;
+            element.innerHTML = currentMsg;
+        }, interval);
+    }
 
 }
 

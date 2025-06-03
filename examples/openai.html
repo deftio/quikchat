@@ -83,11 +83,11 @@
                     <input type="text" id="apiKey" name="apiKey"
                         placeholder="sk-01234-put-your-api-key-here. It-is-not-stored-on-any-server."
                         onblur="maskInput()" onfocus="unmaskInput()">
-                    <label for="baseUrl">Base URL (optional):</label>
+
                     <label for="llm_model">LLM Model:</label>
-                    <input type="text" id="llm_model" name="llm_model"
-                        placeholder="gpt-4o"
-                        value="gpt-4o">
+                    <input type="text" id="llm_model" name="llm_model" placeholder="gpt-4o" value="gpt-4o">
+                    <label for="baseUrl">Base URL (optional):</label>
+
                     <input type="text" id="baseUrl" name="baseUrl"
                         placeholder="https://api.openai.com/v1/chat/completions"
                         value="https://api.openai.com/v1/chat/completions">
@@ -223,10 +223,12 @@
             // Save the prompt, apiKey, and baseUrl to cookies
             const prompt = encodeURIComponent(document.getElementById('prompt').value);
             const apiKey = encodeURIComponent(document.getElementById('apiKey').value);
+            const llm_model = encodeURIComponent(document.getElementById('llm_model').value);
             const baseUrl = encodeURIComponent(document.getElementById('baseUrl').value);
 
             document.cookie = `prompt=${prompt}; path=/`;
             document.cookie = `apiKey=${apiKey}; path=/`;
+            document.cookie = `llm_model=${llm_model}; path=/`;
             document.cookie = `baseUrl=${baseUrl}; path=/`;
         });
 
@@ -241,6 +243,9 @@
                 if (name.trim() === 'apiKey') {
                     document.getElementById('apiKey').value = decodeURIComponent(value);
                     maskInput();
+                }
+                if (name.trim() === 'llm_model') {
+                    document.getElementById('llm_model').value = decodeURIComponent(value);
                 }
                 if (name.trim() === 'baseUrl') {
                     document.getElementById('baseUrl').value = decodeURIComponent(value);

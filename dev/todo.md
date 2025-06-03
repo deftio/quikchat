@@ -14,6 +14,10 @@
 
 ==========
 
+## 1.1.12 
+
+* added temp message generator
+
 ## 1.1.7
 
 * added get/restore full message history including timestamps

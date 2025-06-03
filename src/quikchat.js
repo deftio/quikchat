@@ -268,8 +268,8 @@ class quikchat {
         );
         // this.messageScrollToBottom();
         return retvalue;
-
     }
+
     messageRemove(n) {
         // use css selector to remove the message
         let sucess = false;
@@ -384,6 +384,19 @@ class quikchat {
     messageScrollToBottom() {
         this._messagesArea.lastElementChild.scrollIntoView();
     }
+
+    /**
+     * Removes the last message from the messages area.
+     */
+    messageRemoveLast() {
+        // find the last message by id:
+        if (this._history.length >= 0) {
+            let lastMsgId = this._history[this._history.length - 1].msgid;
+            return this.messageRemove(lastMsgId);
+        }
+        return false;
+    }
+
 
     /**
      * For right sided or centered messages, we need to handle the CSS for short and long messages.
@@ -642,6 +655,58 @@ class quikchat {
             element.innerHTML = currentMsg;
         }, interval);
     }
+
+    static createTempMessageDOMStr(initialContent, updateInterval = 1000, callback = null, options = {}) {
+        // Make sure the interval is at least 100ms
+        updateInterval = Math.max(updateInterval, 100);
+        
+        // Validate callback; if not a function, ignore it.
+        if (callback && typeof callback !== 'function') {
+          callback = null;
+        }
+        // Default callback simply appends a dot.
+        callback = callback || function(msg, count) {
+          return msg + ".";
+        };
+      
+        // Allow an optional CSS class for the container element
+        const containerClass = options.containerClass ? options.containerClass : '';
+      
+        // Generate a unique id so that the inline script can reliably find the container.
+        const uniqueId = "tempMsg_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
+      
+        // Build and return the HTML string.
+        // Note the use of <\/script> (with a backslash) so that the inline script is not terminated early.
+        return `
+          <span id="${uniqueId}" ${containerClass ? `class="${containerClass}"` : ''}>
+            ${initialContent}
+          </span>
+          <script>
+            (function(){
+              // Get our container element by its unique id.
+              var container = document.getElementById("${uniqueId}");
+              if (!container) return;
+              var count = 0;
+              var currentMsg = container.innerHTML;
+              var interval = ${updateInterval};
+              // Convert the callback function into its string representation.
+              var cb = ${callback.toString()};
+              var intervalId = setInterval(function(){
+                // If the content has been replaced, stop updating.
+                if(container.innerHTML !== currentMsg){
+                  clearInterval(intervalId);
+                  return;
+                }
+                // Use the callback to generate the new message.
+                currentMsg = String(cb(currentMsg, count));
+                count++;
+                container.innerHTML = currentMsg;
+              }, interval);
+            })();
+          <\/script>
+        `;
+      }
+      
 
 }
 

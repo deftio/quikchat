@@ -84,6 +84,10 @@
                         placeholder="sk-01234-put-your-api-key-here. It-is-not-stored-on-any-server."
                         onblur="maskInput()" onfocus="unmaskInput()">
                     <label for="baseUrl">Base URL (optional):</label>
+                    <label for="llm_model">LLM Model:</label>
+                    <input type="text" id="llm_model" name="llm_model"
+                        placeholder="gpt-4o"
+                        value="gpt-4o">
                     <input type="text" id="baseUrl" name="baseUrl"
                         placeholder="https://api.openai.com/v1/chat/completions"
                         value="https://api.openai.com/v1/chat/completions">
@@ -111,14 +115,15 @@
 
             const apiKey = document.getElementById('apiKey').value || '';
             const baseUrl = document.getElementById('baseUrl').value || 'https://api.openai.com/v1/chat/completions';
-            const prompt = document.getElementById('prompt').value || 'Tell me a story';
+            //const prompt = document.getElementById('prompt').value || 'Tell me a story';
+            const prompt = document.getElementById('llm_model').value || 'gpt-4o';
             const responseDiv = document.getElementById('response');
             responseDiv.innerHTML = '';
             chatInstance.messageAddNew(userInput, "user", "right");
             console.log(baseUrl)
             console.log(apiKey)
             const data = {
-                model: 'gpt-4o-mini',
+                model: 'gpt-4o' || llm_model,
                 messages: [
                     { role: 'system', content: prompt }, // this is the base prompt
                     ...chatInstance.historyGet() // get the chat history and add it to the prompt

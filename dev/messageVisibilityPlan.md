@@ -111,35 +111,61 @@ To ensure developers can effectively use this new feature, the following assets 
 
 This plan provides a comprehensive approach to implementing the message visibility feature. It addresses the core requirements, considers backward compatibility, and provides a clear path for implementation.
 
-## 7. Advanced Group Visibility Control
+## 7. Future Enhancements: Tagged Visibility
 
-### 7.1. The Challenge with Individual Visibility
+### The Challenge with Simple Visibility
 
-The `messageSetVisibility` function is ideal for controlling single messages. However, it is not well-suited for managing categories of messages, such as a set of system prompts that should be toggled together. An application would need to manually track the IDs of all system messages and loop through them, which is inefficient and loses the state of which messages were originally hidden by default.
+The currently implemented visibility system (`visible: true/false` and `messageSetVisibility`) is perfect for controlling the display of *individual* messages. However, it is not designed to manage the visibility of *groups* of related messages, such as a set of system prompts or moderator notes that an application might want to toggle all at once. An application would need to manually track the IDs of all relevant messages and loop through them, which is inefficient and loses the state of which messages were originally hidden by default.
 
-### 7.2. A Hybrid, Class-Based Solution
+### A More Powerful Proposal: A Tag-Based System
 
-To solve this, we will implement a more powerful, class-based group toggling system that works in tandem with the existing individual visibility controls.
+A more robust and flexible solution is to implement a generic message tagging system. This would allow developers to assign one or more tags (as CSS classes) to messages and then control the visibility of all messages with a certain tag via a single command.
 
-1.  **New `visibilityGroup` Property:**
-    -   A new optional string property, `visibilityGroup`, will be added to the `messageAddFull` input object.
-    -   When a message is added with `visibilityGroup: 'system'`, its DOM element will receive a corresponding CSS class: `quikchat-visibility-group-system`.
+#### 1. API for Tagging Messages
 
-2.  **New Group-Toggle Functions:**
-    -   `setGroupVisibility(groupName, isVisible)`: This function will add or remove a class on the main chat container (`_chatWidget`). For example, `setGroupVisibility('system', true)` will add the class `quikchat-show-group-system` to the container.
-    -   `toggleGroupVisibility(groupName)`: A convenience function to flip the current visibility of a group.
-    -   `getGroupVisibility(groupName)`: Checks if a given group is currently set to be visible.
+The core change would be to add a `tags` property to the `messageAddFull` input object.
 
-3.  **CSS-Driven Logic:**
-    -   The core showing and hiding will be managed by CSS, not by iterating through DOM elements in JavaScript.
-    -   By default, any element with a `quikchat-visibility-group-*` class will have `display: none`.
-    -   A CSS rule will specify that when the container has a `quikchat-show-group-*` class, the corresponding messages within it should have `display: ''` (or `block`).
-    -   The `_updateMessageStyles` function must be called after any group visibility change to fix the alternating background colors.
+-   `tags` (Array of strings): An optional array of strings that will be used as tags. For example: `tags: ["system-prompt", "priority"]`.
+-   **Backward Compatibility:** This would be a new, optional property and would not affect existing code.
 
-### 7.3. Interaction Between Individual and Group Controls
+#### 2. From Tags to CSS Classes
 
-This hybrid system allows for maximum flexibility. Because inline `style` attributes have higher CSS specificity than classes, the individual controls will always override group settings.
+The QuikChat library would take the provided tags and convert them into namespaced CSS classes on the message's main `div` element.
 
--   **Scenario:** A message is part of the `system` group, which is currently hidden.
--   An admin calls `messageSetVisibility(msgid, true)` on that single message.
--   **Result:** That specific message will appear, while all other messages in the `system` group remain hidden. This is the desired and most intuitive behavior. 
+-   A tag like `"system-prompt"` would become the class `quikchat-tag-system-prompt`.
+-   A message with `tags: ["system-prompt", "priority"]` would get both `quikchat-tag-system-prompt` and `quikchat-tag-priority` added to its class list.
+-   This provides a powerful hook for any custom CSS styling, not just visibility.
+
+#### 3. Toggling Visibility via Container Classes
+
+Instead of manipulating individual messages, we would control group visibility by adding/removing classes on the main chat widget container (`_chatWidget`). This is highly efficient as it's a single DOM manipulation that leverages the browser's CSS engine.
+
+-   **New Functions:** We would introduce new functions like `setTagVisibility(tagName, isVisible)`.
+-   **Mechanism:**
+    -   Calling `setTagVisibility("system-prompt", true)` would add the class `quikchat-show-tag-system-prompt` to the main widget container.
+    -   Calling `setTagVisibility("system-prompt", false)` would remove that class.
+-   **CSS-Driven Logic:** The actual showing and hiding would be managed entirely by CSS rules that we would add to the `quikchat.css` file.
+    ```css
+    /* By default, hide any message that has a tag. */
+    .quikchat-base .quikchat-message[class*="quikchat-tag-"] {
+        display: none;
+    }
+
+    /* When the container has the corresponding "show" class, display the tagged messages. */
+    .quikchat-base.quikchat-show-tag-system-prompt .quikchat-tag-system-prompt {
+        display: block; /* Or flex, depending on the message structure */
+    }
+    .quikchat-base.quikchat-show-tag-priority .quikchat-tag-priority {
+        display: block;
+    }
+    /* etc. for any other tags */
+    ```
+    *(Note: The CSS would need to be carefully crafted to handle multiple tags and potential overrides, but this demonstrates the principle.)*
+
+#### 4. Benefits of the Tagging Approach
+
+-   **Decoupling:** The JavaScript logic is simple: add classes to messages and a single class to the container. The complex logic of what "visible" means is left entirely to CSS, where it belongs.
+-   **Multi-Category Messages:** A single message can belong to multiple groups (e.g., a message could be tagged as both `system` and `debug`).
+-   **Performance:** Toggling a class on a single parent container is vastly more performant than iterating over potentially hundreds of message elements in JavaScript.
+-   **Extensibility:** This system is not limited to visibility. A developer could use the `quikchat-tag-*` classes to apply custom borders, colors, or icons to certain types of messages by simply adding their own CSS rules.
+-   **Preservation of State:** The individual visibility (`style.display`) of a message remains untouched by group toggling, allowing the hybrid system to function as previously discussed. A user can still show/hide a single message from a group. 

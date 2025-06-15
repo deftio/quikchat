@@ -209,5 +209,80 @@ describe('quikchat', () => {
     test('should return version', () => {
         expect(quikchat.version().url).toBe('https://github/deftio/quikchat');
     });
+
+    describe('Message Visibility', () => {
+        test('should render message by default (backward compatibility)', () => {
+            const msgId = chatInstance.messageAddNew('Visible message');
+            expect(chatInstance.messageGetVisibility(msgId)).toBe(true);
+            const historyItem = chatInstance.historyGet(0, 1)[0];
+            expect(historyItem.visible).toBe(true);
+        });
+
+        test('should render message when visible: true is passed', () => {
+            const msgId = chatInstance.messageAddNew('Visible message', 'user', 'right', 'user', true, true);
+            expect(chatInstance.messageGetVisibility(msgId)).toBe(true);
+        });
+
+        test('should hide message when visible: false is passed', () => {
+            const msgId = chatInstance.messageAddNew('Hidden message', 'user', 'right', 'user', true, false);
+            expect(chatInstance.messageGetVisibility(msgId)).toBe(false);
+            const domElement = chatInstance.messageGetDOMObject(msgId);
+            expect(domElement.style.display).toBe('none');
+        });
+
+        test('should show a hidden message', () => {
+            const msgId = chatInstance.messageAddNew('Hidden message', 'user', 'right', 'user', true, false);
+            expect(chatInstance.messageGetVisibility(msgId)).toBe(false);
+            chatInstance.messageSetVisibility(msgId, true);
+            expect(chatInstance.messageGetVisibility(msgId)).toBe(true);
+        });
+
+        test('should hide a visible message', () => {
+            const msgId = chatInstance.messageAddNew('Visible message');
+            expect(chatInstance.messageGetVisibility(msgId)).toBe(true);
+            chatInstance.messageSetVisibility(msgId, false);
+            expect(chatInstance.messageGetVisibility(msgId)).toBe(false);
+        });
+
+        test('should toggle visibility repeatedly', () => {
+            const msgId = chatInstance.messageAddNew('A message');
+            chatInstance.messageSetVisibility(msgId, false);
+            expect(chatInstance.messageGetVisibility(msgId)).toBe(false);
+            chatInstance.messageSetVisibility(msgId, true);
+            expect(chatInstance.messageGetVisibility(msgId)).toBe(true);
+            chatInstance.messageSetVisibility(msgId, false);
+            expect(chatInstance.messageGetVisibility(msgId)).toBe(false);
+        });
+
+        test('should correctly set alternating colors when visibility changes', () => {
+            chatInstance.messageAddNew('Msg 0');
+            const msg1 = chatInstance.messageAddNew('Msg 1', 'user', 'right', 'user', true, false);
+            chatInstance.messageAddNew('Msg 2');
+
+            const msg0_dom = chatInstance.messageGetDOMObject(0);
+            const msg2_dom = chatInstance.messageGetDOMObject(2);
+
+            expect(msg0_dom.classList.contains('quikchat-message-1')).toBe(true);
+            expect(msg2_dom.classList.contains('quikchat-message-2')).toBe(true);
+
+            chatInstance.messageSetVisibility(1, true);
+            const msg1_dom = chatInstance.messageGetDOMObject(1);
+            expect(msg1_dom.classList.contains('quikchat-message-2')).toBe(true);
+            expect(msg2_dom.classList.contains('quikchat-message-1')).toBe(true); // Should have changed
+        });
+
+        test('should return false for invalid msgid', () => {
+            expect(chatInstance.messageSetVisibility(999, true)).toBe(false);
+            expect(chatInstance.messageGetVisibility(999)).toBe(false);
+        });
+        
+        test('should include `visible` property in history export', () => {
+            chatInstance.messageAddNew('Visible message');
+            chatInstance.messageAddNew('Hidden message', 'user', 'right', 'user', true, false);
+            const history = chatInstance.historyGetAllCopy();
+            expect(history[0].visible).toBe(true);
+            expect(history[1].visible).toBe(false);
+        });
+    });
     
 });

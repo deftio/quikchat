@@ -217,3 +217,52 @@ quikchat is licensed under the BSD-2 License.
 ## Home Page
 
 [quikchat homepage and source code](https://github.com/deftio/quikchat)
+
+## New Features
+
+- `role` (string): The role of the message sender (e.g., "user", "agent"). Defaults to "user".
+- `scrollIntoView` (boolean): If true, the chat will scroll to the bottom after the message is added. Defaults to true.
+
+**Example:**
+```javascript
+myChat.messageAddNew("Hello world!", "Alice", "left", "user");
+```
+
+### `messageAddFull(input)`
+
+Adds a new message with a comprehensive set of options.
+
+- `input` (object): An object containing message properties:
+    - `content` (string): The HTML content of the message.
+    - `userString` (string): The name to display for the user.
+    - `align` (string): `left`, `right`, or `center`.
+    - `role` (string): The role of the sender.
+    - `userID` (number): A numeric ID for the user.
+    - `timestamp` (string|boolean): An ISO string for the timestamp, or `false`.
+    - `updatedtime` (string|boolean): An ISO string for the last update time, or `false`.
+    - `scrollIntoView` (boolean): Whether to scroll to the message.
+    - `visible` (boolean): If `false`, the message is added to the history but not displayed. Defaults to `true`.
+
+### `messageRemove(msgid)`
+
+Removes a message from the chat by its ID.
+
+### `messageSetVisibility(msgid, isVisible)`
+
+Sets the visibility of a message that is already in the chat.
+
+- `msgid` (number): The ID of the message to modify.
+- `isVisible` (boolean): `true` to show the message, `false` to hide it.
+
+This is useful for hiding system prompts or for moderation.
+
+### `messageGetVisibility(msgid)`
+
+Checks if a message is currently visible.
+
+- `msgid` (number): The ID of the message to check.
+- Returns `true` if the message is visible, `false` otherwise.
+
+### `messageRemoveLast()`
+
+Removes the most recently added message.

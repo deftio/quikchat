@@ -327,7 +327,8 @@ var quikchat = /*#__PURE__*/function () {
         userID: -1,
         timestamp: false,
         updatedtime: false,
-        scrollIntoView: true
+        scrollIntoView: true,
+        visible: true
       };
       var msgid = this.msgid;
       var messageDiv = document.createElement('div');
@@ -335,7 +336,6 @@ var quikchat = /*#__PURE__*/function () {
       'quikchat-userid-' + String(input.userString).padStart(10, '0'); // hash this..
       messageDiv.classList.add('quikchat-message', msgidClass, 'quikchat-structure');
       this.msgid++;
-      messageDiv.classList.add(this._messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
       var userDiv = document.createElement('div');
       userDiv.innerHTML = input.userString;
       userDiv.classList.add('quikchat-user-label');
@@ -358,6 +358,10 @@ var quikchat = /*#__PURE__*/function () {
       messageDiv.appendChild(userDiv);
       messageDiv.appendChild(contentDiv);
       this._messagesArea.appendChild(messageDiv);
+      var visible = input.visible === undefined ? true : input.visible;
+      if (!visible) {
+        messageDiv.style.display = 'none';
+      }
 
       // Scroll to the last message only if the user is not actively scrolling up
       if (!this.userScrolledUp || input.scrollIntoView) {
@@ -366,6 +370,7 @@ var quikchat = /*#__PURE__*/function () {
       this._textEntry.value = '';
       this._adjustMessagesAreaHeight();
       this._handleShortLongMessageCSS(messageDiv, input.align); // Handle CSS for short/long messages
+      this._updateMessageStyles();
 
       // Add timestamp now, unless it is passed in 
       var timestamp = input.timestamp ? input.timestamp : new Date().toISOString();
@@ -374,6 +379,7 @@ var quikchat = /*#__PURE__*/function () {
         this._history.push(_objectSpread2(_objectSpread2({
           msgid: msgid
         }, input), {}, {
+          visible: visible,
           timestamp: timestamp,
           updatedtime: updatedtime,
           messageDiv: messageDiv
@@ -395,12 +401,14 @@ var quikchat = /*#__PURE__*/function () {
       var align = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "right";
       var role = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "user";
       var scrollIntoView = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
+      var visible = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
       var retvalue = this.messageAddFull({
         content: content,
         userString: userString,
         align: align,
         role: role,
-        scrollIntoView: scrollIntoView
+        scrollIntoView: scrollIntoView,
+        visible: visible
       });
       // this.messageScrollToBottom();
       return retvalue;
@@ -536,7 +544,59 @@ var quikchat = /*#__PURE__*/function () {
   }, {
     key: "messageScrollToBottom",
     value: function messageScrollToBottom() {
-      this._messagesArea.lastElementChild.scrollIntoView();
+      if (this._messagesArea.lastElementChild) {
+        this._messagesArea.lastElementChild.scrollIntoView();
+      }
+    }
+
+    /**
+     * Removes the last message from the messages area.
+     */
+  }, {
+    key: "messageRemoveLast",
+    value: function messageRemoveLast() {
+      // find the last message by id:
+      if (this._history.length >= 0) {
+        var lastMsgId = this._history[this._history.length - 1].msgid;
+        return this.messageRemove(lastMsgId);
+      }
+      return false;
+    }
+  }, {
+    key: "messageSetVisibility",
+    value: function messageSetVisibility(msgid, isVisible) {
+      var message = this._history.find(function (item) {
+        return item.msgid === msgid;
+      });
+      if (message && message.messageDiv) {
+        message.messageDiv.style.display = isVisible ? '' : 'none';
+        message.visible = isVisible;
+        this._updateMessageStyles();
+        return true;
+      }
+      return false;
+    }
+  }, {
+    key: "messageGetVisibility",
+    value: function messageGetVisibility(msgid) {
+      var message = this._history.find(function (item) {
+        return item.msgid === msgid;
+      });
+      if (message && message.messageDiv) {
+        return message.messageDiv.style.display !== 'none';
+      }
+      return false; // Return false if not found or no messageDiv
+    }
+  }, {
+    key: "_updateMessageStyles",
+    value: function _updateMessageStyles() {
+      var visibleMessages = _toConsumableArray(this._messagesArea.children).filter(function (child) {
+        return child.style.display !== 'none';
+      });
+      visibleMessages.forEach(function (messageDiv, index) {
+        messageDiv.classList.remove('quikchat-message-1', 'quikchat-message-2');
+        messageDiv.classList.add(index % 2 === 0 ? 'quikchat-message-1' : 'quikchat-message-2');
+      });
     }
 
     /**
@@ -699,7 +759,7 @@ var quikchat = /*#__PURE__*/function () {
     key: "version",
     value: function version() {
       return {
-        "version": "1.1.12",
+        "version": "1.1.13",
         "license": "BSD-2",
         "url": "https://github/deftio/quikchat",
         "fun": true
@@ -797,6 +857,34 @@ var quikchat = /*#__PURE__*/function () {
         count++;
         element.innerHTML = currentMsg;
       }, interval);
+    }
+  }, {
+    key: "createTempMessageDOMStr",
+    value: function createTempMessageDOMStr(initialContent) {
+      var updateInterval = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1000;
+      var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+      var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+      // Make sure the interval is at least 100ms
+      updateInterval = Math.max(updateInterval, 100);
+
+      // Validate callback; if not a function, ignore it.
+      if (callback && typeof callback !== 'function') {
+        callback = null;
+      }
+      // Default callback simply appends a dot.
+      callback = callback || function (msg, count) {
+        return msg + ".";
+      };
+
+      // Allow an optional CSS class for the container element
+      var containerClass = options.containerClass ? options.containerClass : '';
+
+      // Generate a unique id so that the inline script can reliably find the container.
+      var uniqueId = "tempMsg_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
+
+      // Build and return the HTML string.
+      // Note the use of <\/script> (with a backslash) so that the inline script is not terminated early.
+      return "\n          <span id=\"".concat(uniqueId, "\" ").concat(containerClass ? "class=\"".concat(containerClass, "\"") : '', ">\n            ").concat(initialContent, "\n          </span>\n          <script>\n            (function(){\n              // Get our container element by its unique id.\n              var container = document.getElementById(\"").concat(uniqueId, "\");\n              if (!container) return;\n              var count = 0;\n              var currentMsg = container.innerHTML;\n              var interval = ").concat(updateInterval, ";\n              // Convert the callback function into its string representation.\n              var cb = ").concat(callback.toString(), ";\n              var intervalId = setInterval(function(){\n                // If the content has been replaced, stop updating.\n                if(container.innerHTML !== currentMsg){\n                  clearInterval(intervalId);\n                  return;\n                }\n                // Use the callback to generate the new message.\n                currentMsg = String(cb(currentMsg, count));\n                count++;\n                container.innerHTML = currentMsg;\n              }, interval);\n            })();\n          </script>\n        ");
     }
   }]);
 }();

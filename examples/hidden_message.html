@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QuikChat - Hidden Message Example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../dist/quikchat.css">
+    <script type="module">
+        import quikchat from '../src/quikchat.js';
+        window.quikchat = quikchat; // make it available globally for the example
+    </script>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 2%;
+            box-sizing: border-box;
+        }
+        #main-container {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        #chat-container {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-start;
+            margin-bottom: 20px;
+        }
+        .controls button, .controls input {
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+        .explanation {
+            max-width: 800px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        #status-area {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e9e9e9;
+            border-radius: 5px;
+            min-height: 1.2em;
+            font-family: monospace;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+<div id="main-container">
+    <h1>QuikChat Message Visibility Demo</h1>
+    <div class="explanation">
+        <p>This demo shows how to use the message visibility feature. Messages can be added to the history but remain hidden from view by setting <code>visible: false</code>. This is useful for including contextual information, like a system prompt for an LLM, without cluttering the UI.</p>
+        <p>This chat has an initial hidden message (ID: 0) containing a system prompt. Use the controls to make it visible or to add new hidden messages.</p>
+    </div>
+
+    <div id="chat-container"></div>
+
+    <div class="controls">
+        <button id="add-visible">Add Alternating Message</button>
+        <button id="add-hidden">Add Hidden "System" Message</button>
+        <input type="number" id="msg-id-input" placeholder="Msg ID" value="0">
+        <button id="toggle-visibility">Toggle Visibility</button>
+        <button id="show-all">Show All Hidden</button>
+    </div>
+    <div id="status-area">Status messages will appear here.</div>
+</div>
+    <script type="module">
+        const statusArea = document.getElementById('status-area');
+        const chat = new quikchat('#chat-container',
+            (self, msg) => {
+                self.messageAddNew(msg, 'You', 'right');
+                statusArea.textContent = 'Sent: ' + msg;
+            },
+            {
+                titleArea: { title: "Visibility Demo", show: true }
+            }
+        );
+
+        // Add some initial messages
+        chat.messageAddNew("You are an expert assistant on helping a user decide how to pick colors for a website.", "System", "center", "system", true, false);
+        chat.messageAddNew("Hello! Let's talk about website colors.", "Bot", "left");
+        chat.messageAddNew("Ask me anything about color schemes.", "Bot", "left");
+
+        let isUserTurn = true;
+        document.getElementById('add-visible').addEventListener('click', () => {
+            const content = quikchat.loremIpsum(50);
+            if(isUserTurn) {
+                chat.messageAddNew(content, 'User', 'right');
+                statusArea.textContent = 'Added a new message from User.';
+            } else {
+                chat.messageAddNew(content, 'Bot', 'left');
+                statusArea.textContent = 'Added a new message from Bot.';
+            }
+            isUserTurn = !isUserTurn;
+        });
+
+        document.getElementById('add-hidden').addEventListener('click', () => {
+            const content = `(System instruction: The user seems to prefer modern, minimalist designs.)`;
+            const msgId = chat.messageAddNew(content, 'System', 'center', 'system', true, false);
+            statusArea.textContent = `Added hidden message with ID: ${msgId}. It's in the history but not visible.`;
+        });
+
+        document.getElementById('toggle-visibility').addEventListener('click', () => {
+            const msgIdInput = document.getElementById('msg-id-input');
+            const msgId = parseInt(msgIdInput.value);
+            if (isNaN(msgId)) {
+                statusArea.textContent = 'Error: Please enter a valid message ID.';
+                return;
+            }
+
+            const isVisible = chat.messageGetVisibility(msgId);
+            const success = chat.messageSetVisibility(msgId, !isVisible);
+            if (success) {
+                statusArea.textContent = `Toggled visibility for message ID ${msgId} to ${!isVisible}.`;
+            } else {
+                statusArea.textContent = `Error: Message with ID ${msgId} not found.`;
+            }
+        });
+
+        document.getElementById('show-all').addEventListener('click', () => {
+            const allHistory = chat.historyGetAllCopy();
+            let hiddenCount = 0;
+            allHistory.forEach(message => {
+                if (!message.visible) {
+                    chat.messageSetVisibility(message.msgid, true);
+                    hiddenCount++;
+                }
+            });
+            statusArea.textContent = `Made ${hiddenCount} hidden message(s) visible.`;
+        });
+
+    </script>
+</body>
+</html> 

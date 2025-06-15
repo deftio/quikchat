@@ -271,4 +271,45 @@ myChatWidget.changeTheme(newTheme) where myChatWidget is the instance of your wi
 <p>quikchat is licensed under the BSD-2 License.</p>
 <h2 id="home-page">Home Page</h2>
 <p><a href="https://github.com/deftio/quikchat">quikchat homepage and source code</a></p>
+<h2 id="new-features">New Features</h2>
+<ul>
+<li><code>role</code> (string): The role of the message sender (e.g., &quot;user&quot;, &quot;agent&quot;). Defaults to &quot;user&quot;.</li>
+<li><code>scrollIntoView</code> (boolean): If true, the chat will scroll to the bottom after the message is added. Defaults to true.</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">myChat.messageAddNew(&quot;Hello world!&quot;, &quot;Alice&quot;, &quot;left&quot;, &quot;user&quot;);
+</code></pre>
+<h3 id="messageaddfullinput"><code>messageAddFull(input)</code></h3>
+<p>Adds a new message with a comprehensive set of options.</p>
+<ul>
+<li><code>input</code> (object): An object containing message properties:<ul>
+<li><code>content</code> (string): The HTML content of the message.</li>
+<li><code>userString</code> (string): The name to display for the user.</li>
+<li><code>align</code> (string): <code>left</code>, <code>right</code>, or <code>center</code>.</li>
+<li><code>role</code> (string): The role of the sender.</li>
+<li><code>userID</code> (number): A numeric ID for the user.</li>
+<li><code>timestamp</code> (string|boolean): An ISO string for the timestamp, or <code>false</code>.</li>
+<li><code>updatedtime</code> (string|boolean): An ISO string for the last update time, or <code>false</code>.</li>
+<li><code>scrollIntoView</code> (boolean): Whether to scroll to the message.</li>
+<li><code>visible</code> (boolean): If <code>false</code>, the message is added to the history but not displayed. Defaults to <code>true</code>.</li>
+</ul>
+</li>
+</ul>
+<h3 id="messageremovemsgid"><code>messageRemove(msgid)</code></h3>
+<p>Removes a message from the chat by its ID.</p>
+<h3 id="messagesetvisibilitymsgid-isvisible"><code>messageSetVisibility(msgid, isVisible)</code></h3>
+<p>Sets the visibility of a message that is already in the chat.</p>
+<ul>
+<li><code>msgid</code> (number): The ID of the message to modify.</li>
+<li><code>isVisible</code> (boolean): <code>true</code> to show the message, <code>false</code> to hide it.</li>
+</ul>
+<p>This is useful for hiding system prompts or for moderation.</p>
+<h3 id="messagegetvisibilitymsgid"><code>messageGetVisibility(msgid)</code></h3>
+<p>Checks if a message is currently visible.</p>
+<ul>
+<li><code>msgid</code> (number): The ID of the message to check.</li>
+<li>Returns <code>true</code> if the message is visible, <code>false</code> otherwise.</li>
+</ul>
+<h3 id="messageremovelast"><code>messageRemoveLast()</code></h3>
+<p>Removes the most recently added message.</p>
 </body></html>

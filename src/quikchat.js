@@ -1,4 +1,3 @@
-
 class quikchat {
     /**
      * 
@@ -198,15 +197,14 @@ class quikchat {
         return this._messagesArea.classList.contains('quikchat-messages-area-alt');
     }
     // message functions
-    messageAddFull(input = { content: "", userString: "user", align: "right", role: "user", userID: -1, timestamp: false, updatedtime: false, scrollIntoView: true }) {
+    messageAddFull(input = { content: "", userString: "user", align: "right", role: "user", userID: -1, timestamp: false, updatedtime: false, scrollIntoView: true, visible: true }) {
         const msgid = this.msgid;
         const messageDiv = document.createElement('div');
         const msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
         const userIdClass = 'quikchat-userid-' + String(input.userString).padStart(10, '0'); // hash this..
         messageDiv.classList.add('quikchat-message', msgidClass, 'quikchat-structure');
         this.msgid++;
-        messageDiv.classList.add(this._messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
-    
+
         const userDiv = document.createElement('div');
         userDiv.innerHTML = input.userString;
         userDiv.classList.add('quikchat-user-label');
@@ -232,6 +230,11 @@ class quikchat {
         messageDiv.appendChild(userDiv);
         messageDiv.appendChild(contentDiv);
         this._messagesArea.appendChild(messageDiv);
+        
+        const visible = input.visible === undefined ? true : input.visible;
+        if (!visible) {
+            messageDiv.style.display = 'none';
+        }
     
         // Scroll to the last message only if the user is not actively scrolling up
         if ((!this.userScrolledUp) || input.scrollIntoView) {
@@ -241,13 +244,14 @@ class quikchat {
         this._textEntry.value = '';
         this._adjustMessagesAreaHeight();
         this._handleShortLongMessageCSS(messageDiv, input.align); // Handle CSS for short/long messages
+        this._updateMessageStyles();
     
         // Add timestamp now, unless it is passed in 
         const timestamp = input.timestamp ? input.timestamp : new Date().toISOString();
         const updatedtime = input.updatedtime ? input.updatedtime : timestamp;
     
         if (this.trackHistory) {
-            this._history.push({ msgid, ...input, timestamp, updatedtime, messageDiv });
+            this._history.push({ msgid, ...input, visible, timestamp, updatedtime, messageDiv });
             if (this._history.length > this._historyLimit) {
                 this._history.shift();
             }
@@ -262,9 +266,9 @@ class quikchat {
     
 
 
-    messageAddNew(content = "", userString = "user", align = "right", role = "user", scrollIntoView = true) {
+    messageAddNew(content = "", userString = "user", align = "right", role = "user", scrollIntoView = true, visible = true) {
         let retvalue = this.messageAddFull(
-            { content: content, userString: userString, align: align, role: role, scrollIntoView: scrollIntoView }
+            { content: content, userString: userString, align: align, role: role, scrollIntoView: scrollIntoView, visible: visible }
         );
         // this.messageScrollToBottom();
         return retvalue;
@@ -382,7 +386,9 @@ class quikchat {
      * Scrolls the messages area to the bottom.
      */
     messageScrollToBottom() {
-        this._messagesArea.lastElementChild.scrollIntoView();
+        if (this._messagesArea.lastElementChild) {
+            this._messagesArea.lastElementChild.scrollIntoView();
+        }
     }
 
     /**
@@ -397,6 +403,35 @@ class quikchat {
         return false;
     }
 
+    messageSetVisibility(msgid, isVisible) {
+        const message = this._history.find(item => item.msgid === msgid);
+        if (message && message.messageDiv) {
+            message.messageDiv.style.display = isVisible ? '' : 'none';
+            message.visible = isVisible;
+            this._updateMessageStyles();
+            return true;
+        }
+        return false;
+    }
+
+    messageGetVisibility(msgid) {
+        const message = this._history.find(item => item.msgid === msgid);
+        if (message && message.messageDiv) {
+            return message.messageDiv.style.display !== 'none';
+        }
+        return false; // Return false if not found or no messageDiv
+    }
+
+    _updateMessageStyles() {
+        const visibleMessages = [...this._messagesArea.children].filter(
+            child => child.style.display !== 'none'
+        );
+
+        visibleMessages.forEach((messageDiv, index) => {
+            messageDiv.classList.remove('quikchat-message-1', 'quikchat-message-2');
+            messageDiv.classList.add(index % 2 === 0 ? 'quikchat-message-1' : 'quikchat-message-2');
+        });
+    }
 
     /**
      * For right sided or centered messages, we need to handle the CSS for short and long messages.
@@ -551,7 +586,7 @@ class quikchat {
      * @returns {object} - Returns the version and license information for the library.
      */
     static version() {
-        return { "version": "1.1.12", "license": "BSD-2", "url": "https://github/deftio/quikchat", "fun": true };
+        return { "version": "1.1.13", "license": "BSD-2", "url": "https://github/deftio/quikchat", "fun": true };
     }
 
     /**

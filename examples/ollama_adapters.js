@@ -12,7 +12,7 @@ function getOllamaCompletionCallback (chatInstance,userInput) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            model: "mistral",
+            model: "llama3.1",
             prompt: systemPrompt + userInput, 
             stream: false
         })
@@ -36,7 +36,7 @@ function getOllamaStreamingCallback (chatInstance,userInput) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            model: "mistral",
+            model: "llama3.1",
             prompt: systemPrompt + userInput,
             stream: true
         })

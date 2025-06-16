@@ -138,10 +138,14 @@ QuikChat allows theming using CSS of all the messages, and user area, and overal
 
 Below is the prebuilt 'light' theme.  To change the theme, make a new set of classes with different values but the same css selector naming (e.g. change "quikchat-theme-light" to "my-theme") and save as a style.  Then pass the "my-theme" to the constructor or to the changeTheme() function.
 
-Themes can be changed at anytime by calling
-myChatWidget.changeTheme(newTheme) where myChatWidget is the instance of your widget. 
+#### Instance Scoping
 
-If several widgets are on the same page, each can have a separate theme.
+For multi-instance pages where you need different styling or visibility rules per chat, you can provide a custom `instanceClass` in the options object during initialization. This class will be added to the main chat widget, allowing for scoped CSS rules.
+
+**Example:**
+```javascript
+const chat1 = new quikchat('#chat1', {}, { instanceClass: 'sales-chat' });
+```
 
 ```css
 /* quikchat theme light */
@@ -192,7 +196,17 @@ If several widgets are on the same page, each can have a separate theme.
   border: none;
   border-radius: 4px;
 }
+
+/* In your custom stylesheet */
+.sales-chat .quikchat-tag-system {
+    display: none; /* Hide system messages only in sales-chat */
+}
 ```
+
+Themes can be changed at anytime by calling
+myChatWidget.changeTheme(newTheme) where myChatWidget is the instance of your widget. 
+
+If several widgets are on the same page, each can have a separate theme.
 
 ## Building from Source
 
@@ -242,6 +256,7 @@ Adds a new message with a comprehensive set of options.
     - `updatedtime` (string|boolean): An ISO string for the last update time, or `false`.
     - `scrollIntoView` (boolean): Whether to scroll to the message.
     - `visible` (boolean): If `false`, the message is added to the history but not displayed. Defaults to `true`.
+    - `tags` (Array of strings): An optional array of strings to tag the message with (e.g., `['system', 'priority']`). These are converted to `quikchat-tag-*` CSS classes.
 
 ### `messageRemove(msgid)`
 
@@ -262,6 +277,24 @@ Checks if a message is currently visible.
 
 - `msgid` (number): The ID of the message to check.
 - Returns `true` if the message is visible, `false` otherwise.
+
+### `setTagVisibility(tagName, isVisible)`
+
+Shows or hides all messages with a specific tag by adding/removing a `quikchat-show-tag-[tagName]` class on the main chat container.
+
+- `tagName` (string): The tag to target.
+- `isVisible` (boolean): `true` to show the message group, `false` to hide it.
+
+### `getTagVisibility(tagName)`
+
+Checks if a group of tagged messages is currently set to be visible.
+
+- `tagName` (string): The tag to check.
+- Returns `true` if the corresponding `quikchat-show-tag-*` class is present on the container.
+
+### `getActiveTags()`
+
+Returns an array of all unique tags that have been added to messages in the current chat history.
 
 ### `messageRemoveLast()`
 

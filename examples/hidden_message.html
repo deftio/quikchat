@@ -1,144 +1,315 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>QuikChat - Hidden Message Example</title>
+    <title>QuikChat - Advanced Visibility Controls</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../dist/quikchat.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
     <script type="module">
-        import quikchat from '../src/quikchat.js';
+        import quikchat from '../dist/quikchat.esm.min.js';
         window.quikchat = quikchat; // make it available globally for the example
     </script>
     <style>
         body {
-            font-family: sans-serif;
+            font-family: 'Source Sans Pro', sans-serif;
+            background-color: #f4f7f6;
             margin: 0;
-            padding: 2%;
-            box-sizing: border-box;
+            padding: 20px;
+            color: #333;
         }
-        #main-container {
-            width: 90%;
-            max-width: 800px;
+
+        .header {
+            max-width: 1300px;
+            margin: 0 auto 20px auto;
+        }
+
+        .header h1 {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            color: #555;
+            max-width: 80ch;
+        }
+        
+        .main-container {
+            display: flex;
+            gap: 20px;
+            max-width: 1300px;
             margin: 0 auto;
         }
+
+        .chat-column {
+            flex: 0 0 50%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .controls-column-group {
+            flex: 1 1 50%;
+            display: flex;
+            gap: 20px;
+        }
+        
+        .control-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
         #chat-container {
             width: 100%;
-            height: 500px;
-            border: 1px solid #ccc;
+            height: 550px;
             border-radius: 8px;
-            margin-bottom: 20px;
         }
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: flex-start;
-            margin-bottom: 20px;
+
+        .control-card {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            border: 1px solid #e9e9e9;
         }
-        .controls button, .controls input {
-            padding: 8px 12px;
-            border-radius: 5px;
+
+        .control-card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        .control-card p {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 0;
+            line-height: 1.4;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 8px;
             border: 1px solid #ddd;
-            background-color: #f0f0f0;
-            cursor: pointer;
+            border-radius: 4px;
+            box-sizing: border-box;
         }
-        .explanation {
-            max-width: 800px;
-            color: #555;
-            margin-bottom: 20px;
+
+        .button-group {
+            display: flex;
+            gap: 10px;
         }
-        #status-area {
-            margin-top: 15px;
+
+        .button-group button, .control-card button {
+            flex-grow: 1;
             padding: 10px;
-            background-color: #e9e9e9;
-            border-radius: 5px;
-            min-height: 1.2em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4a90e2;
+            color: white;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        .button-group button:hover, .control-card button:hover {
+            background-color: #357abd;
+        }
+        
+        .button-group button.secondary, .control-card button.secondary {
+             background-color: #50e3c2;
+        }
+        .button-group button.secondary:hover, .control-card button.secondary:hover {
+             background-color: #38a892;
+        }
+        
+        #status-display {
+            background-color: #2d2d2d;
+            color: #50e3c2;
             font-family: monospace;
-            color: #333;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.9em;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        /* --- Tag-Based Visibility CSS --- */
+        .quikchat-tag-system, .quikchat-tag-user-note {
+            display: none;
+        }
+        .quikchat-base.quikchat-show-tag-system .quikchat-tag-system {
+            display: flex;
+        }
+        .quikchat-base.quikchat-show-tag-user-note .quikchat-tag-user-note {
+            display: flex;
+        }
+
+        /* Custom message borders for when alternating colors are off */
+        .quikchat-message.left-multiline, .quikchat-message.left-singleline {
+            border: 1px solid #e0e0e0;
+            margin:  4px 0px;
+        }
+
+        .quikchat-message.right-multiline, .quikchat-message.right-singleline {
+            border: 1px solid #aed6f1;
+            background-color: #f5faff; /* A very light blue to complement the border */
+            margin:  4px 0px;
         }
     </style>
 </head>
 <body>
-<div id="main-container">
-    <h1>QuikChat Message Visibility Demo</h1>
-    <div class="explanation">
-        <p>This demo shows how to use the message visibility feature. Messages can be added to the history but remain hidden from view by setting <code>visible: false</code>. This is useful for including contextual information, like a system prompt for an LLM, without cluttering the UI.</p>
-        <p>This chat has an initial hidden message (ID: 0) containing a system prompt. Use the controls to make it visible or to add new hidden messages.</p>
+
+    <div class="header">
+        <h1>Quikchat Message Visibility and Hidden Messages Demo</h1>
+        <p>
+            By default all messages are visible.  However, QuikChat supports two message visibility systems for hiding/showing mesesages at runtime.<br><br> <strong>Individual Visibility</strong> allows you to show or hide a single message by its ID using JavaScript. <br><strong>Tagged Visibility</strong> allows you to assign tags to messages and then show or hide entire groups of messages with a single command powered by CSS classes. This demo lets you experiment with both.
+        </p>
     </div>
 
-    <div id="chat-container"></div>
-
-    <div class="controls">
-        <button id="add-visible">Add Alternating Message</button>
-        <button id="add-hidden">Add Hidden "System" Message</button>
-        <input type="number" id="msg-id-input" placeholder="Msg ID" value="0">
-        <button id="toggle-visibility">Toggle Visibility</button>
-        <button id="show-all">Show All Hidden</button>
+    <div class="main-container">
+        <div class="chat-column">
+            <div id="chat-container"></div>
+        </div>
+        <div class="controls-column-group">
+            <div class="control-column">
+                <div class="control-card">
+                    <h3>Individual Message Control</h3>
+                    <p>Directly set a single message's visibility. This will override any tag-based rules.</p>
+                    <div class="form-group">
+                        <label for="msg-id-input">Message ID</label>
+                        <input type="number" id="msg-id-input" placeholder="e.g., 0" value="1">
+                    </div>
+                    <div class="button-group">
+                        <button id="toggle-visibility" class="secondary">Toggle</button>
+                        <button id="show-message">Show</button>
+                        <button id="hide-message">Hide</button>
+                    </div>
+                </div>
+                 <div class="control-card">
+                    <h3>Add New Message</h3>
+                    <div class="form-group">
+                        <label for="new-msg-content">Content</label>
+                        <textarea id="new-msg-content" rows="2">A new tagged message.</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-msg-tags">Tags (comma-separated)</label>
+                        <input type="text" id="new-msg-tags" placeholder="e.g., system, priority">
+                    </div>
+                    <button id="add-message-btn">Add Message</button>
+                </div>
+            </div>
+            <div class="control-column">
+                 <div class="control-card">
+                    <h3>Tagged Group Control</h3>
+                    <p>Show or hide all messages that share a tag. Affects visibility via CSS classes.</p>
+                    <div class="form-group">
+                        <label for="tag-name-input">Tag Name</label>
+                        <input type="text" id="tag-name-input" placeholder="e.g., system" value="system">
+                    </div>
+                    <div class="button-group">
+                        <button id="show-group">Show Group</button>
+                        <button id="hide-group">Hide Group</button>
+                    </div>
+                </div>
+                <div class="control-card">
+                    <h3>Live Container State</h3>
+                    <p>Shows the CSS class list on the main chat widget. Watch how it changes when you use the group controls.</p>
+                    <div id="status-display"></div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div id="status-area">Status messages will appear here.</div>
-</div>
+
     <script type="module">
-        const statusArea = document.getElementById('status-area');
         const chat = new quikchat('#chat-container',
             (self, msg) => {
-                self.messageAddNew(msg, 'You', 'right');
-                statusArea.textContent = 'Sent: ' + msg;
+                if (!msg) return; // Don't send empty messages
+                self.messageAddNew(msg, 'User', 'right');
+                const botResponse = quikchat.loremIpsum(Math.floor(Math.random() * 80) + 40);
+                setTimeout(() => {
+                    self.messageAddNew(botResponse, 'Bot', 'left');
+                }, 400);
             },
             {
-                titleArea: { title: "Visibility Demo", show: true }
+                titleArea: { title: "Quikchat Message Visbility Demo", show: true, align: "left" },
+                instanceClass: 'chat-showcase'
             }
         );
+        window.chat = chat;
 
-        // Add some initial messages
-        chat.messageAddNew("You are an expert assistant on helping a user decide how to pick colors for a website.", "System", "center", "system", true, false);
-        chat.messageAddNew("Hello! Let's talk about website colors.", "Bot", "left");
-        chat.messageAddNew("Ask me anything about color schemes.", "Bot", "left");
+        // --- Initial State & Helper Functions ---
+        const statusDisplay = document.getElementById('status-display');
+        const msgIdInput = document.getElementById('msg-id-input');
+        const tagNameInput = document.getElementById('tag-name-input');
+        const newMsgContent = document.getElementById('new-msg-content');
+        const newMsgTags = document.getElementById('new-msg-tags');
 
-        let isUserTurn = true;
-        document.getElementById('add-visible').addEventListener('click', () => {
-            const content = quikchat.loremIpsum(50);
-            if(isUserTurn) {
-                chat.messageAddNew(content, 'User', 'right');
-                statusArea.textContent = 'Added a new message from User.';
-            } else {
-                chat.messageAddNew(content, 'Bot', 'left');
-                statusArea.textContent = 'Added a new message from Bot.';
-            }
-            isUserTurn = !isUserTurn;
-        });
+        const updateStatus = () => {
+            statusDisplay.textContent = chat._chatWidget.className;
+        };
 
-        document.getElementById('add-hidden').addEventListener('click', () => {
-            const content = `(System instruction: The user seems to prefer modern, minimalist designs.)`;
-            const msgId = chat.messageAddNew(content, 'System', 'center', 'system', true, false);
-            statusArea.textContent = `Added hidden message with ID: ${msgId}. It's in the history but not visible.`;
-        });
+        // --- Populate with initial messages ---
+        chat.messageAddNew("You are an expert assistant on color theory for web design.", "System Prompt", "center", "system", true, true, ["system"]);
+        chat.messageAddNew("Hi there! I need help picking a color palette.", "User", "right");
+        chat.messageAddNew("Of course! What's the purpose of your website?", "Bot", "left");
+        chat.messageAddNew("It's for a modern tech startup.", "User", "right");
+        chat.messageAddNew("Note to self: The user mentioned 'modern'. Suggest palettes with blues and greys.", "Internal Note", "center", "system", true, true, ["user-note"]);
+        chat.messageAddNew("Great! For a modern tech look, a palette of deep blues, cool greys, and a single bright accent color like electric green or orange works very well. Does that sound interesting?", "Bot", "left");
 
+        chat.messagesAreaAlternateColors(false); // Turn off alternating colors
+        updateStatus(); // Initial status
+
+        // --- Event Listeners for Control Panel ---
+
+        // Individual Message Control
         document.getElementById('toggle-visibility').addEventListener('click', () => {
-            const msgIdInput = document.getElementById('msg-id-input');
             const msgId = parseInt(msgIdInput.value);
-            if (isNaN(msgId)) {
-                statusArea.textContent = 'Error: Please enter a valid message ID.';
-                return;
-            }
-
             const isVisible = chat.messageGetVisibility(msgId);
-            const success = chat.messageSetVisibility(msgId, !isVisible);
-            if (success) {
-                statusArea.textContent = `Toggled visibility for message ID ${msgId} to ${!isVisible}.`;
-            } else {
-                statusArea.textContent = `Error: Message with ID ${msgId} not found.`;
-            }
+            chat.messageSetVisibility(msgId, !isVisible);
+        });
+        document.getElementById('show-message').addEventListener('click', () => {
+            chat.messageSetVisibility(parseInt(msgIdInput.value), true);
+        });
+        document.getElementById('hide-message').addEventListener('click', () => {
+            chat.messageSetVisibility(parseInt(msgIdInput.value), false);
         });
 
-        document.getElementById('show-all').addEventListener('click', () => {
-            const allHistory = chat.historyGetAllCopy();
-            let hiddenCount = 0;
-            allHistory.forEach(message => {
-                if (!message.visible) {
-                    chat.messageSetVisibility(message.msgid, true);
-                    hiddenCount++;
-                }
-            });
-            statusArea.textContent = `Made ${hiddenCount} hidden message(s) visible.`;
+        // Tagged Group Control
+        document.getElementById('show-group').addEventListener('click', () => {
+            chat.setTagVisibility(tagNameInput.value, true);
+            updateStatus();
+        });
+        document.getElementById('hide-group').addEventListener('click', () => {
+            chat.setTagVisibility(tagNameInput.value, false);
+            updateStatus();
+        });
+
+        // Add New Message
+        document.getElementById('add-message-btn').addEventListener('click', () => {
+            const content = newMsgContent.value;
+            const tags = newMsgTags.value.split(',').map(t => t.trim()).filter(Boolean);
+            chat.messageAddNew(content, 'User', 'right', 'user', true, true, tags);
+            newMsgContent.value = "Another new message.";
+            newMsgTags.value = "";
         });
 
     </script>

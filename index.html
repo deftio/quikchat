@@ -110,7 +110,7 @@ Any manual edits may be lost.
 <li>Responsive design for various screen sizes and resizes with parent container</li>
 <li>Hideable/Showable Title and Text Entry areas allows flexibility of usage</li>
 <li>Full message history storage and retrieval (save and resume full chats)</li>
-<li>History can be fed directly to OpenAI / Mistral / Ollama compatible APIs for context aware chats</li>
+<li>History can be fed directly to OpenAI / Anthropic / Mistral / Ollama / LMStudio / etc compatible APIs for context aware chats</li>
 <li>Available via NPM, CDN or source via github</li>
 <li>Provided in UMD and ESM formats (+ minified)</li>
 <li>Multiple separate instances can run on a single page</li>
@@ -207,9 +207,11 @@ chat.changeTheme(&quot;quikchat-theme-dark&quot;); // change theme on the fly (s
 <h2 id="theming">Theming</h2>
 <p>QuikChat allows theming using CSS of all the messages, and user area, and overal widget.</p>
 <p>Below is the prebuilt &#39;light&#39; theme.  To change the theme, make a new set of classes with different values but the same css selector naming (e.g. change &quot;quikchat-theme-light&quot; to &quot;my-theme&quot;) and save as a style.  Then pass the &quot;my-theme&quot; to the constructor or to the changeTheme() function.</p>
-<p>Themes can be changed at anytime by calling
-myChatWidget.changeTheme(newTheme) where myChatWidget is the instance of your widget. </p>
-<p>If several widgets are on the same page, each can have a separate theme.</p>
+<h4 id="instance-scoping">Instance Scoping</h4>
+<p>For multi-instance pages where you need different styling or visibility rules per chat, you can provide a custom <code>instanceClass</code> in the options object during initialization. This class will be added to the main chat widget, allowing for scoped CSS rules.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">const chat1 = new quikchat(&#39;#chat1&#39;, {}, { instanceClass: &#39;sales-chat&#39; });
+</code></pre>
 <pre><code class="language-css">/* quikchat theme light */
 .quikchat-theme-light {
   border: 1px solid #cccccc;
@@ -258,7 +260,15 @@ myChatWidget.changeTheme(newTheme) where myChatWidget is the instance of your wi
   border: none;
   border-radius: 4px;
 }
+
+/* In your custom stylesheet */
+.sales-chat .quikchat-tag-system {
+    display: none; /* Hide system messages only in sales-chat */
+}
 </code></pre>
+<p>Themes can be changed at anytime by calling
+myChatWidget.changeTheme(newTheme) where myChatWidget is the instance of your widget. </p>
+<p>If several widgets are on the same page, each can have a separate theme.</p>
 <h2 id="building-from-source">Building from Source</h2>
 <p>quikchat is built with <a href="https://rollupjs.org/">rollup.js</a>.</p>
 <p>Make sure to run npm install.  Then run npm run build.</p>
@@ -292,6 +302,7 @@ myChatWidget.changeTheme(newTheme) where myChatWidget is the instance of your wi
 <li><code>updatedtime</code> (string|boolean): An ISO string for the last update time, or <code>false</code>.</li>
 <li><code>scrollIntoView</code> (boolean): Whether to scroll to the message.</li>
 <li><code>visible</code> (boolean): If <code>false</code>, the message is added to the history but not displayed. Defaults to <code>true</code>.</li>
+<li><code>tags</code> (Array of strings): An optional array of strings to tag the message with (e.g., <code>[&#39;system&#39;, &#39;priority&#39;]</code>). These are converted to <code>quikchat-tag-*</code> CSS classes.</li>
 </ul>
 </li>
 </ul>
@@ -310,6 +321,20 @@ myChatWidget.changeTheme(newTheme) where myChatWidget is the instance of your wi
 <li><code>msgid</code> (number): The ID of the message to check.</li>
 <li>Returns <code>true</code> if the message is visible, <code>false</code> otherwise.</li>
 </ul>
+<h3 id="settagvisibilitytagname-isvisible"><code>setTagVisibility(tagName, isVisible)</code></h3>
+<p>Shows or hides all messages with a specific tag by adding/removing a <code>quikchat-show-tag-[tagName]</code> class on the main chat container.</p>
+<ul>
+<li><code>tagName</code> (string): The tag to target.</li>
+<li><code>isVisible</code> (boolean): <code>true</code> to show the message group, <code>false</code> to hide it.</li>
+</ul>
+<h3 id="gettagvisibilitytagname"><code>getTagVisibility(tagName)</code></h3>
+<p>Checks if a group of tagged messages is currently set to be visible.</p>
+<ul>
+<li><code>tagName</code> (string): The tag to check.</li>
+<li>Returns <code>true</code> if the corresponding <code>quikchat-show-tag-*</code> class is present on the container.</li>
+</ul>
+<h3 id="getactivetags"><code>getActiveTags()</code></h3>
+<p>Returns an array of all unique tags that have been added to messages in the current chat history.</p>
 <h3 id="messageremovelast"><code>messageRemoveLast()</code></h3>
 <p>Removes the most recently added message.</p>
 </body></html>

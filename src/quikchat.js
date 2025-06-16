@@ -12,7 +12,8 @@ class quikchat {
             messagesArea: { alternating: true },
             inputArea: { show: true },
             sendOnEnter: true,
-            sendOnShiftEnter: false
+            sendOnShiftEnter: false,
+            instanceClass: ''
         };
         const meta = { ...defaultOpts, ...options }; // merge options with defaults
 
@@ -24,6 +25,11 @@ class quikchat {
         this._theme = meta.theme;
         this._onSend = onSend ? onSend : () => { }; // call back function for onSend
         this._createWidget();
+
+        if (meta.instanceClass) {
+            this._chatWidget.classList.add(meta.instanceClass);
+        }
+
         // title area
         if (meta.titleArea) {
             this.titleAreaSetContents(meta.titleArea.title, meta.titleArea.align);
@@ -50,6 +56,7 @@ class quikchat {
         this.trackHistory = meta.trackHistory || true;
         this._historyLimit = 10000000;
         this._history = [];
+        this._activeTags = new Set();
 
         // send on enter / shift enter
         this.sendOnEnter = meta.sendOnEnter;
@@ -197,12 +204,22 @@ class quikchat {
         return this._messagesArea.classList.contains('quikchat-messages-area-alt');
     }
     // message functions
-    messageAddFull(input = { content: "", userString: "user", align: "right", role: "user", userID: -1, timestamp: false, updatedtime: false, scrollIntoView: true, visible: true }) {
+    messageAddFull(input = { content: "", userString: "user", align: "right", role: "user", userID: -1, timestamp: false, updatedtime: false, scrollIntoView: true, visible: true, tags: [] }) {
         const msgid = this.msgid;
         const messageDiv = document.createElement('div');
         const msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
         const userIdClass = 'quikchat-userid-' + String(input.userString).padStart(10, '0'); // hash this..
         messageDiv.classList.add('quikchat-message', msgidClass, 'quikchat-structure');
+
+        if (Array.isArray(input.tags)) {
+            input.tags.forEach(tag => {
+                if (typeof tag === 'string' && /^[a-zA-Z0-9-]+$/.test(tag)) {
+                    messageDiv.classList.add(`quikchat-tag-${tag}`);
+                    this._activeTags.add(tag);
+                }
+            });
+        }
+
         this.msgid++;
 
         const userDiv = document.createElement('div');
@@ -266,9 +283,9 @@ class quikchat {
     
 
 
-    messageAddNew(content = "", userString = "user", align = "right", role = "user", scrollIntoView = true, visible = true) {
+    messageAddNew(content = "", userString = "user", align = "right", role = "user", scrollIntoView = true, visible = true, tags = []) {
         let retvalue = this.messageAddFull(
-            { content: content, userString: userString, align: align, role: role, scrollIntoView: scrollIntoView, visible: visible }
+            { content: content, userString: userString, align: align, role: role, scrollIntoView: scrollIntoView, visible: visible, tags: tags }
         );
         // this.messageScrollToBottom();
         return retvalue;
@@ -529,6 +546,7 @@ class quikchat {
         this.msgid = 0;
         this._messagesArea.innerHTML = "";
         this._history = [];
+        this._activeTags.clear();
     }
 
     historyGetLength() {
@@ -586,7 +604,7 @@ class quikchat {
      * @returns {object} - Returns the version and license information for the library.
      */
     static version() {
-        return { "version": "1.1.13", "license": "BSD-2", "url": "https://github/deftio/quikchat", "fun": true };
+        return { "version": "1.1.14", "license": "BSD-2", "url": "https://github/deftio/quikchat", "fun": true };
     }
 
     /**
@@ -742,7 +760,30 @@ class quikchat {
         `;
       }
       
+    setTagVisibility(tagName, isVisible) {
+        if (typeof tagName !== 'string' || !/^[a-zA-Z0-9-]+$/.test(tagName)) {
+            return false;
+        }
+        const className = `quikchat-show-tag-${tagName}`;
+        if (isVisible) {
+            this._chatWidget.classList.add(className);
+        } else {
+            this._chatWidget.classList.remove(className);
+        }
+        this._updateMessageStyles();
+        return true;
+    }
 
+    getTagVisibility(tagName) {
+        if (typeof tagName !== 'string' || !/^[a-zA-Z0-9-]+$/.test(tagName)) {
+            return false;
+        }
+        return this._chatWidget.classList.contains(`quikchat-show-tag-${tagName}`);
+    }
+
+    getActiveTags() {
+        return Array.from(this._activeTags);
+    }
 }
 
 export default quikchat;

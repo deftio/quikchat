@@ -284,5 +284,69 @@ describe('quikchat', () => {
             expect(history[1].visible).toBe(false);
         });
     });
+
+    describe('Tagged Visibility', () => {
+        test('should apply instanceClass to the main widget', () => {
+            const chatWithClass = new quikchat(parentElement, () => {}, { instanceClass: 'my-test-class' });
+            expect(chatWithClass._chatWidget.classList.contains('my-test-class')).toBe(true);
+        });
+
+        test('should add tag classes to message elements', () => {
+            const msgId = chatInstance.messageAddNew('Tagged message', 'user', 'right', 'user', true, true, ['system', 'priority']);
+            const msgDom = chatInstance.messageGetDOMObject(msgId);
+            expect(msgDom.classList.contains('quikchat-tag-system')).toBe(true);
+            expect(msgDom.classList.contains('quikchat-tag-priority')).toBe(true);
+        });
+
+        test('should not add invalid tag names', () => {
+            const msgId = chatInstance.messageAddNew('Tagged message', 'user', 'right', 'user', true, true, ['system', 'invalid tag']);
+            const msgDom = chatInstance.messageGetDOMObject(msgId);
+            expect(msgDom.classList.contains('quikchat-tag-system')).toBe(true);
+            expect(msgDom.classList.contains('quikchat-tag-invalid tag')).toBe(false);
+        });
+
+        test('should get all active tags', () => {
+            chatInstance.messageAddNew('Tagged message', 'user', 'right', 'user', true, true, ['system', 'priority']);
+            chatInstance.messageAddNew('Another message', 'user', 'right', 'user', true, true, ['system', 'debug']);
+            expect(chatInstance.getActiveTags()).toEqual(expect.arrayContaining(['system', 'priority', 'debug']));
+            expect(chatInstance.getActiveTags().length).toBe(3);
+        });
+
+        test('should set and get tag visibility', () => {
+            chatInstance.setTagVisibility('system', true);
+            expect(chatInstance.getTagVisibility('system')).toBe(true);
+            expect(chatInstance._chatWidget.classList.contains('quikchat-show-tag-system')).toBe(true);
+
+            chatInstance.setTagVisibility('system', false);
+            expect(chatInstance.getTagVisibility('system')).toBe(false);
+            expect(chatInstance._chatWidget.classList.contains('quikchat-show-tag-system')).toBe(false);
+        });
+
+        test('should restore history with tags and rebuild active tag set', () => {
+            const history = [
+                { content: "msg1", tags: ['system'] },
+                { content: "msg2", tags: ['debug', 'priority'] }
+            ];
+            chatInstance.historyRestoreAll(history);
+            expect(chatInstance.historyGetLength()).toBe(2);
+            expect(chatInstance.getActiveTags()).toEqual(expect.arrayContaining(['system', 'debug', 'priority']));
+            const msgDom = chatInstance.messageGetDOMObject(1);
+            expect(msgDom.classList.contains('quikchat-tag-debug')).toBe(true);
+        });
+
+        test('individual visibility should override group visibility', () => {
+            // Note: This requires CSS to be set up correctly in a real environment.
+            // The test here only checks the JS behavior (inline style).
+            const msgId = chatInstance.messageAddNew('A message', 'user', 'right', 'user', true, true, ['system']);
+            
+            // Hide the group (in a real scenario, this would hide the message via CSS class)
+            chatInstance.setTagVisibility('system', false);
+
+            // Now, individually show the message
+            chatInstance.messageSetVisibility(msgId, true);
+            const msgDom = chatInstance.messageGetDOMObject(msgId);
+            expect(msgDom.style.display).not.toBe('none'); // It has an inline style to show it
+        });
+    });
     
 });

@@ -107,7 +107,8 @@ var quikchat = /*#__PURE__*/function () {
         show: true
       },
       sendOnEnter: true,
-      sendOnShiftEnter: false
+      sendOnShiftEnter: false,
+      instanceClass: ''
     };
     var meta = _objectSpread2(_objectSpread2({}, defaultOpts), options); // merge options with defaults
 
@@ -119,6 +120,10 @@ var quikchat = /*#__PURE__*/function () {
     this._theme = meta.theme;
     this._onSend = onSend ? onSend : function () {}; // call back function for onSend
     this._createWidget();
+    if (meta.instanceClass) {
+      this._chatWidget.classList.add(meta.instanceClass);
+    }
+
     // title area
     if (meta.titleArea) {
       this.titleAreaSetContents(meta.titleArea.title, meta.titleArea.align);
@@ -142,6 +147,7 @@ var quikchat = /*#__PURE__*/function () {
     this.trackHistory = meta.trackHistory || true;
     this._historyLimit = 10000000;
     this._history = [];
+    this._activeTags = new Set();
 
     // send on enter / shift enter
     this.sendOnEnter = meta.sendOnEnter;
@@ -319,6 +325,7 @@ var quikchat = /*#__PURE__*/function () {
   }, {
     key: "messageAddFull",
     value: function messageAddFull() {
+      var _this2 = this;
       var input = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
         content: "",
         userString: "user",
@@ -328,13 +335,22 @@ var quikchat = /*#__PURE__*/function () {
         timestamp: false,
         updatedtime: false,
         scrollIntoView: true,
-        visible: true
+        visible: true,
+        tags: []
       };
       var msgid = this.msgid;
       var messageDiv = document.createElement('div');
       var msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
       'quikchat-userid-' + String(input.userString).padStart(10, '0'); // hash this..
       messageDiv.classList.add('quikchat-message', msgidClass, 'quikchat-structure');
+      if (Array.isArray(input.tags)) {
+        input.tags.forEach(function (tag) {
+          if (typeof tag === 'string' && /^[a-zA-Z0-9-]+$/.test(tag)) {
+            messageDiv.classList.add("quikchat-tag-".concat(tag));
+            _this2._activeTags.add(tag);
+          }
+        });
+      }
       this.msgid++;
       var userDiv = document.createElement('div');
       userDiv.innerHTML = input.userString;
@@ -402,13 +418,15 @@ var quikchat = /*#__PURE__*/function () {
       var role = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "user";
       var scrollIntoView = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
       var visible = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
+      var tags = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : [];
       var retvalue = this.messageAddFull({
         content: content,
         userString: userString,
         align: align,
         role: role,
         scrollIntoView: scrollIntoView,
-        visible: visible
+        visible: visible,
+        tags: tags
       });
       // this.messageScrollToBottom();
       return retvalue;
@@ -693,6 +711,7 @@ var quikchat = /*#__PURE__*/function () {
       this.msgid = 0;
       this._messagesArea.innerHTML = "";
       this._history = [];
+      this._activeTags.clear();
     }
   }, {
     key: "historyGetLength",
@@ -717,7 +736,7 @@ var quikchat = /*#__PURE__*/function () {
   }, {
     key: "historyRestoreAll",
     value: function historyRestoreAll(messageList) {
-      var _this2 = this;
+      var _this3 = this;
       // clear all messages and history
       this.historyClear();
 
@@ -726,7 +745,7 @@ var quikchat = /*#__PURE__*/function () {
 
       // add all messages
       messageList.forEach(function (message) {
-        _this2.messageAddFull(message);
+        _this3.messageAddFull(message);
       });
     }
     /**
@@ -755,11 +774,39 @@ var quikchat = /*#__PURE__*/function () {
      * 
      * @returns {object} - Returns the version and license information for the library.
      */
+  }, {
+    key: "setTagVisibility",
+    value: function setTagVisibility(tagName, isVisible) {
+      if (typeof tagName !== 'string' || !/^[a-zA-Z0-9-]+$/.test(tagName)) {
+        return false;
+      }
+      var className = "quikchat-show-tag-".concat(tagName);
+      if (isVisible) {
+        this._chatWidget.classList.add(className);
+      } else {
+        this._chatWidget.classList.remove(className);
+      }
+      this._updateMessageStyles();
+      return true;
+    }
+  }, {
+    key: "getTagVisibility",
+    value: function getTagVisibility(tagName) {
+      if (typeof tagName !== 'string' || !/^[a-zA-Z0-9-]+$/.test(tagName)) {
+        return false;
+      }
+      return this._chatWidget.classList.contains("quikchat-show-tag-".concat(tagName));
+    }
+  }, {
+    key: "getActiveTags",
+    value: function getActiveTags() {
+      return Array.from(this._activeTags);
+    }
   }], [{
     key: "version",
     value: function version() {
       return {
-        "version": "1.1.13",
+        "version": "1.1.14",
         "license": "BSD-2",
         "url": "https://github/deftio/quikchat",
         "fun": true

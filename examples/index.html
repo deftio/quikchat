@@ -51,6 +51,26 @@
         <p>These examples demonstrate how to use QuikChat in your projects. Included are basic themes for light, dark,
             and debugging.</p>
 
+        <!-- Documentation Links -->
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin: 2rem 0; border-left: 4px solid #007bff;">
+            <h2 style="margin-top: 0;">📚 Documentation</h2>
+            <p><strong>Complete guides and references for QuikChat:</strong></p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <div>
+                    <a href="../API-REFERENCE.md" style="font-weight: 600; color: #007bff;">📖 API Reference</a>
+                    <p style="margin: 0.5rem 0; font-size: 0.9rem; color: #666;">Complete technical reference for all methods and options</p>
+                </div>
+                <div>
+                    <a href="../DEVELOPER-GUIDE.md" style="font-weight: 600; color: #007bff;">🛠 Developer Guide</a>
+                    <p style="margin: 0.5rem 0; font-size: 0.9rem; color: #666;">Practical recipes for theming, LLM integration, and frameworks</p>
+                </div>
+                <div>
+                    <a href="../README.md" style="font-weight: 600; color: #007bff;">🚀 Quick Start</a>
+                    <p style="margin: 0.5rem 0; font-size: 0.9rem; color: #666;">Installation, features, and getting started guide</p>
+                </div>
+            </div>
+        </div>
+
         <h2>Basic Usage as Module</h2>
         <p>This example demonstrates how to create a basic chat widget with QuikChatJS using ESM module import</p>
         <a href="./example_esm.html">View Example ESM</a>
@@ -67,8 +87,8 @@
         <p>This demo shows saving and restore of full chat message history.  Useful for apps where the history needs to be restored from a previous session.</p>
         <a href="./historyDemo.html">View Example History Demo</a>
 
-        <h2>Message Visibility Demo</h2>
-        <p>This demo shows how to use the message visibility feature to add messages to the history without displaying them, and how to toggle their visibility. This is useful for system prompts in LLM applications.</p>
+        <h2>Message Visibility Demo (v1.1.13+)</h2>
+        <p>This demo shows how to use the message visibility feature to add messages to the history without displaying them, and how to toggle their visibility. <strong>New in v1.1.14:</strong> Includes tagged visibility system for group-based message control.</p>
         <a href="./hidden_message.html">View Message Visibility Demo</a>
 
         <h2>Simple Ollama</h2>
@@ -112,6 +132,29 @@
             responses to user prompts. The example uses the Express server to generate responses to user prompts.</p>
             **Note: This example requires the Express server to be running locally and doesn't run on the github pages.**
         <a href="./npm_express/index.html">View Example Express Instructions</a>
+
+        <!-- Additional Resources -->
+        <div style="background: #e8f5e8; padding: 1.5rem; border-radius: 8px; margin: 2rem 0; border-left: 4px solid #28a745;">
+            <h2 style="margin-top: 0;">🔗 Additional Resources</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div>
+                    <a href="https://github.com/deftio/quikchat" style="font-weight: 600; color: #28a745;">GitHub Repository</a>
+                    <p style="margin: 0.5rem 0; font-size: 0.9rem; color: #666;">Source code, issues, and contributions</p>
+                </div>
+                <div>
+                    <a href="https://www.npmjs.com/package/quikchat" style="font-weight: 600; color: #28a745;">NPM Package</a>
+                    <p style="margin: 0.5rem 0; font-size: 0.9rem; color: #666;">Install via npm or view package info</p>
+                </div>
+                <div>
+                    <a href="https://medium.com/gitconnected/quikchat-4be8d4a849e5" style="font-weight: 600; color: #28a745;">Medium Article</a>
+                    <p style="margin: 0.5rem 0; font-size: 0.9rem; color: #666;">In-depth tutorial and use cases</p>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 2rem 0; padding: 1rem; background: #fff3cd; border-radius: 8px;">
+            <p style="margin: 0; color: #856404;"><strong>💡 Need Help?</strong> Check out the <a href="../DEVELOPER-GUIDE.md" style="color: #856404;">Developer Guide</a> for detailed tutorials and best practices, or the <a href="../API-REFERENCE.md" style="color: #856404;">API Reference</a> for complete method documentation.</p>
+        </div>
     </div>
 </body>
 

@@ -101,240 +101,308 @@ Any manual edits may be lost.
 <body class="bw-def-page-setup bw-font-sans-serif dbat" ><br><br><p><a href="https://opensource.org/licenses/BSD-2-Clause"><img src="https://img.shields.io/badge/License-BSD%202--Clause-blue.svg" alt="License"></a>
 <a href="https://www.npmjs.com/package/quikchat"><img src="https://img.shields.io/npm/v/quikchat.svg?style=flat-square" alt="NPM version"></a>
 <img src="https://github.com/deftio/quikchat/actions/workflows/ci.yml/badge.svg" alt="CI"></p>
-<h1 id="quikchat-js">QuikChat (js)</h1>
-<p>Quikchat is a vanilla (no dependancies) JavaScript chat control that can be easily integrated into web applications. It provides a customizable chat interface with support for hiding and showing a title area and the input area.</p>
-<p><a href="https://medium.com/gitconnected/quikchat-4be8d4a849e5?sk=ac745ae60a3521a9fbca6b748d4da48a">Article on Using Quickchat</a></p>
-<h2 id="features">Features</h2>
+<h1 id="quikchat">QuikChat</h1>
+<blockquote>
+<p>Zero-dependency JavaScript chat widget for modern web applications</p>
+</blockquote>
+<p>QuikChat is a lightweight, highly customizable chat interface that integrates seamlessly with any web project. Built with vanilla JavaScript, it provides powerful features for LLM applications, real-time chat, and interactive messaging experiences.</p>
+<p><strong>🚀 <a href="https://deftio.github.io/quikchat/examples/example_umd.html">Live Demo</a> | 📚 <a href="API-REFERENCE.md">API Reference</a> | 🛠 <a href="DEVELOPER-GUIDE.md">Developer Guide</a></strong></p>
+<hr>
+<h2 id="✨-key-features">✨ Key Features</h2>
 <ul>
-<li>Themeable with CSS (examples for light and dark)</li>
-<li>Responsive design for various screen sizes and resizes with parent container</li>
-<li>Hideable/Showable Title and Text Entry areas allows flexibility of usage</li>
-<li>Full message history storage and retrieval (save and resume full chats)</li>
-<li>History can be fed directly to OpenAI / Anthropic / Mistral / Ollama / LMStudio / etc compatible APIs for context aware chats</li>
-<li>Available via NPM, CDN or source via github</li>
-<li>Provided in UMD and ESM formats (+ minified)</li>
-<li>Multiple separate instances can run on a single page</li>
-<li>Multiple users can be in a chat</li>
-<li>Messages can be searched, appended to (streamed token completion), replaced, or removed.</li>
-<li>Left / Right / Center support of individual users</li>
-<li>Callback for all message events (to monitor chat)</li>
-<li>Example backends for Python FastApi and Nodejs (see examples for working full projects)</li>
+<li><strong>🚫 Zero Dependencies</strong> - Pure vanilla JavaScript, no frameworks required</li>
+<li><strong>🎨 Fully Customizable</strong> - Complete CSS theming system with multi-instance support</li>
+<li><strong>🤖 LLM Ready</strong> - Built-in support for OpenAI, Anthropic, Ollama, and streaming responses</li>
+<li><strong>📱 Responsive Design</strong> - Adapts to any screen size and container dimensions</li>
+<li><strong>⚡ High Performance</strong> - Efficient message handling and memory management</li>
+<li><strong>👁 Advanced Visibility</strong> - Individual and group-based message control (v1.1.13+)</li>
+<li><strong>🏷 Tagged Messages</strong> - Powerful tagging system for message organization (v1.1.14+)</li>
+<li><strong>💾 Full History Control</strong> - Save, load, and restore complete chat sessions</li>
+<li><strong>🔧 Developer Friendly</strong> - TypeScript-ready with comprehensive API</li>
 </ul>
-<h2 id="demo--examples">Demo &amp; Examples</h2>
-<p><a href="https://deftio.github.io/quikchat/examples/example_umd.html">Simple Demo</a></p>
-<p><a href="https://deftio.github.io/quikchat/examples/index.html">List of Examples on Github</a></p>
-<p>Full Examples are in the repo examples folder (relative link): 
-<a href="./examples/index.html">Example Code and Demo</a>.</p>
-<p>Examples include using ESM, UMD modules, theming, running multiple chats on the same page, and integration with LLM providers such as Ollama, LMStudio, OpenAI compatible providers.</p>
-<h2 id="installation">Installation</h2>
-<p>To use quikchat in your project, follow these steps:</p>
-<p>Include the quikchat.js JavaScript file in your project.
-Link the quikchat.css stylesheet to style the chat interface.
-html</p>
-<pre><code class="language-html">&lt;script src=&quot;./path/to/quikchat.umd.min.js&quot;&gt;&lt;/script&gt;
-&lt;link rel=&quot;stylesheet&quot; href=&quot;./path/to/quikchat.css&quot;&gt;
+<hr>
+<h2 id="🚀-quick-start">🚀 Quick Start</h2>
+<p>Get a working chat interface in under 60 seconds:</p>
+<h3 id="via-cdn">Via CDN</h3>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://unpkg.com/quikchat/dist/quikchat.css&quot;&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id=&quot;chat&quot; style=&quot;width: 100%; height: 400px;&quot;&gt;&lt;/div&gt;
+    
+    &lt;script src=&quot;https://unpkg.com/quikchat&quot;&gt;&lt;/script&gt;
+    &lt;script&gt;
+        const chat = new quikchat(&#39;#chat&#39;, (instance, message) =&gt; {
+            // Echo user message
+            instance.messageAddNew(message, &#39;You&#39;, &#39;right&#39;);
+            
+            // Add bot response
+            setTimeout(() =&gt; {
+                instance.messageAddNew(&#39;Thanks for your message!&#39;, &#39;Bot&#39;, &#39;left&#39;);
+            }, 1000);
+        });
+        
+        // Add welcome message
+        chat.messageAddNew(&#39;Hello! How can I help you today?&#39;, &#39;Bot&#39;, &#39;left&#39;);
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
 </code></pre>
-<h3 id="use-quikchat-via-cdn">use quikchat Via CDN</h3>
-<pre><code class="language-html">&lt;script src=&quot;https://unpkg.com/quikchat&quot;&gt;&lt;/script&gt;
-&lt;link rel=&quot;stylesheet&quot; href=&quot;https://unpkg.com/quikchat/dist/quikchat.css&quot; /&gt;
+<h3 id="via-npm">Via NPM</h3>
+<pre><code class="language-bash">npm install quikchat
 </code></pre>
-<p>Or import as a module:</p>
-<pre><code class="language-javascript">import quikchat from &#39;../dist/quikchat.esm.min.js&#39;;
+<pre><code class="language-javascript">import quikchat from &#39;quikchat&#39;;
+import &#39;quikchat/dist/quikchat.css&#39;;
 
-document.addEventListener(&#39;DOMContentLoaded&#39;, () =&gt; {
-    const parentDiv = document.querySelector(&#39;#chatContainerInstance&#39;);
-    window.chatBox = new quikchat(parentDiv, 
-    (chat, msg) =&gt; {
-        chat.messageAddNew(msg, &#39;me&#39;, &#39;right&#39;); // echo the message to the chat area
-
-        // example of a bot response using the built-in lorem ipsum generator
-        const botResponse = quikchat.loremIpsum();
-        chat.messageAddNew(botResponse, &#39;bot&#39;, &#39;left&#39;);
-    },
-    { // options
-        theme: &#39;quikchat-theme-light&#39;,
-        titleArea: { title: &#39;QuikChatJS&#39;, align: &#39;left&#39;, show: true },
-    });
-    chatBox.messageAddNew(&#39;Hello, how are you?&#39;, &#39;bot&#39;, &#39;left&#39;);
-    chatBox.messageAddNew(&#39;I am fine, thank you.&#39;, &#39;user&#39;, &#39;right&#39;);
-    chatBox.messageAddNew(&#39;How can I help you today?&#39;, &#39;bot&#39;, &#39;left&#39;);
-    chatBox.changeTheme(&quot;quikchat-theme-light&quot;);
-    console.log(&quot;quikchat version: &quot;+quikchat.version().version);
-
+const chat = new quikchat(&#39;#chat-container&#39;, (instance, message) =&gt; {
+    // Your message handling logic
+    console.log(&#39;User said:&#39;, message);
 });
 </code></pre>
-<p>Create a container element in your HTML where you want the chat interface to appear.  The quikchat widget will take 100% of the paretn container height and width.  If the parent container width or height is not specified the quikchat widget may grow as content is added.  If the parent container is resized, quikchat will resize with the parent container.</p>
-<pre><code class="language-html">&lt;style&gt;
-#chat-container {width: 100%; height: 50vh;}  /* use any width / height as appropriate for your app */
-&lt;/style&gt;
-&lt;div id=&quot;chat-container&quot;&gt;&lt;/div&gt;
+<hr>
+<h2 id="📦-installation-options">📦 Installation Options</h2>
+<h3 id="npm-package">NPM Package</h3>
+<pre><code class="language-bash">npm install quikchat
 </code></pre>
-<p>Initialize quikchat in your JavaScript code by providing the container element and a callback function for message events:</p>
-<p>See /examples for full working code.</p>
-<pre><code class="language-javascript">chat = new quikchat(
-      &quot;#chat-container&quot;,//a css selector such as &quot;#chat-container&quot; or DOM element
-      (chat, msg) =&gt; { // this callback triggered when user hits the Send
-            // messages are not automatically echoed.
-            // this allows filtering of the message before posting.
-            chat.messageAddNew(msg, &#39;me&#39;, &#39;right&#39;); // echo msg to chat area 
-            // now call an LLM or do other actions with msg
-            // ... callLLM(msg) ... do other logic if needed.
-            // or callLLM(chat.historyGet());  // pass full history (can also filter)
-      },
-      {
-        theme: &#39;quikchat-theme-light&#39;, // set theme, see quikchat.css
-        titleArea: { title: &#39;My Chat&#39;, align: &#39;left&#39;, show: true }, // internal title area if desired
-      });
+<h3 id="cdn-latest-version">CDN (Latest Version)</h3>
+<pre><code class="language-html">&lt;!-- CSS --&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://unpkg.com/quikchat/dist/quikchat.css&quot;&gt;
 
-// Add a message at any point not just from callback
-chat.messageAddNew(&#39;Hello!&#39;, &#39;You&#39;, &#39;left&#39;);    //  should appear left justified
-chat.messageAddNew(&#39;Hello!&#39;, &#39;Me&#39;, &#39;right&#39;);  //  should appear  right justified
-
-
-//... other logic
-let messageHistory = chat.historyGet(); // get all the messages (see docs for filters)
-console.log(messageHistory); // do something with messages
-
-// show / hide the title area
-chat.titleAreaHide();  // hides the title area for a bare chat
-
-// hide the input area
-chat.inputAreaHide(); // hides the input area so chat is now just a message stream.
-
-// change themes at any time
-chat.changeTheme(&quot;quikchat-theme-dark&quot;); // change theme on the fly (see quikchat.css for examples)
+&lt;!-- JavaScript --&gt;
+&lt;script src=&quot;https://unpkg.com/quikchat&quot;&gt;&lt;/script&gt;
 </code></pre>
-<h2 id="theming">Theming</h2>
-<p>QuikChat allows theming using CSS of all the messages, and user area, and overal widget.</p>
-<p>Below is the prebuilt &#39;light&#39; theme.  To change the theme, make a new set of classes with different values but the same css selector naming (e.g. change &quot;quikchat-theme-light&quot; to &quot;my-theme&quot;) and save as a style.  Then pass the &quot;my-theme&quot; to the constructor or to the changeTheme() function.</p>
-<h4 id="instance-scoping">Instance Scoping</h4>
-<p>For multi-instance pages where you need different styling or visibility rules per chat, you can provide a custom <code>instanceClass</code> in the options object during initialization. This class will be added to the main chat widget, allowing for scoped CSS rules.</p>
-<p><strong>Example:</strong></p>
-<pre><code class="language-javascript">const chat1 = new quikchat(&#39;#chat1&#39;, {}, { instanceClass: &#39;sales-chat&#39; });
+<h3 id="direct-download">Direct Download</h3>
+<p>Download the latest release from <a href="https://github.com/deftio/quikchat/releases">GitHub Releases</a></p>
+<hr>
+<h2 id="🆕-whats-new-in-v1114">🆕 What&#39;s New in v1.1.14</h2>
+<h3 id="🏷-tagged-message-system">🏷 Tagged Message System</h3>
+<p>Group and control message visibility with powerful tagging:</p>
+<pre><code class="language-javascript">// Add messages with tags
+chat.messageAddNew(&#39;System initialized&#39;, &#39;System&#39;, &#39;center&#39;, &#39;system&#39;, true, true, [&#39;system&#39;, &#39;startup&#39;]);
+
+// Control visibility by tag
+chat.setTagVisibility(&#39;system&#39;, false); // Hide all system messages
+chat.setTagVisibility(&#39;system&#39;, true);  // Show all system messages
+
+// Get active tags
+const tags = chat.getActiveTags(); // [&#39;system&#39;, &#39;startup&#39;, &#39;user&#39;]
 </code></pre>
-<pre><code class="language-css">/* quikchat theme light */
-.quikchat-theme-light {
-  border: 1px solid #cccccc;
-  border-radius: 10px;
-  background-color: #f9f9f9;
-}
-  
-.quikchat-theme-light .quikchat-title-area {
-  padding: 8px;
-  color: #333;
-}
-  
-.quikchat-theme-light .quikchat-messages-area {
-  background-color: #ffffffe2;
-  color: #333;
-}
- 
-/* support for alternating row styles */
-.quikchat-theme-light .quikchat-messages-area-alt .quikchat-message:nth-child(odd) {
-    background-color: #fffffff0;
-    color: #005662;
-}
-.quikchat-theme-light .quikchat-messages-area-alt .quikchat-message:nth-child(even) {
-    background-color: #eeeeeee9;
-    color: #353535;
+<h3 id="🎯-instance-scoping">🎯 Instance Scoping</h3>
+<p>Multiple chat instances with different styling and behavior:</p>
+<pre><code class="language-javascript">const salesChat = new quikchat(&#39;#sales&#39;, handler, {
+    theme: &#39;quikchat-theme-light&#39;,
+    instanceClass: &#39;sales-chat&#39;
+});
+
+const supportChat = new quikchat(&#39;#support&#39;, handler, {
+    theme: &#39;quikchat-theme-dark&#39;,
+    instanceClass: &#39;support-chat&#39;
+});
+</code></pre>
+<h3 id="👁-enhanced-visibility-controls-v1113">👁 Enhanced Visibility Controls (v1.1.13+)</h3>
+<p>Fine-grained control over message display:</p>
+<pre><code class="language-javascript">// Hide individual messages
+chat.messageSetVisibility(messageId, false);
+
+// Check visibility status
+const isVisible = chat.messageGetVisibility(messageId);
+</code></pre>
+<p><strong><a href="https://github.com/deftio/quikchat/releases">View Complete Changelog</a></strong></p>
+<hr>
+<h2 id="🎨-theming--customization">🎨 Theming &amp; Customization</h2>
+<p>QuikChat includes beautiful built-in themes and supports complete customization:</p>
+<pre><code class="language-javascript">// Use built-in themes
+const chat = new quikchat(&#39;#chat&#39;, handler, {
+    theme: &#39;quikchat-theme-dark&#39; // or &#39;quikchat-theme-light&#39;
+});
+
+// Switch themes dynamically
+chat.changeTheme(&#39;quikchat-theme-light&#39;);
+</code></pre>
+<h3 id="custom-themes">Custom Themes</h3>
+<p>Create your own themes with CSS:</p>
+<pre><code class="language-css">.my-custom-theme {
+    border: 2px solid #3b82f6;
+    border-radius: 12px;
+    font-family: &#39;SF Pro Display&#39;, sans-serif;
 }
 
-/* input area / text entry / send button */
-.quikchat-theme-light .quikchat-input-area {
-  background-color: #f9f9f9;
-  border-bottom-left-radius : 10px;
-  border-bottom-right-radius : 10px;
+.my-custom-theme .quikchat-message-content {
+    border-radius: 18px;
+    padding: 12px 16px;
 }
 
-.quikchat-theme-light .quikchat-input-textbox {
-  background-color: #ffffff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
-  color: #333;
-}
-  
-.quikchat-theme-light .quikchat-input-send-btn {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-}
-
-/* In your custom stylesheet */
-.sales-chat .quikchat-tag-system {
-    display: none; /* Hide system messages only in sales-chat */
+/* Apply to chat */
+const chat = new quikchat(&#39;#chat&#39;, handler, {
+    theme: &#39;my-custom-theme&#39;
+});
+</code></pre>
+<p><strong>📖 <a href="DEVELOPER-GUIDE.md#theming-guide">Complete Theming Guide</a></strong></p>
+<hr>
+<h2 id="🤖-llm-integration-examples">🤖 LLM Integration Examples</h2>
+<h3 id="openai-integration">OpenAI Integration</h3>
+<pre><code class="language-javascript">async function handleMessage(chat, message) {
+    chat.messageAddNew(message, &#39;You&#39;, &#39;right&#39;);
+    
+    const response = await fetch(&#39;https://api.openai.com/v1/chat/completions&#39;, {
+        method: &#39;POST&#39;,
+        headers: {
+            &#39;Authorization&#39;: `Bearer ${API_KEY}`,
+            &#39;Content-Type&#39;: &#39;application/json&#39;
+        },
+        body: JSON.stringify({
+            model: &#39;gpt-4&#39;,
+            messages: formatChatHistory(chat.historyGetAllCopy(), message)
+        })
+    });
+    
+    const data = await response.json();
+    chat.messageAddNew(data.choices[0].message.content, &#39;Assistant&#39;, &#39;left&#39;);
 }
 </code></pre>
-<p>Themes can be changed at anytime by calling
-myChatWidget.changeTheme(newTheme) where myChatWidget is the instance of your widget. </p>
-<p>If several widgets are on the same page, each can have a separate theme.</p>
-<h2 id="building-from-source">Building from Source</h2>
-<p>quikchat is built with <a href="https://rollupjs.org/">rollup.js</a>.</p>
-<p>Make sure to run npm install.  Then run npm run build.</p>
-<p>Note that at run time quikchat has no dependancies, but at build time several tools are used for packing and minifying code.</p>
-<h2 id="testing">Testing</h2>
-<p>quikchat is tested with the jest framwork.  To run unit tests and see coverage run:</p>
-<pre><code class="language-bash">npm run test
+<h3 id="streaming-responses">Streaming Responses</h3>
+<pre><code class="language-javascript">// Create message for streaming
+const botMsgId = chat.messageAddNew(&#39;&#39;, &#39;Bot&#39;, &#39;left&#39;);
+
+// Append content as it arrives
+streamingAPI.onChunk(chunk =&gt; {
+    chat.messageAppendContent(botMsgId, chunk);
+});
 </code></pre>
-<h2 id="license">License</h2>
-<p>quikchat is licensed under the BSD-2 License.</p>
-<h2 id="home-page">Home Page</h2>
-<p><a href="https://github.com/deftio/quikchat">quikchat homepage and source code</a></p>
-<h2 id="new-features">New Features</h2>
-<ul>
-<li><code>role</code> (string): The role of the message sender (e.g., &quot;user&quot;, &quot;agent&quot;). Defaults to &quot;user&quot;.</li>
-<li><code>scrollIntoView</code> (boolean): If true, the chat will scroll to the bottom after the message is added. Defaults to true.</li>
-</ul>
-<p><strong>Example:</strong></p>
-<pre><code class="language-javascript">myChat.messageAddNew(&quot;Hello world!&quot;, &quot;Alice&quot;, &quot;left&quot;, &quot;user&quot;);
+<p><strong>🛠 <a href="DEVELOPER-GUIDE.md#llm-integration-best-practices">Complete LLM Integration Guide</a></strong></p>
+<hr>
+<h2 id="🏗-framework-integration">🏗 Framework Integration</h2>
+<h3 id="react">React</h3>
+<pre><code class="language-jsx">function ChatComponent() {
+    const chatRef = useRef(null);
+    const instanceRef = useRef(null);
+    
+    useEffect(() =&gt; {
+        instanceRef.current = new quikchat(chatRef.current, handleMessage);
+    }, []);
+    
+    return &lt;div ref={chatRef} style={{ height: &#39;400px&#39; }} /&gt;;
+}
 </code></pre>
-<h3 id="messageaddfullinput"><code>messageAddFull(input)</code></h3>
-<p>Adds a new message with a comprehensive set of options.</p>
+<h3 id="vue">Vue</h3>
+<pre><code class="language-vue">&lt;template&gt;
+    &lt;div ref=&quot;chatContainer&quot; class=&quot;chat-container&quot;&gt;&lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+import quikchat from &#39;quikchat&#39;;
+
+export default {
+    mounted() {
+        this.chat = new quikchat(this.$refs.chatContainer, this.handleMessage);
+    }
+}
+&lt;/script&gt;
+</code></pre>
+<p><strong>⚛️ <a href="DEVELOPER-GUIDE.md#frontend-framework-integration">Framework Integration Examples</a></strong></p>
+<hr>
+<h2 id="📖-documentation">📖 Documentation</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><a href="API-REFERENCE.md">API Reference</a></strong></td>
+<td>Complete technical reference for all methods and options</td>
+</tr>
+<tr>
+<td><strong><a href="DEVELOPER-GUIDE.md">Developer Guide</a></strong></td>
+<td>Practical recipes and advanced patterns</td>
+</tr>
+<tr>
+<td><strong><a href="examples/">Examples</a></strong></td>
+<td>Working code examples and demos</td>
+</tr>
+<tr>
+<td><strong><a href="https://deftio.github.io/quikchat/examples/">Live Demo</a></strong></td>
+<td>Interactive examples and showcase</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🌟-examples--demos">🌟 Examples &amp; Demos</h2>
 <ul>
-<li><code>input</code> (object): An object containing message properties:<ul>
-<li><code>content</code> (string): The HTML content of the message.</li>
-<li><code>userString</code> (string): The name to display for the user.</li>
-<li><code>align</code> (string): <code>left</code>, <code>right</code>, or <code>center</code>.</li>
-<li><code>role</code> (string): The role of the sender.</li>
-<li><code>userID</code> (number): A numeric ID for the user.</li>
-<li><code>timestamp</code> (string|boolean): An ISO string for the timestamp, or <code>false</code>.</li>
-<li><code>updatedtime</code> (string|boolean): An ISO string for the last update time, or <code>false</code>.</li>
-<li><code>scrollIntoView</code> (boolean): Whether to scroll to the message.</li>
-<li><code>visible</code> (boolean): If <code>false</code>, the message is added to the history but not displayed. Defaults to <code>true</code>.</li>
-<li><code>tags</code> (Array of strings): An optional array of strings to tag the message with (e.g., <code>[&#39;system&#39;, &#39;priority&#39;]</code>). These are converted to <code>quikchat-tag-*</code> CSS classes.</li>
+<li><strong><a href="https://deftio.github.io/quikchat/examples/example_umd.html">Basic Chat</a></strong> - Simple chat interface</li>
+<li><strong><a href="examples/openai.html">LLM Integration</a></strong> - OpenAI GPT integration</li>
+<li><strong><a href="examples/dual-chatrooms.html">Multi-Instance</a></strong> - Multiple chats on one page</li>
+<li><strong><a href="examples/hidden_message.html">Visibility Controls</a></strong> - Message visibility features</li>
+<li><strong><a href="https://deftio.github.io/quikchat/examples/">Theme Showcase</a></strong> - Light and dark themes</li>
+<li><strong><a href="examples/quikchat-react.html">React Integration</a></strong> - React component example</li>
+<li><strong><a href="examples/">Backend Examples</a></strong> - FastAPI and Node.js backends</li>
 </ul>
-</li>
-</ul>
-<h3 id="messageremovemsgid"><code>messageRemove(msgid)</code></h3>
-<p>Removes a message from the chat by its ID.</p>
-<h3 id="messagesetvisibilitymsgid-isvisible"><code>messageSetVisibility(msgid, isVisible)</code></h3>
-<p>Sets the visibility of a message that is already in the chat.</p>
+<p><strong>📂 <a href="examples/index.html">Browse All Examples</a></strong></p>
+<hr>
+<h2 id="🚀-performance">🚀 Performance</h2>
+<p>QuikChat is built for production use with excellent performance characteristics:</p>
 <ul>
-<li><code>msgid</code> (number): The ID of the message to modify.</li>
-<li><code>isVisible</code> (boolean): <code>true</code> to show the message, <code>false</code> to hide it.</li>
+<li><strong>Lightweight</strong>: ~25KB minified + gzipped</li>
+<li><strong>Fast</strong>: Sub-millisecond message rendering</li>
+<li><strong>Scalable</strong>: Handles thousands of messages efficiently</li>
+<li><strong>Memory Efficient</strong>: Automatic cleanup and optimization</li>
 </ul>
-<p>This is useful for hiding system prompts or for moderation.</p>
-<h3 id="messagegetvisibilitymsgid"><code>messageGetVisibility(msgid)</code></h3>
-<p>Checks if a message is currently visible.</p>
+<p><strong>📊 <a href="DEVELOPER-GUIDE.md#performance-optimization">Performance Optimization Guide</a></strong></p>
+<hr>
+<h2 id="🛠-building-from-source">🛠 Building from Source</h2>
+<pre><code class="language-bash"># Clone repository
+git clone https://github.com/deftio/quikchat.git
+cd quikchat
+
+# Install dependencies
+npm install
+
+# Build for production
+npm run build
+
+# Run tests
+npm test
+
+# Start development server
+npm run dev
+</code></pre>
+<p><strong>Requirements</strong>: Node.js 14+ and npm 6+</p>
+<hr>
+<h2 id="🤝-contributing">🤝 Contributing</h2>
+<p>We welcome contributions! Here&#39;s how you can help:</p>
+<ol>
+<li><strong>🐛 Report Issues</strong> - Found a bug? <a href="https://github.com/deftio/quikchat/issues">Open an issue</a></li>
+<li><strong>💡 Feature Requests</strong> - Have an idea? We&#39;d love to hear it</li>
+<li><strong>🔧 Code Contributions</strong> - Submit pull requests for bug fixes or new features</li>
+<li><strong>📖 Documentation</strong> - Help improve our guides and examples</li>
+<li><strong>🌟 Share Examples</strong> - Show us what you&#39;ve built with QuikChat</li>
+</ol>
+<h3 id="development-setup">Development Setup</h3>
+<pre><code class="language-bash">git clone https://github.com/deftio/quikchat.git
+cd quikchat
+npm install
+npm run dev
+</code></pre>
+<p><strong>📋 <a href="CONTRIBUTING.md">Contributing Guidelines</a></strong></p>
+<hr>
+<h2 id="📄-license">📄 License</h2>
+<p>QuikChat is licensed under the <a href="LICENSE.txt">BSD-2-Clause License</a>.</p>
+<p><strong>Free for commercial and personal use</strong> - No attribution required (but appreciated!)</p>
+<hr>
+<h2 id="🔗-links">🔗 Links</h2>
 <ul>
-<li><code>msgid</code> (number): The ID of the message to check.</li>
-<li>Returns <code>true</code> if the message is visible, <code>false</code> otherwise.</li>
+<li><strong>📦 <a href="https://www.npmjs.com/package/quikchat">NPM Package</a></strong></li>
+<li><strong>🐙 <a href="https://github.com/deftio/quikchat">GitHub Repository</a></strong></li>
+<li><strong>🚀 <a href="https://deftio.github.io/quikchat/examples/">Live Examples</a></strong></li>
+<li><strong>📖 <a href="https://medium.com/gitconnected/quikchat-4be8d4a849e5">Medium Article</a></strong></li>
+<li><strong>💬 <a href="https://github.com/deftio/quikchat/issues">Issues &amp; Support</a></strong></li>
 </ul>
-<h3 id="settagvisibilitytagname-isvisible"><code>setTagVisibility(tagName, isVisible)</code></h3>
-<p>Shows or hides all messages with a specific tag by adding/removing a <code>quikchat-show-tag-[tagName]</code> class on the main chat container.</p>
-<ul>
-<li><code>tagName</code> (string): The tag to target.</li>
-<li><code>isVisible</code> (boolean): <code>true</code> to show the message group, <code>false</code> to hide it.</li>
-</ul>
-<h3 id="gettagvisibilitytagname"><code>getTagVisibility(tagName)</code></h3>
-<p>Checks if a group of tagged messages is currently set to be visible.</p>
-<ul>
-<li><code>tagName</code> (string): The tag to check.</li>
-<li>Returns <code>true</code> if the corresponding <code>quikchat-show-tag-*</code> class is present on the container.</li>
-</ul>
-<h3 id="getactivetags"><code>getActiveTags()</code></h3>
-<p>Returns an array of all unique tags that have been added to messages in the current chat history.</p>
-<h3 id="messageremovelast"><code>messageRemoveLast()</code></h3>
-<p>Removes the most recently added message.</p>
+<hr>
+<h2 id="⭐-star-history">⭐ Star History</h2>
+<p>If QuikChat helps your project, please consider giving it a star on GitHub!</p>
+<p><a href="https://star-history.com/#deftio/quikchat&Timeline"><img src="https://api.star-history.com/svg?repos=deftio/quikchat&type=Timeline" alt="Star History Chart"></a></p>
+<hr>
+<p><strong>Made with ❤️ by <a href="https://github.com/deftio">deftio</a> | Built for the modern web</strong></p>
 </body></html>

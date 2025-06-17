@@ -10,7 +10,7 @@ QuikChat is a lightweight, highly customizable chat interface that integrates se
 
 **🚀 [Live Demo](https://deftio.github.io/quikchat/examples/example_umd.html) | 📚 [API Reference](API-REFERENCE.md) | 🛠 [Developer Guide](DEVELOPER-GUIDE.md)**
 
----
+
 
 ## ✨ Key Features
 
@@ -24,7 +24,7 @@ QuikChat is a lightweight, highly customizable chat interface that integrates se
 - **💾 Full History Control** - Save, load, and restore complete chat sessions
 - **🔧 Developer Friendly** - TypeScript-ready with comprehensive API
 
----
+
 
 ## 🚀 Quick Start
 
@@ -74,7 +74,7 @@ const chat = new quikchat('#chat-container', (instance, message) => {
 });
 ```
 
----
+
 
 ## 📦 Installation Options
 
@@ -95,7 +95,7 @@ npm install quikchat
 ### Direct Download
 Download the latest release from [GitHub Releases](https://github.com/deftio/quikchat/releases)
 
----
+
 
 ## 🆕 What's New in v1.1.14
 
@@ -142,7 +142,7 @@ const isVisible = chat.messageGetVisibility(messageId);
 
 **[View Complete Changelog](https://github.com/deftio/quikchat/releases)**
 
----
+
 
 ## 🎨 Theming & Customization
 
@@ -181,7 +181,7 @@ const chat = new quikchat('#chat', handler, {
 
 **📖 [Complete Theming Guide](DEVELOPER-GUIDE.md#theming-guide)**
 
----
+
 
 ## 🤖 LLM Integration Examples
 
@@ -220,7 +220,7 @@ streamingAPI.onChunk(chunk => {
 
 **🛠 [Complete LLM Integration Guide](DEVELOPER-GUIDE.md#llm-integration-best-practices)**
 
----
+
 
 ## 🏗 Framework Integration
 
@@ -257,18 +257,18 @@ export default {
 
 **⚛️ [Framework Integration Examples](DEVELOPER-GUIDE.md#frontend-framework-integration)**
 
----
+
 
 ## 📖 Documentation
 
 | Document | Description |
-|----------|-------------|
+|-|-|
 | **[API Reference](API-REFERENCE.md)** | Complete technical reference for all methods and options |
 | **[Developer Guide](DEVELOPER-GUIDE.md)** | Practical recipes and advanced patterns |
 | **[Examples](examples/)** | Working code examples and demos |
 | **[Live Demo](https://deftio.github.io/quikchat/examples/)** | Interactive examples and showcase |
 
----
+
 
 ## 🌟 Examples & Demos
 
@@ -282,7 +282,7 @@ export default {
 
 **📂 [Browse All Examples](examples/index.html)**
 
----
+
 
 ## 🚀 Performance
 
@@ -295,7 +295,7 @@ QuikChat is built for production use with excellent performance characteristics:
 
 **📊 [Performance Optimization Guide](DEVELOPER-GUIDE.md#performance-optimization)**
 
----
+
 
 ## 🛠 Building from Source
 
@@ -319,7 +319,7 @@ npm run dev
 
 **Requirements**: Node.js 14+ and npm 6+
 
----
+
 
 ## 🤝 Contributing
 
@@ -341,15 +341,13 @@ npm run dev
 
 **📋 [Contributing Guidelines](CONTRIBUTING.md)**
 
----
+
 
 ## 📄 License
 
 QuikChat is licensed under the [BSD-2-Clause License](LICENSE.txt).
 
-**Free for commercial and personal use** - No attribution required (but appreciated!)
 
----
 
 ## 🔗 Links
 
@@ -359,14 +357,3 @@ QuikChat is licensed under the [BSD-2-Clause License](LICENSE.txt).
 - **📖 [Medium Article](https://medium.com/gitconnected/quikchat-4be8d4a849e5)**
 - **💬 [Issues & Support](https://github.com/deftio/quikchat/issues)**
 
----
-
-## ⭐ Star History
-
-If QuikChat helps your project, please consider giving it a star on GitHub!
-
-[![Star History Chart](https://api.star-history.com/svg?repos=deftio/quikchat&type=Timeline)](https://star-history.com/#deftio/quikchat&Timeline)
-
----
-
-**Made with ❤️ by [deftio](https://github.com/deftio) | Built for the modern web**

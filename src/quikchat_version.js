@@ -2,7 +2,7 @@
 // This file is automatically updated by tools/updateVersion.js
 
 export const quikchatVersion = {
-    version: "1.1.15-dev4",
+    version: "1.1.15",
     license: "BSD-2",
     url: "https://github/deftio/quikchat",
     fun: true

@@ -1,6 +1,6 @@
 # Release Notes
 
-## 1.1.15 (In Development)
+## 1.1.15 (2025-08-10)
 
 ### New Features
 
@@ -30,8 +30,11 @@
 
 ### Developer Experience
 - Improved test coverage with 57 total tests  
-- Comprehensive documentation updates
-- Better TypeScript compatibility preparation
+- **Added comprehensive JSDoc documentation** to all public methods
+- **TypeScript definitions** (`dist/quikchat.d.ts`) for full TypeScript support
+- **API documentation generation** via `npm run docs:api`
+- IDE intellisense support through JSDoc comments
+- Better error messages and debugging information
 
 ### Documentation Infrastructure
 - **Replaced outdated `docbat` with modern `marked` markdown parser**

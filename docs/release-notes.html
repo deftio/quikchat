@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Release Notes - QuikChat Documentation</title>
+    <link rel="stylesheet" href="https://unpkg.com/github-markdown-css@5/github-markdown.css">
+    <link rel="stylesheet" href="https://unpkg.com/prismjs@1/themes/prism.css">
+    <style>
+        body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        @media (max-width: 767px) {
+            body { padding: 15px; }
+        }
+        /* Ensure emojis display properly */
+        .markdown-body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+        }
+        /* Code block styling */
+        pre {
+            background-color: #f6f8fa;
+            border-radius: 6px;
+            padding: 16px;
+            overflow: auto;
+        }
+        code {
+            background-color: rgba(175, 184, 193, 0.2);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 85%;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        /* Table styling */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 16px;
+            margin-bottom: 16px;
+        }
+        table th, table td {
+            border: 1px solid #d0d7de;
+            padding: 6px 13px;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+    </style>
+    <script src="https://unpkg.com/prismjs@1/components/prism-core.min.js"></script>
+    <script src="https://unpkg.com/prismjs@1/plugins/autoloader/prism-autoloader.min.js"></script>
+</head>
+<body>
+    <article class="markdown-body">
+        <h1>Release Notes</h1>
+<h2>1.1.15 (In Development)</h2>
+<h3>New Features</h3>
+<h4>Smart Scroll Behavior</h4>
+<ul>
+<li><strong>Fixed GitHub Issue #1</strong>: Messages no longer force scroll to bottom when users are reading earlier messages</li>
+<li>Added <code>&#39;smart&#39;</code> scroll mode - only scrolls if user is near bottom of chat</li>
+<li><code>scrollIntoView</code> parameter now accepts:<ul>
+<li><code>true</code> - Always scroll to new message</li>
+<li><code>false</code> - Never scroll automatically  </li>
+<li><code>&#39;smart&#39;</code> - Only scroll if user is near bottom (new!)</li>
+</ul>
+</li>
+</ul>
+<h4>Enhanced Callbacks for Message Modifications</h4>
+<ul>
+<li><code>setCallbackonMessageAppend()</code> - Fired when content is appended to a message (useful for streaming)</li>
+<li><code>setCallbackonMessageReplace()</code> - Fired when message content is replaced</li>
+<li><code>setCallbackonMessageDelete()</code> - Fired when a message is deleted</li>
+</ul>
+<h4>History API Improvements</h4>
+<ul>
+<li><strong><code>historyGetPage()</code></strong> - Paginated history retrieval with ascending/descending order support</li>
+<li><strong><code>historySearch()</code></strong> - Search messages by text, user, role, or tags</li>
+<li><strong><code>historyGetInfo()</code></strong> - Get metadata about history size, memory usage, and pagination</li>
+<li>Memory optimizations for better performance with 1000+ messages</li>
+<li>Efficient handling of large chat histories without loading everything at once</li>
+</ul>
+<h3>Bug Fixes</h3>
+<ul>
+<li>Fixed auto-scroll disrupting users reading earlier messages</li>
+<li>Removed unnecessary scroll triggers from append/replace operations</li>
+</ul>
+<h3>Developer Experience</h3>
+<ul>
+<li>Improved test coverage with 48 total tests</li>
+<li>Comprehensive documentation updates</li>
+<li>Better TypeScript compatibility preparation</li>
+</ul>
+<h3>Breaking Changes</h3>
+<ul>
+<li>None - all changes are backward compatible</li>
+</ul>
+<h2>1.1.14</h2>
+<p>Add tagged visibility<br>updated readme, api-docs, and quickstart</p>
+<h2>1.1.12</h2>
+<ul>
+<li>added temp message generator</li>
+</ul>
+<h2>1.1.7</h2>
+<ul>
+<li>added get/restore full message history including timestamps</li>
+<li>updated messageAddFull to accept timestamp setting for history restore</li>
+<li>added /examples/historyDemo.html</li>
+</ul>
+<h2>1.1.6</h2>
+<ul>
+<li>added show/hide input on construction</li>
+<li>added more test coverage (approx 87%)</li>
+</ul>
+<h2>1.1.5</h2>
+<ul>
+<li>added  examples for nodejs and python backends including streaming</li>
+</ul>
+<h2>1.1.4</h2>
+<ul>
+<li>added  travisci build support</li>
+</ul>
+<h2>1.1.3</h2>
+<ul>
+<li>added onMessageNew callback</li>
+<li>minified css (/dist/quikchat.min.css)</li>
+<li>moved all border-radius to themes</li>
+<li>updated docs / index.html</li>
+<li>updated readme generator from npx to /node-modules (still using docbat)</li>
+<li>add ci via github actions</li>
+<li>added build passing badge based on github actions</li>
+</ul>
+<h2>1.1.2</h2>
+<ul>
+<li>updated styles and docs</li>
+<li>add jest test suite</li>
+<li>add npm and version badges in readme</li>
+<li>added fixes in github pages for demos</li>
+</ul>
+<h2>1.1.1</h2>
+<ul>
+<li>move callback from {meta} to 2nd param of constructor</li>
+<li>add loremIpsum Generator</li>
+<li>addedfix alternate light and dark to use css nth-child, added messagesAreaAlternateColors()</li>
+</ul>
+<h2>1.0.4</h2>
+<ul>
+<li><p>make robust the add/remove/update message (harden id scheme for messages)</p>
+</li>
+<li><p>example ChatGPT</p>
+</li>
+<li><p>add center div styling (addMessage(content, user, center))</p>
+</li>
+<li><p>CSS: add functions for light, dark, debug styles to be built-in</p>
+</li>
+</ul>
+
+    </article>
+    <script>
+        // Syntax highlighting
+        if (typeof Prism !== 'undefined') {
+            Prism.highlightAll();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,2083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEVELOPER GUIDE - QuikChat Documentation</title>
+    <link rel="stylesheet" href="https://unpkg.com/github-markdown-css@5/github-markdown.css">
+    <link rel="stylesheet" href="https://unpkg.com/prismjs@1/themes/prism.css">
+    <style>
+        body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        @media (max-width: 767px) {
+            body { padding: 15px; }
+        }
+        /* Ensure emojis display properly */
+        .markdown-body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+        }
+        /* Code block styling */
+        pre {
+            background-color: #f6f8fa;
+            border-radius: 6px;
+            padding: 16px;
+            overflow: auto;
+        }
+        code {
+            background-color: rgba(175, 184, 193, 0.2);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 85%;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        /* Table styling */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 16px;
+            margin-bottom: 16px;
+        }
+        table th, table td {
+            border: 1px solid #d0d7de;
+            padding: 6px 13px;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+    </style>
+    <script src="https://unpkg.com/prismjs@1/components/prism-core.min.js"></script>
+    <script src="https://unpkg.com/prismjs@1/plugins/autoloader/prism-autoloader.min.js"></script>
+</head>
+<body>
+    <article class="markdown-body">
+        <h1>QuikChat Developer Guide</h1>
+<p>Practical recipes and patterns for building chat applications with QuikChat.</p>
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#theming-guide">Theming Guide</a></li>
+<li><a href="#frontend-framework-integration">Frontend Framework Integration</a></li>
+<li><a href="#llm-integration-best-practices">LLM Integration Best Practices</a></li>
+<li><a href="#advanced-history-management">Advanced History Management</a></li>
+<li><a href="#mastering-visibility-controls">Mastering Visibility Controls</a></li>
+<li><a href="#performance-optimization">Performance Optimization</a></li>
+</ol>
+<hr>
+<h2>Getting Started</h2>
+<h3>Basic Setup</h3>
+<p>QuikChat works in any environment that supports modern JavaScript. Here are common setup patterns:</p>
+<h4>Vanilla HTML</h4>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://unpkg.com/quikchat/dist/quikchat.css&quot;&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id=&quot;chat&quot; style=&quot;width: 100%; height: 400px;&quot;&gt;&lt;/div&gt;
+    
+    &lt;script src=&quot;https://unpkg.com/quikchat&quot;&gt;&lt;/script&gt;
+    &lt;script&gt;
+        const chat = new quikchat(&#39;#chat&#39;, (instance, message) =&gt; {
+            // Echo user message
+            instance.messageAddNew(message, &#39;You&#39;, &#39;right&#39;);
+            
+            // Simple bot response
+            setTimeout(() =&gt; {
+                instance.messageAddNew(&#39;I received: &#39; + message, &#39;Bot&#39;, &#39;left&#39;);
+            }, 1000);
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<h4>ES6 Modules</h4>
+<pre><code class="language-javascript">import quikchat from &#39;quikchat&#39;;
+import &#39;quikchat/dist/quikchat.css&#39;;
+
+const chat = new quikchat(&#39;#chat-container&#39;, handleMessage);
+
+function handleMessage(instance, message) {
+    instance.messageAddNew(message, &#39;User&#39;, &#39;right&#39;);
+    // Your logic here
+}
+</code></pre>
+<h4>CommonJS (Node.js/Webpack)</h4>
+<pre><code class="language-javascript">const quikchat = require(&#39;quikchat&#39;);
+require(&#39;quikchat/dist/quikchat.css&#39;);
+
+const chat = new quikchat(&#39;#chat-container&#39;, handleMessage);
+</code></pre>
+<h3>Common Pitfalls &amp; Solutions</h3>
+<h4>Container Sizing Issue</h4>
+<pre><code class="language-css">/* ❌ Problem: Chat doesn&#39;t appear */
+#chat-container {
+    /* No explicit dimensions */
+}
+
+/* ✅ Solution: Always set container dimensions */
+#chat-container {
+    width: 100%;
+    height: 400px; /* or use vh units for viewport height */
+}
+</code></pre>
+<h4>Event Handler Memory Leaks</h4>
+<pre><code class="language-javascript">// ❌ Problem: Creating new handlers on each render
+function BadComponent() {
+    const chat = new quikchat(&#39;#chat&#39;, (instance, msg) =&gt; {
+        // This creates a new closure each time
+        someFunction(msg);
+    });
+}
+
+// ✅ Solution: Define handler once
+function GoodComponent() {
+    const handleMessage = useCallback((instance, msg) =&gt; {
+        someFunction(msg);
+    }, []);
+    
+    const chat = new quikchat(&#39;#chat&#39;, handleMessage);
+}
+</code></pre>
+<h4>Multiple Initialization</h4>
+<pre><code class="language-javascript">// ❌ Problem: Initializing chat multiple times
+let chat;
+function initChat() {
+    chat = new quikchat(&#39;#chat&#39;, handler); // Overwrites previous instance
+}
+
+// ✅ Solution: Check for existing instance
+let chat;
+function initChat() {
+    if (!chat) {
+        chat = new quikchat(&#39;#chat&#39;, handler);
+    }
+    return chat;
+}
+</code></pre>
+<hr>
+<h2>Theming Guide</h2>
+<h3>Understanding the CSS Architecture</h3>
+<p>QuikChat uses a layered CSS system:</p>
+<ol>
+<li><strong>Base Structure</strong> (<code>.quikchat-base</code>) - Layout and positioning</li>
+<li><strong>Theme Layer</strong> (<code>.quikchat-theme-*</code>) - Colors, fonts, spacing</li>
+<li><strong>Component Classes</strong> - Specific elements like messages, inputs</li>
+<li><strong>State Classes</strong> - Dynamic states and variations</li>
+</ol>
+<h3>Creating a Custom Theme</h3>
+<h4>Step 1: Define Your Theme Class</h4>
+<pre><code class="language-css">/* custom-theme.css */
+.my-custom-theme {
+  border: 2px solid #2563eb;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  font-family: &#39;SF Pro Display&#39;, -apple-system, sans-serif;
+}
+</code></pre>
+<h4>Step 2: Style the Components</h4>
+<pre><code class="language-css">/* Title Area */
+.my-custom-theme .quikchat-title-area {
+  background: #2563eb;
+  color: white;
+  padding: 16px;
+  font-weight: 600;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+/* Messages Area */
+.my-custom-theme .quikchat-messages-area {
+  background: #ffffff;
+  padding: 16px;
+}
+
+/* Individual Messages */
+.my-custom-theme .quikchat-message {
+  margin-bottom: 12px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.my-custom-theme .quikchat-message-content {
+  padding: 12px 16px;
+  border-radius: 18px;
+  max-width: 70%;
+}
+
+/* Left-aligned messages (other users) */
+.my-custom-theme .left-singleline .quikchat-message-content,
+.my-custom-theme .left-multiline .quikchat-message-content {
+  background: #f3f4f6;
+  color: #1f2937;
+  margin-right: auto;
+}
+
+/* Right-aligned messages (current user) */
+.my-custom-theme .right-singleline .quikchat-message-content,
+.my-custom-theme .right-multiline .quikchat-message-content {
+  background: #2563eb;
+  color: white;
+  margin-left: auto;
+}
+
+/* Input Area */
+.my-custom-theme .quikchat-input-area {
+  background: #f9fafb;
+  padding: 16px;
+  border-top: 1px solid #e5e7eb;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.my-custom-theme .quikchat-input-textbox {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.my-custom-theme .quikchat-input-textbox:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.my-custom-theme .quikchat-input-send-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.my-custom-theme .quikchat-input-send-btn:hover {
+  background: #1d4ed8;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</code></pre>
+<h4>Step 3: Apply Your Theme</h4>
+<pre><code class="language-javascript">const chat = new quikchat(&#39;#chat&#39;, handler, {
+    theme: &#39;my-custom-theme&#39;
+});
+
+// Or change theme dynamically
+chat.changeTheme(&#39;my-custom-theme&#39;);
+</code></pre>
+<h3>Multi-Instance Theming with <code>instanceClass</code></h3>
+<p>For different themes on the same page:</p>
+<pre><code class="language-javascript">// Sales chat with professional theme
+const salesChat = new quikchat(&#39;#sales-chat&#39;, handleSales, {
+    theme: &#39;quikchat-theme-light&#39;,
+    instanceClass: &#39;sales-instance&#39;
+});
+
+// Support chat with friendly theme
+const supportChat = new quikchat(&#39;#support-chat&#39;, handleSupport, {
+    theme: &#39;quikchat-theme-dark&#39;, 
+    instanceClass: &#39;support-instance&#39;
+});
+</code></pre>
+<pre><code class="language-css">/* Scope styles to specific instances */
+.sales-instance {
+    border-color: #059669; /* Green for sales */
+}
+
+.support-instance {
+    border-color: #dc2626; /* Red for support */
+}
+
+/* Override specific elements per instance */
+.sales-instance .quikchat-input-send-btn {
+    background: #059669;
+}
+
+.support-instance .quikchat-input-send-btn {
+    background: #dc2626;
+}
+</code></pre>
+<h3>Responsive Design Patterns</h3>
+<pre><code class="language-css">/* Mobile-first responsive design */
+.my-custom-theme {
+    /* Base mobile styles */
+}
+
+@media (min-width: 768px) {
+    .my-custom-theme .quikchat-message-content {
+        max-width: 60%; /* Narrower on desktop */
+    }
+    
+    .my-custom-theme .quikchat-input-area {
+        display: flex;
+        gap: 12px;
+    }
+    
+    .my-custom-theme .quikchat-input-textbox {
+        flex: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .my-custom-theme .quikchat-message-content {
+        max-width: 85%; /* Wider on small screens */
+        font-size: 14px;
+    }
+}
+</code></pre>
+<hr>
+<h2>Frontend Framework Integration</h2>
+<h3>React Integration</h3>
+<h4>Basic React Component</h4>
+<pre><code class="language-jsx">import React, { useRef, useEffect, useCallback } from &#39;react&#39;;
+import quikchat from &#39;quikchat&#39;;
+import &#39;quikchat/dist/quikchat.css&#39;;
+
+function ChatWidget({ onMessage, messages = [] }) {
+    const chatRef = useRef(null);
+    const instanceRef = useRef(null);
+    
+    const handleMessage = useCallback((instance, message) =&gt; {
+        if (onMessage) {
+            onMessage(message);
+        }
+    }, [onMessage]);
+    
+    useEffect(() =&gt; {
+        if (chatRef.current &amp;&amp; !instanceRef.current) {
+            instanceRef.current = new quikchat(
+                chatRef.current,
+                handleMessage,
+                {
+                    theme: &#39;quikchat-theme-light&#39;,
+                    titleArea: { title: &#39;Chat&#39;, show: true }
+                }
+            );
+        }
+        
+        return () =&gt; {
+            // Cleanup if needed
+            instanceRef.current = null;
+        };
+    }, [handleMessage]);
+    
+    // Add external messages to chat
+    useEffect(() =&gt; {
+        if (instanceRef.current &amp;&amp; messages.length &gt; 0) {
+            const lastMessage = messages[messages.length - 1];
+            instanceRef.current.messageAddNew(
+                lastMessage.content,
+                lastMessage.user,
+                lastMessage.align || &#39;left&#39;
+            );
+        }
+    }, [messages]);
+    
+    return (
+        &lt;div 
+            ref={chatRef} 
+            style={{ width: &#39;100%&#39;, height: &#39;400px&#39; }}
+        /&gt;
+    );
+}
+
+// Usage
+function App() {
+    const [botMessages, setBotMessages] = useState([]);
+    
+    const handleUserMessage = async (message) =&gt; {
+        // Send to your API
+        const response = await fetch(&#39;/api/chat&#39;, {
+            method: &#39;POST&#39;,
+            body: JSON.stringify({ message }),
+            headers: { &#39;Content-Type&#39;: &#39;application/json&#39; }
+        });
+        
+        const data = await response.json();
+        
+        setBotMessages(prev =&gt; [...prev, {
+            content: data.response,
+            user: &#39;Assistant&#39;,
+            align: &#39;left&#39;
+        }]);
+    };
+    
+    return (
+        &lt;ChatWidget 
+            onMessage={handleUserMessage}
+            messages={botMessages}
+        /&gt;
+    );
+}
+</code></pre>
+<h4>Advanced React Hook</h4>
+<pre><code class="language-jsx">import { useRef, useEffect, useCallback, useState } from &#39;react&#39;;
+
+function useQuikChat(containerId, options = {}) {
+    const instanceRef = useRef(null);
+    const [isReady, setIsReady] = useState(false);
+    
+    const sendMessage = useCallback((content, user = &#39;Bot&#39;, align = &#39;left&#39;) =&gt; {
+        if (instanceRef.current) {
+            return instanceRef.current.messageAddNew(content, user, align);
+        }
+    }, []);
+    
+    const clearChat = useCallback(() =&gt; {
+        if (instanceRef.current) {
+            instanceRef.current.historyClear();
+        }
+    }, []);
+    
+    const setVisibility = useCallback((msgId, visible) =&gt; {
+        if (instanceRef.current) {
+            return instanceRef.current.messageSetVisibility(msgId, visible);
+        }
+    }, []);
+    
+    useEffect(() =&gt; {
+        const container = document.getElementById(containerId);
+        if (container &amp;&amp; !instanceRef.current) {
+            instanceRef.current = new quikchat(
+                container,
+                options.onMessage || (() =&gt; {}),
+                options
+            );
+            setIsReady(true);
+        }
+        
+        return () =&gt; {
+            instanceRef.current = null;
+            setIsReady(false);
+        };
+    }, [containerId, options]);
+    
+    return {
+        instance: instanceRef.current,
+        isReady,
+        sendMessage,
+        clearChat,
+        setVisibility
+    };
+}
+
+// Usage
+function ChatComponent() {
+    const { sendMessage, clearChat, isReady } = useQuikChat(&#39;my-chat&#39;, {
+        theme: &#39;quikchat-theme-dark&#39;,
+        onMessage: (instance, msg) =&gt; {
+            // Handle user messages
+            console.log(&#39;User said:&#39;, msg);
+        }
+    });
+    
+    return (
+        &lt;div&gt;
+            &lt;div id=&quot;my-chat&quot; style={{ height: &#39;400px&#39; }} /&gt;
+            {isReady &amp;&amp; (
+                &lt;div&gt;
+                    &lt;button onClick={() =&gt; sendMessage(&#39;Hello!&#39;)}&gt;
+                        Send Test Message
+                    &lt;/button&gt;
+                    &lt;button onClick={clearChat}&gt;
+                        Clear Chat
+                    &lt;/button&gt;
+                &lt;/div&gt;
+            )}
+        &lt;/div&gt;
+    );
+}
+</code></pre>
+<h3>Vue Integration</h3>
+<pre><code class="language-vue">&lt;template&gt;
+  &lt;div&gt;
+    &lt;div ref=&quot;chatContainer&quot; class=&quot;chat-container&quot;&gt;&lt;/div&gt;
+    &lt;div v-if=&quot;chatReady&quot; class=&quot;controls&quot;&gt;
+      &lt;button @click=&quot;addTestMessage&quot;&gt;Add Test Message&lt;/button&gt;
+      &lt;button @click=&quot;clearChat&quot;&gt;Clear Chat&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script&gt;
+import { ref, onMounted, onUnmounted } from &#39;vue&#39;;
+import quikchat from &#39;quikchat&#39;;
+import &#39;quikchat/dist/quikchat.css&#39;;
+
+export default {
+  name: &#39;QuikChatComponent&#39;,
+  props: {
+    theme: {
+      type: String,
+      default: &#39;quikchat-theme-light&#39;
+    }
+  },
+  emits: [&#39;message&#39;],
+  setup(props, { emit }) {
+    const chatContainer = ref(null);
+    const chatInstance = ref(null);
+    const chatReady = ref(false);
+    
+    const handleMessage = (instance, message) =&gt; {
+      emit(&#39;message&#39;, { instance, message });
+    };
+    
+    const addTestMessage = () =&gt; {
+      if (chatInstance.value) {
+        chatInstance.value.messageAddNew(
+          &#39;Test message from Vue!&#39;,
+          &#39;System&#39;,
+          &#39;center&#39;
+        );
+      }
+    };
+    
+    const clearChat = () =&gt; {
+      if (chatInstance.value) {
+        chatInstance.value.historyClear();
+      }
+    };
+    
+    onMounted(() =&gt; {
+      if (chatContainer.value) {
+        chatInstance.value = new quikchat(
+          chatContainer.value,
+          handleMessage,
+          {
+            theme: props.theme,
+            titleArea: { title: &#39;Vue Chat&#39;, show: true }
+          }
+        );
+        chatReady.value = true;
+      }
+    });
+    
+    onUnmounted(() =&gt; {
+      chatInstance.value = null;
+      chatReady.value = false;
+    });
+    
+    return {
+      chatContainer,
+      chatReady,
+      addTestMessage,
+      clearChat
+    };
+  }
+};
+&lt;/script&gt;
+
+&lt;style scoped&gt;
+.chat-container {
+  width: 100%;
+  height: 400px;
+}
+
+.controls {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+&lt;/style&gt;
+</code></pre>
+<h3>Svelte Integration</h3>
+<pre><code class="language-svelte">&lt;script&gt;
+  import { onMount, onDestroy } from &#39;svelte&#39;;
+  import quikchat from &#39;quikchat&#39;;
+  import &#39;quikchat/dist/quikchat.css&#39;;
+  
+  export let theme = &#39;quikchat-theme-light&#39;;
+  export let title = &#39;Svelte Chat&#39;;
+  
+  let chatContainer;
+  let chatInstance;
+  let isReady = false;
+  
+  function handleMessage(instance, message) {
+    console.log(&#39;Message from user:&#39;, message);
+    
+    // Echo message
+    instance.messageAddNew(message, &#39;You&#39;, &#39;right&#39;);
+    
+    // Simple bot response
+    setTimeout(() =&gt; {
+      instance.messageAddNew(
+        `You said: &quot;${message}&quot;`,
+        &#39;Bot&#39;,
+        &#39;left&#39;
+      );
+    }, 1000);
+  }
+  
+  function addSystemMessage() {
+    if (chatInstance) {
+      chatInstance.messageAddNew(
+        &#39;System message from Svelte&#39;,
+        &#39;System&#39;,
+        &#39;center&#39;
+      );
+    }
+  }
+  
+  onMount(() =&gt; {
+    if (chatContainer) {
+      chatInstance = new quikchat(
+        chatContainer,
+        handleMessage,
+        {
+          theme,
+          titleArea: { title, show: true }
+        }
+      );
+      isReady = true;
+    }
+  });
+  
+  onDestroy(() =&gt; {
+    chatInstance = null;
+    isReady = false;
+  });
+&lt;/script&gt;
+
+&lt;div class=&quot;chat-wrapper&quot;&gt;
+  &lt;div bind:this={chatContainer} class=&quot;chat-container&quot;&gt;&lt;/div&gt;
+  
+  {#if isReady}
+    &lt;div class=&quot;controls&quot;&gt;
+      &lt;button on:click={addSystemMessage}&gt;
+        Add System Message
+      &lt;/button&gt;
+    &lt;/div&gt;
+  {/if}
+&lt;/div&gt;
+
+&lt;style&gt;
+  .chat-container {
+    width: 100%;
+    height: 400px;
+  }
+  
+  .controls {
+    margin-top: 10px;
+  }
+&lt;/style&gt;
+</code></pre>
+<hr>
+<h2>LLM Integration Best Practices</h2>
+<h3>OpenAI Integration</h3>
+<pre><code class="language-javascript">class OpenAIChat {
+    constructor(apiKey, chatContainer) {
+        this.apiKey = apiKey;
+        this.chat = new quikchat(chatContainer, this.handleUserMessage.bind(this), {
+            theme: &#39;quikchat-theme-light&#39;,
+            titleArea: { title: &#39;AI Assistant&#39;, show: true }
+        });
+        
+        // Add welcome message
+        this.chat.messageAddNew(
+            &#39;Hello! I\&#39;m your AI assistant. How can I help you today?&#39;,
+            &#39;Assistant&#39;,
+            &#39;left&#39;
+        );
+    }
+    
+    async handleUserMessage(instance, message) {
+        // Show user message
+        instance.messageAddNew(message, &#39;You&#39;, &#39;right&#39;);
+        
+        // Show typing indicator
+        const typingId = instance.messageAddNew(&#39;...&#39;, &#39;Assistant&#39;, &#39;left&#39;);
+        
+        try {
+            // Prepare conversation history
+            const history = this.formatHistoryForOpenAI();
+            
+            const response = await fetch(&#39;https://api.openai.com/v1/chat/completions&#39;, {
+                method: &#39;POST&#39;,
+                headers: {
+                    &#39;Authorization&#39;: `Bearer ${this.apiKey}`,
+                    &#39;Content-Type&#39;: &#39;application/json&#39;
+                },
+                body: JSON.stringify({
+                    model: &#39;gpt-4&#39;,
+                    messages: [
+                        {
+                            role: &#39;system&#39;,
+                            content: &#39;You are a helpful assistant.&#39;
+                        },
+                        ...history,
+                        {
+                            role: &#39;user&#39;,
+                            content: message
+                        }
+                    ],
+                    stream: true
+                })
+            });
+            
+            // Remove typing indicator
+            instance.messageRemove(typingId);
+            
+            // Handle streaming response
+            await this.handleStreamingResponse(response, instance);
+            
+        } catch (error) {
+            console.error(&#39;OpenAI API error:&#39;, error);
+            instance.messageReplaceContent(typingId, 
+                &#39;Sorry, I encountered an error. Please try again.&#39;);
+        }
+    }
+    
+    formatHistoryForOpenAI() {
+        const history = this.chat.historyGetAllCopy();
+        
+        return history
+            .filter(msg =&gt; msg.userString !== &#39;System&#39;) // Exclude system messages
+            .map(msg =&gt; ({
+                role: msg.userString === &#39;You&#39; ? &#39;user&#39; : &#39;assistant&#39;,
+                content: msg.content
+            }));
+    }
+    
+    async handleStreamingResponse(response, instance) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        
+        // Create initial message for streaming
+        const assistantMsgId = instance.messageAddNew(&#39;&#39;, &#39;Assistant&#39;, &#39;left&#39;);
+        
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                const chunk = decoder.decode(value);
+                const lines = chunk.split(&#39;\n&#39;);
+                
+                for (const line of lines) {
+                    if (line.startsWith(&#39;data: &#39;)) {
+                        const data = line.slice(6);
+                        if (data === &#39;[DONE]&#39;) return;
+                        
+                        try {
+                            const parsed = JSON.parse(data);
+                            const content = parsed.choices[0]?.delta?.content;
+                            
+                            if (content) {
+                                instance.messageAppendContent(assistantMsgId, content);
+                            }
+                        } catch (e) {
+                            // Skip invalid JSON
+                        }
+                    }
+                }
+            }
+        } finally {
+            reader.releaseLock();
+        }
+    }
+}
+
+// Usage
+const aiChat = new OpenAIChat(&#39;your-api-key&#39;, &#39;#chat-container&#39;);
+</code></pre>
+<h3>Anthropic Claude Integration</h3>
+<pre><code class="language-javascript">class ClaudeChat {
+    constructor(apiKey, chatContainer) {
+        this.apiKey = apiKey;
+        this.chat = new quikchat(chatContainer, this.handleUserMessage.bind(this), {
+            titleArea: { title: &#39;Claude Assistant&#39;, show: true }
+        });
+    }
+    
+    async handleUserMessage(instance, message) {
+        instance.messageAddNew(message, &#39;You&#39;, &#39;right&#39;);
+        
+        const typingId = instance.messageAddNew(&#39;Thinking...&#39;, &#39;Claude&#39;, &#39;left&#39;);
+        
+        try {
+            const response = await fetch(&#39;https://api.anthropic.com/v1/messages&#39;, {
+                method: &#39;POST&#39;,
+                headers: {
+                    &#39;x-api-key&#39;: this.apiKey,
+                    &#39;Content-Type&#39;: &#39;application/json&#39;,
+                    &#39;anthropic-version&#39;: &#39;2023-06-01&#39;
+                },
+                body: JSON.stringify({
+                    model: &#39;claude-3-sonnet-20240229&#39;,
+                    max_tokens: 1000,
+                    messages: this.formatHistoryForClaude(message)
+                })
+            });
+            
+            const data = await response.json();
+            
+            instance.messageReplaceContent(
+                typingId,
+                data.content[0].text
+            );
+            
+        } catch (error) {
+            console.error(&#39;Claude API error:&#39;, error);
+            instance.messageReplaceContent(typingId,
+                &#39;I apologize, but I encountered an error. Please try again.&#39;);
+        }
+    }
+    
+    formatHistoryForClaude(newMessage) {
+        const history = this.chat.historyGetAllCopy();
+        const messages = [];
+        
+        // Convert history to Claude format
+        for (const msg of history) {
+            if (msg.userString === &#39;You&#39;) {
+                messages.push({ role: &#39;user&#39;, content: msg.content });
+            } else if (msg.userString === &#39;Claude&#39;) {
+                messages.push({ role: &#39;assistant&#39;, content: msg.content });
+            }
+        }
+        
+        // Add current message
+        messages.push({ role: &#39;user&#39;, content: newMessage });
+        
+        return messages;
+    }
+}
+</code></pre>
+<h3>Ollama Local Integration</h3>
+<pre><code class="language-javascript">class OllamaChat {
+    constructor(chatContainer, modelName = &#39;llama2&#39;) {
+        this.modelName = modelName;
+        this.ollamaUrl = &#39;http://localhost:11434&#39;;
+        
+        this.chat = new quikchat(chatContainer, this.handleUserMessage.bind(this), {
+            titleArea: { title: `Ollama (${modelName})`, show: true }
+        });
+        
+        this.initializeModel();
+    }
+    
+    async initializeModel() {
+        try {
+            // Check if Ollama is running
+            await fetch(`${this.ollamaUrl}/api/tags`);
+            
+            this.chat.messageAddNew(
+                `Connected to Ollama with ${this.modelName}. How can I help?`,
+                &#39;Assistant&#39;,
+                &#39;left&#39;
+            );
+        } catch (error) {
+            this.chat.messageAddNew(
+                &#39;Could not connect to Ollama. Make sure it\&#39;s running on localhost:11434&#39;,
+                &#39;System&#39;,
+                &#39;center&#39;
+            );
+        }
+    }
+    
+    async handleUserMessage(instance, message) {
+        instance.messageAddNew(message, &#39;You&#39;, &#39;right&#39;);
+        
+        // Create message for streaming response
+        const assistantMsgId = instance.messageAddNew(&#39;&#39;, &#39;Assistant&#39;, &#39;left&#39;);
+        
+        try {
+            const response = await fetch(`${this.ollamaUrl}/api/generate`, {
+                method: &#39;POST&#39;,
+                headers: {
+                    &#39;Content-Type&#39;: &#39;application/json&#39;
+                },
+                body: JSON.stringify({
+                    model: this.modelName,
+                    prompt: this.buildPrompt(message),
+                    stream: true
+                })
+            });
+            
+            await this.handleOllamaStream(response, instance, assistantMsgId);
+            
+        } catch (error) {
+            console.error(&#39;Ollama error:&#39;, error);
+            instance.messageReplaceContent(assistantMsgId,
+                &#39;Connection error. Is Ollama running?&#39;);
+        }
+    }
+    
+    buildPrompt(newMessage) {
+        const history = this.chat.historyGetAllCopy();
+        let prompt = &#39;&#39;;
+        
+        for (const msg of history) {
+            if (msg.userString === &#39;You&#39;) {
+                prompt += `Human: ${msg.content}\n`;
+            } else if (msg.userString === &#39;Assistant&#39;) {
+                prompt += `Assistant: ${msg.content}\n`;
+            }
+        }
+        
+        prompt += `Human: ${newMessage}\nAssistant: `;
+        return prompt;
+    }
+    
+    async handleOllamaStream(response, instance, msgId) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                const chunk = decoder.decode(value);
+                const lines = chunk.split(&#39;\n&#39;).filter(line =&gt; line.trim());
+                
+                for (const line of lines) {
+                    try {
+                        const data = JSON.parse(line);
+                        if (data.response) {
+                            instance.messageAppendContent(msgId, data.response);
+                        }
+                    } catch (e) {
+                        // Skip invalid JSON
+                    }
+                }
+            }
+        } finally {
+            reader.releaseLock();
+        }
+    }
+}
+
+// Usage
+const ollamaChat = new OllamaChat(&#39;#chat-container&#39;, &#39;llama2&#39;);
+</code></pre>
+<h3>Error Handling &amp; Rate Limiting</h3>
+<pre><code class="language-javascript">class ResilientLLMChat {
+    constructor(provider, chatContainer) {
+        this.provider = provider;
+        this.retryCount = 0;
+        this.maxRetries = 3;
+        this.rateLimitDelay = 1000;
+        
+        this.chat = new quikchat(chatContainer, this.handleUserMessage.bind(this));
+    }
+    
+    async handleUserMessage(instance, message) {
+        instance.messageAddNew(message, &#39;You&#39;, &#39;right&#39;);
+        
+        const statusMsgId = instance.messageAddNew(&#39;...&#39;, &#39;Assistant&#39;, &#39;left&#39;);
+        
+        try {
+            await this.sendWithRetry(instance, message, statusMsgId);
+        } catch (error) {
+            this.handleFinalError(instance, statusMsgId, error);
+        }
+    }
+    
+    async sendWithRetry(instance, message, statusMsgId, attempt = 1) {
+        try {
+            const response = await this.provider.send(message);
+            instance.messageReplaceContent(statusMsgId, response);
+            this.retryCount = 0; // Reset on success
+            
+        } catch (error) {
+            if (attempt &lt;= this.maxRetries) {
+                // Update status to show retry
+                instance.messageReplaceContent(statusMsgId, 
+                    `Retrying... (${attempt}/${this.maxRetries})`);
+                
+                // Exponential backoff
+                const delay = this.rateLimitDelay * Math.pow(2, attempt - 1);
+                await new Promise(resolve =&gt; setTimeout(resolve, delay));
+                
+                return this.sendWithRetry(instance, message, statusMsgId, attempt + 1);
+            } else {
+                throw error;
+            }
+        }
+    }
+    
+    handleFinalError(instance, statusMsgId, error) {
+        let errorMessage = &#39;Sorry, I encountered an error.&#39;;
+        
+        if (error.status === 429) {
+            errorMessage = &#39;Rate limit exceeded. Please wait a moment and try again.&#39;;
+        } else if (error.status === 401) {
+            errorMessage = &#39;Authentication error. Please check your API key.&#39;;
+        } else if (error.status &gt;= 500) {
+            errorMessage = &#39;Server error. Please try again later.&#39;;
+        }
+        
+        instance.messageReplaceContent(statusMsgId, errorMessage);
+    }
+}
+</code></pre>
+<hr>
+<h2>Advanced History Management</h2>
+<h3>Persistent Storage with LocalStorage</h3>
+<pre><code class="language-javascript">class PersistentChat {
+    constructor(chatContainer, storageKey = &#39;quikchat-history&#39;) {
+        this.storageKey = storageKey;
+        
+        this.chat = new quikchat(chatContainer, this.handleMessage.bind(this), {
+            titleArea: { title: &#39;Persistent Chat&#39;, show: true }
+        });
+        
+        this.loadHistory();
+        this.setupAutoSave();
+    }
+    
+    handleMessage(instance, message) {
+        instance.messageAddNew(message, &#39;You&#39;, &#39;right&#39;);
+        this.saveHistory();
+        
+        // Your message handling logic here
+    }
+    
+    loadHistory() {
+        try {
+            const saved = localStorage.getItem(this.storageKey);
+            if (saved) {
+                const history = JSON.parse(saved);
+                this.chat.historyRestoreAll(history);
+                
+                console.log(`Loaded ${history.length} messages from storage`);
+            }
+        } catch (error) {
+            console.error(&#39;Failed to load chat history:&#39;, error);
+        }
+    }
+    
+    saveHistory() {
+        try {
+            const history = this.chat.historyGetAllCopy();
+            
+            // Remove DOM references before saving
+            const cleanHistory = history.map(msg =&gt; {
+                const { messageDiv, ...cleanMsg } = msg;
+                return cleanMsg;
+            });
+            
+            localStorage.setItem(this.storageKey, JSON.stringify(cleanHistory));
+        } catch (error) {
+            console.error(&#39;Failed to save chat history:&#39;, error);
+        }
+    }
+    
+    setupAutoSave() {
+        // Save on page unload
+        window.addEventListener(&#39;beforeunload&#39;, () =&gt; {
+            this.saveHistory();
+        });
+        
+        // Periodic saves
+        setInterval(() =&gt; {
+            this.saveHistory();
+        }, 30000); // Save every 30 seconds
+    }
+    
+    clearHistory() {
+        this.chat.historyClear();
+        localStorage.removeItem(this.storageKey);
+    }
+    
+    exportHistory() {
+        const history = this.chat.historyGetAllCopy();
+        const cleanHistory = history.map(msg =&gt; {
+            const { messageDiv, ...cleanMsg } = msg;
+            return cleanMsg;
+        });
+        
+        const blob = new Blob([JSON.stringify(cleanHistory, null, 2)], {
+            type: &#39;application/json&#39;
+        });
+        
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement(&#39;a&#39;);
+        a.href = url;
+        a.download = `chat-history-${new Date().toISOString().split(&#39;T&#39;)[0]}.json`;
+        a.click();
+        
+        URL.revokeObjectURL(url);
+    }
+    
+    async importHistory(file) {
+        try {
+            const text = await file.text();
+            const history = JSON.parse(text);
+            
+            this.chat.historyRestoreAll(history);
+            this.saveHistory();
+            
+            return true;
+        } catch (error) {
+            console.error(&#39;Failed to import history:&#39;, error);
+            return false;
+        }
+    }
+}
+
+// Usage with file import
+const persistentChat = new PersistentChat(&#39;#chat&#39;);
+
+// Add import/export controls
+document.getElementById(&#39;export-btn&#39;).addEventListener(&#39;click&#39;, () =&gt; {
+    persistentChat.exportHistory();
+});
+
+document.getElementById(&#39;import-input&#39;).addEventListener(&#39;change&#39;, (e) =&gt; {
+    const file = e.target.files[0];
+    if (file) {
+        persistentChat.importHistory(file);
+    }
+});
+</code></pre>
+<h3>Server-Side History Sync</h3>
+<pre><code class="language-javascript">class CloudSyncChat {
+    constructor(chatContainer, userId, apiEndpoint) {
+        this.userId = userId;
+        this.apiEndpoint = apiEndpoint;
+        this.syncInterval = null;
+        
+        this.chat = new quikchat(chatContainer, this.handleMessage.bind(this));
+        
+        this.loadFromServer();
+        this.startAutoSync();
+    }
+    
+    async handleMessage(instance, message) {
+        instance.messageAddNew(message, &#39;You&#39;, &#39;right&#39;);
+        
+        // Optimistically save to server
+        await this.syncToServer();
+    }
+    
+    async loadFromServer() {
+        try {
+            const response = await fetch(`${this.apiEndpoint}/history/${this.userId}`);
+            
+            if (response.ok) {
+                const history = await response.json();
+                this.chat.historyRestoreAll(history);
+            }
+        } catch (error) {
+            console.error(&#39;Failed to load history from server:&#39;, error);
+        }
+    }
+    
+    async syncToServer() {
+        try {
+            const history = this.chat.historyGetAllCopy();
+            
+            // Clean history for transmission
+            const cleanHistory = history.map(msg =&gt; {
+                const { messageDiv, ...cleanMsg } = msg;
+                return cleanMsg;
+            });
+            
+            await fetch(`${this.apiEndpoint}/history/${this.userId}`, {
+                method: &#39;POST&#39;,
+                headers: {
+                    &#39;Content-Type&#39;: &#39;application/json&#39;
+                },
+                body: JSON.stringify(cleanHistory)
+            });
+            
+        } catch (error) {
+            console.error(&#39;Failed to sync to server:&#39;, error);
+        }
+    }
+    
+    startAutoSync() {
+        // Sync every 2 minutes
+        this.syncInterval = setInterval(() =&gt; {
+            this.syncToServer();
+        }, 120000);
+    }
+    
+    stopAutoSync() {
+        if (this.syncInterval) {
+            clearInterval(this.syncInterval);
+            this.syncInterval = null;
+        }
+    }
+    
+    async mergeWithServer() {
+        // Advanced: merge local and server history
+        try {
+            const serverHistory = await this.loadFromServer();
+            const localHistory = this.chat.historyGetAllCopy();
+            
+            // Merge logic based on timestamps
+            const merged = this.mergeHistories(localHistory, serverHistory);
+            
+            this.chat.historyRestoreAll(merged);
+            await this.syncToServer();
+            
+        } catch (error) {
+            console.error(&#39;Failed to merge histories:&#39;, error);
+        }
+    }
+    
+    mergeHistories(local, server) {
+        // Simple merge by timestamp - implement your own logic
+        const allMessages = [...local, ...server];
+        
+        // Remove duplicates by msgid
+        const unique = allMessages.filter((msg, index, arr) =&gt; 
+            arr.findIndex(m =&gt; m.msgid === msg.msgid) === index
+        );
+        
+        // Sort by timestamp
+        return unique.sort((a, b) =&gt; 
+            new Date(a.timestamp) - new Date(b.timestamp)
+        );
+    }
+}
+</code></pre>
+<h3>Data Compression for Large Histories</h3>
+<pre><code class="language-javascript">class CompressedHistoryManager {
+    constructor(chat) {
+        this.chat = chat;
+    }
+    
+    async compressHistory() {
+        const history = this.chat.historyGetAllCopy();
+        
+        // Remove DOM references and clean data
+        const cleanHistory = history.map(msg =&gt; ({
+            msgid: msg.msgid,
+            content: msg.content,
+            userString: msg.userString,
+            align: msg.align,
+            role: msg.role,
+            timestamp: msg.timestamp,
+            visible: msg.visible,
+            tags: msg.tags
+        }));
+        
+        // Convert to JSON and compress
+        const json = JSON.stringify(cleanHistory);
+        const compressed = await this.compress(json);
+        
+        return compressed;
+    }
+    
+    async compress(text) {
+        // Use browser&#39;s CompressionStream if available
+        if (&#39;CompressionStream&#39; in window) {
+            const stream = new CompressionStream(&#39;gzip&#39;);
+            const writer = stream.writable.getWriter();
+            const reader = stream.readable.getReader();
+            
+            writer.write(new TextEncoder().encode(text));
+            writer.close();
+            
+            const chunks = [];
+            let done = false;
+            
+            while (!done) {
+                const { value, done: readerDone } = await reader.read();
+                done = readerDone;
+                if (value) chunks.push(value);
+            }
+            
+            return new Uint8Array(chunks.reduce((acc, chunk) =&gt; 
+                [...acc, ...chunk], []));
+        } else {
+            // Fallback: just return encoded text
+            return new TextEncoder().encode(text);
+        }
+    }
+    
+    async decompressHistory(compressedData) {
+        try {
+            const decompressed = await this.decompress(compressedData);
+            const history = JSON.parse(decompressed);
+            
+            this.chat.historyRestoreAll(history);
+            return true;
+        } catch (error) {
+            console.error(&#39;Failed to decompress history:&#39;, error);
+            return false;
+        }
+    }
+    
+    async decompress(compressedData) {
+        if (&#39;DecompressionStream&#39; in window) {
+            const stream = new DecompressionStream(&#39;gzip&#39;);
+            const writer = stream.writable.getWriter();
+            const reader = stream.readable.getReader();
+            
+            writer.write(compressedData);
+            writer.close();
+            
+            const chunks = [];
+            let done = false;
+            
+            while (!done) {
+                const { value, done: readerDone } = await reader.read();
+                done = readerDone;
+                if (value) chunks.push(value);
+            }
+            
+            const result = new Uint8Array(chunks.reduce((acc, chunk) =&gt; 
+                [...acc, ...chunk], []));
+            return new TextDecoder().decode(result);
+        } else {
+            // Fallback
+            return new TextDecoder().decode(compressedData);
+        }
+    }
+}
+</code></pre>
+<hr>
+<h2>Mastering Visibility Controls</h2>
+<p><em>Available in v1.1.13+</em></p>
+<h3>Individual Message Visibility</h3>
+<p>Perfect for hiding specific messages without deleting them:</p>
+<pre><code class="language-javascript">class ModerationChat {
+    constructor(chatContainer) {
+        this.chat = new quikchat(chatContainer, this.handleMessage.bind(this));
+        this.hiddenMessages = new Set();
+    }
+    
+    handleMessage(instance, message) {
+        const msgId = instance.messageAddNew(message, &#39;User&#39;, &#39;right&#39;);
+        
+        // Check for inappropriate content
+        if (this.isInappropriate(message)) {
+            this.moderateMessage(msgId, message);
+        }
+    }
+    
+    isInappropriate(message) {
+        const badWords = [&#39;spam&#39;, &#39;inappropriate&#39;]; // Your filter logic
+        return badWords.some(word =&gt; 
+            message.toLowerCase().includes(word)
+        );
+    }
+    
+    moderateMessage(msgId, originalMessage) {
+        // Hide the message
+        this.chat.messageSetVisibility(msgId, false);
+        this.hiddenMessages.add(msgId);
+        
+        // Add moderation notice
+        this.chat.messageAddNew(
+            &#39;[Message hidden by moderation]&#39;,
+            &#39;System&#39;,
+            &#39;center&#39;,
+            &#39;system&#39;,
+            true,
+            true,
+            [&#39;moderation&#39;, &#39;system&#39;]
+        );
+        
+        // Log for review
+        console.log(&#39;Moderated message:&#39;, { msgId, originalMessage });
+    }
+    
+    showHiddenMessages() {
+        // Reveal all hidden messages for review
+        this.hiddenMessages.forEach(msgId =&gt; {
+            this.chat.messageSetVisibility(msgId, true);
+        });
+    }
+    
+    permanentlyDeleteHidden() {
+        // Actually remove moderated messages
+        this.hiddenMessages.forEach(msgId =&gt; {
+            this.chat.messageRemove(msgId);
+        });
+        this.hiddenMessages.clear();
+    }
+}
+</code></pre>
+<h3>Tagged Visibility System</h3>
+<p><em>Available in v1.1.14+</em></p>
+<p>Group-based visibility control with high performance:</p>
+<pre><code class="language-javascript">class AdvancedVisibilityChat {
+    constructor(chatContainer) {
+        this.chat = new quikchat(chatContainer, this.handleMessage.bind(this), {
+            instanceClass: &#39;advanced-chat&#39;
+        });
+        
+        this.setupVisibilityControls();
+        this.addWelcomeMessages();
+    }
+    
+    handleMessage(instance, message) {
+        // Add user message with appropriate tags
+        const tags = this.classifyMessage(message);
+        
+        instance.messageAddNew(
+            message,
+            &#39;You&#39;,
+            &#39;right&#39;,
+            &#39;user&#39;,
+            true,
+            true,
+            tags
+        );
+        
+        // Simulate bot response with tags
+        setTimeout(() =&gt; {
+            instance.messageAddNew(
+                &#39;I understand your message.&#39;,
+                &#39;Assistant&#39;,
+                &#39;left&#39;,
+                &#39;assistant&#39;,
+                true,
+                true,
+                [&#39;bot-response&#39;, &#39;public&#39;]
+            );
+        }, 1000);
+    }
+    
+    classifyMessage(message) {
+        const tags = [&#39;user-message&#39;];
+        
+        // Add tags based on content
+        if (message.includes(&#39;?&#39;)) tags.push(&#39;question&#39;);
+        if (message.length &gt; 100) tags.push(&#39;long-message&#39;);
+        if (this.isUrgent(message)) tags.push(&#39;urgent&#39;);
+        
+        return tags;
+    }
+    
+    isUrgent(message) {
+        const urgentWords = [&#39;urgent&#39;, &#39;emergency&#39;, &#39;asap&#39;, &#39;immediately&#39;];
+        return urgentWords.some(word =&gt; 
+            message.toLowerCase().includes(word)
+        );
+    }
+    
+    addWelcomeMessages() {
+        // System messages
+        this.chat.messageAddNew(
+            &#39;Chat session initialized&#39;,
+            &#39;System&#39;,
+            &#39;center&#39;,
+            &#39;system&#39;,
+            true,
+            false, // Hidden by default
+            [&#39;system&#39;, &#39;session-start&#39;]
+        );
+        
+        // Debug messages
+        this.chat.messageAddNew(
+            &#39;Debug mode enabled&#39;,
+            &#39;Debug&#39;,
+            &#39;center&#39;,
+            &#39;debug&#39;,
+            true,
+            false, // Hidden by default
+            [&#39;debug&#39;, &#39;system&#39;]
+        );
+        
+        // Welcome message
+        this.chat.messageAddNew(
+            &#39;Welcome! I can help you with various tasks.&#39;,
+            &#39;Assistant&#39;,
+            &#39;left&#39;,
+            &#39;assistant&#39;,
+            true,
+            true,
+            [&#39;welcome&#39;, &#39;bot-response&#39;]
+        );
+    }
+    
+    setupVisibilityControls() {
+        // Create control panel
+        this.createControlPanel();
+    }
+    
+    createControlPanel() {
+        const controlPanel = document.createElement(&#39;div&#39;);
+        controlPanel.className = &#39;visibility-controls&#39;;
+        controlPanel.innerHTML = `
+            &lt;h3&gt;Visibility Controls&lt;/h3&gt;
+            &lt;div class=&quot;control-group&quot;&gt;
+                &lt;label&gt;
+                    &lt;input type=&quot;checkbox&quot; id=&quot;show-system&quot; /&gt;
+                    Show System Messages
+                &lt;/label&gt;
+                &lt;label&gt;
+                    &lt;input type=&quot;checkbox&quot; id=&quot;show-debug&quot; /&gt;
+                    Show Debug Messages
+                &lt;/label&gt;
+                &lt;label&gt;
+                    &lt;input type=&quot;checkbox&quot; id=&quot;show-questions&quot; /&gt;
+                    Highlight Questions
+                &lt;/label&gt;
+                &lt;label&gt;
+                    &lt;input type=&quot;checkbox&quot; id=&quot;show-urgent&quot; /&gt;
+                    Show Only Urgent
+                &lt;/label&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;active-tags&quot;&gt;
+                &lt;strong&gt;Active Tags:&lt;/strong&gt;
+                &lt;span id=&quot;tags-list&quot;&gt;&lt;/span&gt;
+            &lt;/div&gt;
+        `;
+        
+        // Insert control panel
+        const chatContainer = this.chat._parentElement;
+        chatContainer.parentNode.insertBefore(controlPanel, chatContainer.nextSibling);
+        
+        // Wire up controls
+        this.wireControlPanel();
+    }
+    
+    wireControlPanel() {
+        document.getElementById(&#39;show-system&#39;).addEventListener(&#39;change&#39;, (e) =&gt; {
+            this.chat.setTagVisibility(&#39;system&#39;, e.target.checked);
+            this.updateTagsList();
+        });
+        
+        document.getElementById(&#39;show-debug&#39;).addEventListener(&#39;change&#39;, (e) =&gt; {
+            this.chat.setTagVisibility(&#39;debug&#39;, e.target.checked);
+            this.updateTagsList();
+        });
+        
+        document.getElementById(&#39;show-questions&#39;).addEventListener(&#39;change&#39;, (e) =&gt; {
+            this.chat.setTagVisibility(&#39;question&#39;, e.target.checked);
+            this.updateTagsList();
+        });
+        
+        document.getElementById(&#39;show-urgent&#39;).addEventListener(&#39;change&#39;, (e) =&gt; {
+            if (e.target.checked) {
+                // Hide all other tags, show only urgent
+                this.chat.setTagVisibility(&#39;user-message&#39;, false);
+                this.chat.setTagVisibility(&#39;bot-response&#39;, false);
+                this.chat.setTagVisibility(&#39;urgent&#39;, true);
+            } else {
+                // Restore normal visibility
+                this.chat.setTagVisibility(&#39;user-message&#39;, true);
+                this.chat.setTagVisibility(&#39;bot-response&#39;, true);
+            }
+            this.updateTagsList();
+        });
+        
+        // Initial update
+        this.updateTagsList();
+    }
+    
+    updateTagsList() {
+        const activeTags = this.chat.getActiveTags();
+        const visibleTags = activeTags.filter(tag =&gt; 
+            this.chat.getTagVisibility(tag)
+        );
+        
+        document.getElementById(&#39;tags-list&#39;).textContent = 
+            visibleTags.length &gt; 0 ? visibleTags.join(&#39;, &#39;) : &#39;None&#39;;
+    }
+}
+</code></pre>
+<h3>CSS for Custom Tag Styling</h3>
+<pre><code class="language-css">/* Base visibility rules */
+.advanced-chat .quikchat-tag-system {
+    display: none; /* Hidden by default */
+}
+
+.advanced-chat .quikchat-tag-debug {
+    display: none; /* Hidden by default */
+}
+
+/* Show when enabled */
+.advanced-chat.quikchat-show-tag-system .quikchat-tag-system {
+    display: block;
+}
+
+.advanced-chat.quikchat-show-tag-debug .quikchat-tag-debug {
+    display: block;
+}
+
+/* Custom styling for different tag types */
+.advanced-chat .quikchat-tag-urgent .quikchat-message-content {
+    border-left: 4px solid #ef4444;
+    background-color: #fef2f2;
+}
+
+.advanced-chat .quikchat-tag-question .quikchat-message-content {
+    border-left: 4px solid #3b82f6;
+    background-color: #eff6ff;
+}
+
+.advanced-chat .quikchat-tag-system .quikchat-message-content {
+    font-style: italic;
+    color: #6b7280;
+    background-color: #f9fafb;
+}
+
+.advanced-chat .quikchat-tag-debug .quikchat-message-content {
+    font-family: monospace;
+    font-size: 12px;
+    background-color: #1f2937;
+    color: #10b981;
+}
+
+/* Control panel styling */
+.visibility-controls {
+    margin-top: 20px;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f9fafb;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.control-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.active-tags {
+    margin-top: 12px;
+    padding: 8px;
+    background: white;
+    border-radius: 4px;
+    font-size: 14px;
+}
+</code></pre>
+<h3>Multi-Instance with Different Rules</h3>
+<pre><code class="language-javascript">// Support chat - show all messages including system
+const supportChat = new quikchat(&#39;#support-chat&#39;, handleSupport, {
+    instanceClass: &#39;support-instance&#39;
+});
+
+// Customer chat - hide system messages by default
+const customerChat = new quikchat(&#39;#customer-chat&#39;, handleCustomer, {
+    instanceClass: &#39;customer-instance&#39;
+});
+
+// Apply different visibility rules via CSS
+</code></pre>
+<pre><code class="language-css">/* Support instance: show everything */
+.support-instance .quikchat-tag-system {
+    display: block;
+}
+
+.support-instance .quikchat-tag-debug {
+    display: block;
+}
+
+/* Customer instance: hide technical messages */
+.customer-instance .quikchat-tag-system {
+    display: none;
+}
+
+.customer-instance .quikchat-tag-debug {
+    display: none;
+}
+
+/* Only show when explicitly enabled */
+.customer-instance.quikchat-show-tag-system .quikchat-tag-system {
+    display: block;
+}
+</code></pre>
+<hr>
+<h2>Performance Optimization</h2>
+<h3>Managing Large Conversation Histories</h3>
+<pre><code class="language-javascript">class OptimizedChat {
+    constructor(chatContainer, maxVisibleMessages = 100) {
+        this.maxVisibleMessages = maxVisibleMessages;
+        this.allMessages = [];
+        
+        this.chat = new quikchat(chatContainer, this.handleMessage.bind(this));
+        this.setupVirtualScrolling();
+    }
+    
+    handleMessage(instance, message) {
+        // Add to our message store
+        const msgData = {
+            content: message,
+            userString: &#39;User&#39;,
+            align: &#39;right&#39;,
+            timestamp: new Date().toISOString()
+        };
+        
+        this.allMessages.push(msgData);
+        
+        // Add to visible chat
+        instance.messageAddNew(message, &#39;User&#39;, &#39;right&#39;);
+        
+        // Trim if we have too many visible messages
+        this.trimVisibleMessages();
+    }
+    
+    trimVisibleMessages() {
+        const history = this.chat.historyGetAllCopy();
+        
+        if (history.length &gt; this.maxVisibleMessages) {
+            // Remove oldest messages from display
+            const toRemove = history.length - this.maxVisibleMessages;
+            
+            for (let i = 0; i &lt; toRemove; i++) {
+                this.chat.messageRemove(history[i].msgid);
+            }
+        }
+    }
+    
+    setupVirtualScrolling() {
+        // Implement virtual scrolling for very large histories
+        // This is a simplified version - real implementation would be more complex
+        
+        const messagesArea = this.chat._messagesArea;
+        let scrollTimeout;
+        
+        messagesArea.addEventListener(&#39;scroll&#39;, () =&gt; {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() =&gt; {
+                this.handleScroll();
+            }, 100);
+        });
+    }
+    
+    handleScroll() {
+        const messagesArea = this.chat._messagesArea;
+        const scrollTop = messagesArea.scrollTop;
+        
+        // If user scrolls to top, load more history
+        if (scrollTop &lt; 100) {
+            this.loadMoreHistory();
+        }
+    }
+    
+    loadMoreHistory() {
+        // Load previous messages that were trimmed
+        const currentHistory = this.chat.historyGetAllCopy();
+        const currentOldest = currentHistory[0];
+        
+        if (currentOldest) {
+            const oldestIndex = this.allMessages.findIndex(msg =&gt; 
+                msg.timestamp === currentOldest.timestamp
+            );
+            
+            if (oldestIndex &gt; 0) {
+                // Add previous 20 messages
+                const previousMessages = this.allMessages.slice(
+                    Math.max(0, oldestIndex - 20),
+                    oldestIndex
+                );
+                
+                // Insert at beginning of chat
+                previousMessages.forEach(msg =&gt; {
+                    this.chat.messageAddFull({
+                        ...msg,
+                        scrollIntoView: false
+                    });
+                });
+            }
+        }
+    }
+    
+    // Memory management
+    cleanup() {
+        // Remove old messages from memory if needed
+        if (this.allMessages.length &gt; 10000) {
+            this.allMessages = this.allMessages.slice(-5000); // Keep last 5000
+        }
+    }
+}
+</code></pre>
+<h3>Efficient Message Batching</h3>
+<pre><code class="language-javascript">class BatchedChat {
+    constructor(chatContainer) {
+        this.chat = new quikchat(chatContainer, this.handleMessage.bind(this));
+        this.messageQueue = [];
+        this.batchTimeout = null;
+    }
+    
+    handleMessage(instance, message) {
+        // Add user message immediately
+        instance.messageAddNew(message, &#39;User&#39;, &#39;right&#39;);
+        
+        // Simulate API that returns multiple messages
+        this.simulateAPIResponse(message);
+    }
+    
+    simulateAPIResponse(userMessage) {
+        // Simulate getting multiple response chunks
+        const responses = [
+            &#39;Processing your request...&#39;,
+            &#39;Analyzing data...&#39;,
+            &#39;Here are my findings:&#39;,
+            &#39;Final response: Thank you for your message.&#39;
+        ];
+        
+        // Queue all responses for batching
+        responses.forEach((response, index) =&gt; {
+            this.queueMessage({
+                content: response,
+                userString: &#39;Assistant&#39;,
+                align: &#39;left&#39;,
+                delay: index * 500 // Stagger the messages
+            });
+        });
+    }
+    
+    queueMessage(messageData) {
+        this.messageQueue.push(messageData);
+        this.scheduleBatch();
+    }
+    
+    scheduleBatch() {
+        if (this.batchTimeout) return;
+        
+        this.batchTimeout = setTimeout(() =&gt; {
+            this.processBatch();
+            this.batchTimeout = null;
+        }, 100); // Batch messages within 100ms
+    }
+    
+    processBatch() {
+        if (this.messageQueue.length === 0) return;
+        
+        // Sort by delay
+        this.messageQueue.sort((a, b) =&gt; (a.delay || 0) - (b.delay || 0));
+        
+        // Process messages with appropriate delays
+        this.messageQueue.forEach((msgData, index) =&gt; {
+            const delay = msgData.delay || 0;
+            
+            setTimeout(() =&gt; {
+                this.chat.messageAddNew(
+                    msgData.content,
+                    msgData.userString,
+                    msgData.align
+                );
+            }, delay);
+        });
+        
+        this.messageQueue = [];
+    }
+}
+</code></pre>
+<h3>Memory-Efficient History Export</h3>
+<pre><code class="language-javascript">class EfficientHistoryManager {
+    constructor(chat) {
+        this.chat = chat;
+    }
+    
+    exportHistoryStream() {
+        // Stream large histories without loading everything into memory
+        const history = this.chat.historyGetAllCopy();
+        
+        return new ReadableStream({
+            start(controller) {
+                const encoder = new TextEncoder();
+                controller.enqueue(encoder.encode(&#39;[\n&#39;));
+            },
+            
+            pull(controller) {
+                if (history.length &gt; 0) {
+                    const message = history.shift();
+                    const cleanMsg = this.cleanMessage(message);
+                    const json = JSON.stringify(cleanMsg, null, 2);
+                    
+                    const encoder = new TextEncoder();
+                    const comma = history.length &gt; 0 ? &#39;,\n&#39; : &#39;\n&#39;;
+                    controller.enqueue(encoder.encode(json + comma));
+                } else {
+                    const encoder = new TextEncoder();
+                    controller.enqueue(encoder.encode(&#39;]&#39;));
+                    controller.close();
+                }
+            }
+        });
+    }
+    
+    cleanMessage(message) {
+        // Remove DOM references and large objects
+        const { messageDiv, ...cleanMsg } = message;
+        return cleanMsg;
+    }
+    
+    async downloadHistoryStream() {
+        const stream = this.exportHistoryStream();
+        const response = new Response(stream);
+        const blob = await response.blob();
+        
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement(&#39;a&#39;);
+        a.href = url;
+        a.download = `chat-history-${Date.now()}.json`;
+        a.click();
+        
+        URL.revokeObjectURL(url);
+    }
+}
+</code></pre>
+<h3>Performance Monitoring</h3>
+<pre><code class="language-javascript">class PerformanceMonitor {
+    constructor(chat) {
+        this.chat = chat;
+        this.metrics = {
+            messageAddTime: [],
+            renderTime: [],
+            memoryUsage: []
+        };
+        
+        this.startMonitoring();
+    }
+    
+    startMonitoring() {
+        // Monitor message addition performance
+        const originalAddNew = this.chat.messageAddNew.bind(this.chat);
+        
+        this.chat.messageAddNew = (...args) =&gt; {
+            const start = performance.now();
+            const result = originalAddNew(...args);
+            const end = performance.now();
+            
+            this.metrics.messageAddTime.push(end - start);
+            this.checkPerformance();
+            
+            return result;
+        };
+        
+        // Monitor memory usage periodically
+        setInterval(() =&gt; {
+            if (performance.memory) {
+                this.metrics.memoryUsage.push({
+                    timestamp: Date.now(),
+                    used: performance.memory.usedJSHeapSize,
+                    total: performance.memory.totalJSHeapSize
+                });
+            }
+        }, 10000); // Every 10 seconds
+    }
+    
+    checkPerformance() {
+        const recent = this.metrics.messageAddTime.slice(-10);
+        const average = recent.reduce((a, b) =&gt; a + b, 0) / recent.length;
+        
+        if (average &gt; 50) { // If adding messages takes &gt; 50ms
+            console.warn(&#39;Performance degradation detected:&#39;, {
+                averageTime: average,
+                messageCount: this.chat.historyGetLength()
+            });
+            
+            this.suggestOptimizations();
+        }
+    }
+    
+    suggestOptimizations() {
+        const messageCount = this.chat.historyGetLength();
+        
+        if (messageCount &gt; 1000) {
+            console.log(&#39;Suggestion: Consider implementing message virtualization&#39;);
+        }
+        
+        if (this.metrics.memoryUsage.length &gt; 0) {
+            const latest = this.metrics.memoryUsage[this.metrics.memoryUsage.length - 1];
+            const mbUsed = latest.used / (1024 * 1024);
+            
+            if (mbUsed &gt; 50) {
+                console.log(&#39;Suggestion: Consider clearing old history or implementing compression&#39;);
+            }
+        }
+    }
+    
+    getPerformanceReport() {
+        return {
+            messageCount: this.chat.historyGetLength(),
+            averageAddTime: this.getAverageAddTime(),
+            memoryTrend: this.getMemoryTrend(),
+            suggestions: this.getOptimizationSuggestions()
+        };
+    }
+    
+    getAverageAddTime() {
+        if (this.metrics.messageAddTime.length === 0) return 0;
+        
+        return this.metrics.messageAddTime.reduce((a, b) =&gt; a + b, 0) / 
+               this.metrics.messageAddTime.length;
+    }
+    
+    getMemoryTrend() {
+        if (this.metrics.memoryUsage.length &lt; 2) return &#39;insufficient-data&#39;;
+        
+        const first = this.metrics.memoryUsage[0];
+        const last = this.metrics.memoryUsage[this.metrics.memoryUsage.length - 1];
+        
+        const growth = (last.used - first.used) / first.used;
+        
+        if (growth &gt; 0.5) return &#39;high-growth&#39;;
+        if (growth &gt; 0.2) return &#39;moderate-growth&#39;;
+        return &#39;stable&#39;;
+    }
+    
+    getOptimizationSuggestions() {
+        const suggestions = [];
+        const messageCount = this.chat.historyGetLength();
+        
+        if (messageCount &gt; 500) {
+            suggestions.push(&#39;Consider implementing virtual scrolling&#39;);
+        }
+        
+        if (this.getAverageAddTime() &gt; 30) {
+            suggestions.push(&#39;Message addition is slow - check DOM complexity&#39;);
+        }
+        
+        if (this.getMemoryTrend() === &#39;high-growth&#39;) {
+            suggestions.push(&#39;Memory usage growing - implement cleanup strategies&#39;);
+        }
+        
+        return suggestions;
+    }
+}
+
+// Usage
+const monitor = new PerformanceMonitor(chat);
+
+// Get performance report periodically
+setInterval(() =&gt; {
+    const report = monitor.getPerformanceReport();
+    console.log(&#39;Performance Report:&#39;, report);
+}, 60000); // Every minute
+</code></pre>
+<hr>
+<p><em>For complete API documentation, see <a href="API-REFERENCE.md">API Reference</a>. For questions and examples, visit our <a href="https://github.com/deftio/quikchat">GitHub repository</a>.</em></p>
+
+    </article>
+    <script>
+        // Syntax highlighting
+        if (typeof Prism !== 'undefined') {
+            Prism.highlightAll();
+        }
+    </script>
+</body>
+</html>

@@ -4,7 +4,7 @@
 
 - [x] **Issue #1**: "Sending message moves page back to top" - FIXED in v1.1.15 with smart scroll behavior
 
-## 🚨 Critical (v1.2.0) - Production Readiness  
+## Critical  - Production Readiness  
 
 - [ ] **Accessibility**: ARIA labels, keyboard navigation, screen reader support
 - [ ] **Security**: XSS protection, sanitization hooks for innerHTML
@@ -14,7 +14,7 @@
 - [ ] **Mobile Experience**: Fix textarea handling for mobile keyboards
 - [ ] **Error Boundaries**: Add error handling APIs and recovery mechanisms
 
-## 🎯 High Priority (v1.3.0) - Core Features  
+##  High Priority - Core Features  
 
 - [ ] **i18n/RTL**: Internationalization support, right-to-left languages
 - [ ] **Message Reactions**: Emoji reactions on messages
@@ -25,7 +25,7 @@
 - [ ] **Show/Hide Timestamps**: Toggle timestamp visibility
 - [ ] **User Avatars**: Inline icon support [user][message] format
 
-## 📈 Medium Priority (v1.4.0) - Enhanced UX
+##  Medium Priority  - Enhanced UX
 - [x] **Message Search**: COMPLETED in v1.1.15 - historySearch() with text, user, role, tags filters
 - [ ] **Message Threading**: Reply to specific messages
 - [ ] **Message Editing**: Edit sent messages with history

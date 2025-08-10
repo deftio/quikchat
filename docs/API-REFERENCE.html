@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API REFERENCE - QuikChat Documentation</title>
+    <link rel="stylesheet" href="https://unpkg.com/github-markdown-css@5/github-markdown.css">
+    <link rel="stylesheet" href="https://unpkg.com/prismjs@1/themes/prism.css">
+    <style>
+        body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        @media (max-width: 767px) {
+            body { padding: 15px; }
+        }
+        /* Ensure emojis display properly */
+        .markdown-body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+        }
+        /* Code block styling */
+        pre {
+            background-color: #f6f8fa;
+            border-radius: 6px;
+            padding: 16px;
+            overflow: auto;
+        }
+        code {
+            background-color: rgba(175, 184, 193, 0.2);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 85%;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        /* Table styling */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 16px;
+            margin-bottom: 16px;
+        }
+        table th, table td {
+            border: 1px solid #d0d7de;
+            padding: 6px 13px;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+    </style>
+    <script src="https://unpkg.com/prismjs@1/components/prism-core.min.js"></script>
+    <script src="https://unpkg.com/prismjs@1/plugins/autoloader/prism-autoloader.min.js"></script>
+</head>
+<body>
+    <article class="markdown-body">
+        <h1>QuikChat API Reference</h1>
+<p>Complete technical reference for QuikChat v1.1.14+ - a zero-dependency JavaScript chat widget.</p>
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#constructor">Constructor</a></li>
+<li><a href="#message-management">Message Management</a></li>
+<li><a href="#visibility-controls">Visibility Controls</a></li>
+<li><a href="#history-management">History Management</a></li>
+<li><a href="#ui-controls">UI Controls</a></li>
+<li><a href="#static-methods">Static Methods</a></li>
+<li><a href="#events--callbacks">Events &amp; Callbacks</a></li>
+</ol>
+<hr>
+<h2>Constructor</h2>
+<h3><code>new quikchat(parentElement, onSend, options)</code></h3>
+<p>Creates a new QuikChat instance.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>parentElement</code></td>
+<td>string | HTMLElement</td>
+<td>CSS selector string or DOM element to contain the chat widget</td>
+</tr>
+<tr>
+<td><code>onSend</code></td>
+<td>function</td>
+<td>Callback function triggered when user sends a message</td>
+</tr>
+<tr>
+<td><code>options</code></td>
+<td>object</td>
+<td>Configuration options (see table below)</td>
+</tr>
+</tbody></table>
+<p><strong>Options Object:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+<th>Version</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>theme</code></td>
+<td>string</td>
+<td><code>&#39;quikchat-theme-light&#39;</code></td>
+<td>CSS theme class name</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>trackHistory</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Whether to maintain message history</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>titleArea.title</code></td>
+<td>string</td>
+<td><code>&quot;Chat&quot;</code></td>
+<td>Title text to display</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>titleArea.show</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Whether title area is visible</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>titleArea.align</code></td>
+<td>string</td>
+<td><code>&quot;center&quot;</code></td>
+<td>Title alignment: <code>left</code>, <code>center</code>, <code>right</code></td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>messagesArea.alternating</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Enable alternating message row colors</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>inputArea.show</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Whether input area is visible</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>sendOnEnter</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Send message on Enter key</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>sendOnShiftEnter</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Send message on Shift+Enter</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>instanceClass</code></td>
+<td>string</td>
+<td><code>&#39;&#39;</code></td>
+<td>Custom CSS class for multi-instance scoping</td>
+<td>v1.1.14+</td>
+</tr>
+</tbody></table>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">const chat = new quikchat(&#39;#chat-container&#39;, 
+  (chatInstance, message) =&gt; {
+    // Echo user message
+    chatInstance.messageAddNew(message, &#39;You&#39;, &#39;right&#39;);
+    
+    // Add bot response
+    chatInstance.messageAddNew(&#39;Thanks for your message!&#39;, &#39;Bot&#39;, &#39;left&#39;);
+  },
+  {
+    theme: &#39;quikchat-theme-dark&#39;,
+    titleArea: { title: &#39;Support Chat&#39;, show: true, align: &#39;left&#39; },
+    instanceClass: &#39;support-chat&#39;
+  }
+);
+</code></pre>
+<hr>
+<h2>Message Management</h2>
+<h3><code>messageAddNew(content, userString, align, role, scrollIntoView, visible, tags)</code></h3>
+<p>Adds a new message to the chat with simplified parameters.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+<th>Version</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>content</code></td>
+<td>string</td>
+<td><code>&quot;&quot;</code></td>
+<td>HTML content of the message</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>userString</code></td>
+<td>string</td>
+<td><code>&quot;user&quot;</code></td>
+<td>Display name for the message sender</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>align</code></td>
+<td>string</td>
+<td><code>&quot;right&quot;</code></td>
+<td>Message alignment: <code>left</code>, <code>right</code>, <code>center</code></td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>role</code></td>
+<td>string</td>
+<td><code>&quot;user&quot;</code></td>
+<td>Semantic role (for history/LLM context)</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>scrollIntoView</code></td>
+<td>boolean|&#39;smart&#39;</td>
+<td><code>true</code></td>
+<td>Scroll behavior: <code>true</code> = always scroll, <code>false</code> = never scroll, <code>&#39;smart&#39;</code> = only scroll if near bottom</td>
+<td>v1.0+ (smart mode v1.1.15+)</td>
+</tr>
+<tr>
+<td><code>visible</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Whether message is initially visible</td>
+<td>v1.1.13+</td>
+</tr>
+<tr>
+<td><code>tags</code></td>
+<td>Array<string></td>
+<td><code>[]</code></td>
+<td>Array of tag strings for grouping</td>
+<td>v1.1.14+</td>
+</tr>
+</tbody></table>
+<p><strong>Returns:</strong> <code>number</code> - Unique message ID</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">// Basic message
+const msgId = chat.messageAddNew(&#39;Hello world!&#39;, &#39;Alice&#39;, &#39;left&#39;);
+
+// Message with tags and hidden initially
+const systemMsgId = chat.messageAddNew(
+  &#39;System: Chat session started&#39;, 
+  &#39;System&#39;, 
+  &#39;center&#39;, 
+  &#39;system&#39;, 
+  true, 
+  false, 
+  [&#39;system&#39;, &#39;session&#39;]
+);
+</code></pre>
+<h3><code>messageAddFull(input)</code></h3>
+<p>Adds a message with complete control over all properties.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+<th>Version</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>input.content</code></td>
+<td>string</td>
+<td><code>&quot;&quot;</code></td>
+<td>HTML content of the message</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>input.userString</code></td>
+<td>string</td>
+<td><code>&quot;user&quot;</code></td>
+<td>Display name for sender</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>input.align</code></td>
+<td>string</td>
+<td><code>&quot;right&quot;</code></td>
+<td>Message alignment</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>input.role</code></td>
+<td>string</td>
+<td><code>&quot;user&quot;</code></td>
+<td>Semantic role</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>input.userID</code></td>
+<td>number</td>
+<td><code>-1</code></td>
+<td>Numeric user identifier</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>input.timestamp</code></td>
+<td>string|boolean</td>
+<td><code>false</code></td>
+<td>ISO timestamp or false for auto</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>input.updatedtime</code></td>
+<td>string|boolean</td>
+<td><code>false</code></td>
+<td>Last update time</td>
+<td>v1.0+</td>
+</tr>
+<tr>
+<td><code>input.scrollIntoView</code></td>
+<td>boolean|&#39;smart&#39;</td>
+<td><code>true</code></td>
+<td>Scroll behavior: <code>true</code> = always, <code>false</code> = never, <code>&#39;smart&#39;</code> = only if near bottom</td>
+<td>v1.0+ (smart mode v1.1.15+)</td>
+</tr>
+<tr>
+<td><code>input.visible</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Initial visibility</td>
+<td>v1.1.13+</td>
+</tr>
+<tr>
+<td><code>input.tags</code></td>
+<td>Array<string></td>
+<td><code>[]</code></td>
+<td>Tag array</td>
+<td>v1.1.14+</td>
+</tr>
+</tbody></table>
+<p><strong>Returns:</strong> <code>number</code> - Unique message ID</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">const msgId = chat.messageAddFull({
+  content: &#39;Welcome to the chat!&#39;,
+  userString: &#39;ChatBot&#39;,
+  align: &#39;left&#39;,
+  role: &#39;assistant&#39;,
+  userID: 100,
+  timestamp: new Date().toISOString(),
+  visible: true,
+  tags: [&#39;welcome&#39;, &#39;bot-message&#39;]
+});
+</code></pre>
+<h3><code>messageRemove(msgid)</code></h3>
+<p>Removes a message from both display and history.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>msgid</code></td>
+<td>number</td>
+<td>Message ID to remove</td>
+</tr>
+</tbody></table>
+<p><strong>Returns:</strong> <code>boolean</code> - Success status</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">const success = chat.messageRemove(42);
+if (success) {
+  console.log(&#39;Message removed successfully&#39;);
+}
+</code></pre>
+<h3><code>messageRemoveLast()</code></h3>
+<p>Removes the most recently added message.</p>
+<p><strong>Returns:</strong> <code>boolean</code> - Success status</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">chat.messageRemoveLast(); // Undo last message
+</code></pre>
+<h3><code>messageAppendContent(msgid, content)</code></h3>
+<p>Appends content to an existing message (useful for streaming).</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>msgid</code></td>
+<td>number</td>
+<td>Target message ID</td>
+</tr>
+<tr>
+<td><code>content</code></td>
+<td>string</td>
+<td>HTML content to append</td>
+</tr>
+</tbody></table>
+<p><strong>Returns:</strong> <code>boolean</code> - Success status</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">// Simulate streaming response
+const botMsgId = chat.messageAddNew(&#39;&#39;, &#39;Bot&#39;, &#39;left&#39;);
+const words = [&#39;Hello&#39;, &#39; there&#39;, &#39;!&#39;];
+words.forEach((word, i) =&gt; {
+  setTimeout(() =&gt; {
+    chat.messageAppendContent(botMsgId, word);
+  }, i * 500);
+});
+</code></pre>
+<h3><code>messageReplaceContent(msgid, content)</code></h3>
+<p>Replaces the entire content of an existing message.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>msgid</code></td>
+<td>number</td>
+<td>Target message ID</td>
+</tr>
+<tr>
+<td><code>content</code></td>
+<td>string</td>
+<td>New HTML content</td>
+</tr>
+</tbody></table>
+<p><strong>Returns:</strong> <code>boolean</code> - Success status</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">// Update message with corrected content
+chat.messageReplaceContent(42, &#39;Corrected message content&#39;);
+</code></pre>
+<h3><code>messageGetContent(msgid)</code></h3>
+<p>Retrieves the text content of a message.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>msgid</code></td>
+<td>number</td>
+<td>Target message ID</td>
+</tr>
+</tbody></table>
+<p><strong>Returns:</strong> <code>string</code> - Message content or empty string if not found</p>
+<h3><code>messageGetDOMObject(msgid)</code></h3>
+<p>Returns the DOM element for a message.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>msgid</code></td>
+<td>number</td>
+<td>Target message ID</td>
+</tr>
+</tbody></table>
+<p><strong>Returns:</strong> <code>HTMLElement|null</code> - Message DOM element or null if not found</p>
+<hr>
+<h2>Visibility Controls</h2>
+<h3><code>messageSetVisibility(msgid, isVisible)</code></h3>
+<p><em>Available in v1.1.13+</em></p>
+<p>Controls the visibility of an individual message.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>msgid</code></td>
+<td>number</td>
+<td>Target message ID</td>
+</tr>
+<tr>
+<td><code>isVisible</code></td>
+<td>boolean</td>
+<td>Whether message should be visible</td>
+</tr>
+</tbody></table>
+<p><strong>Returns:</strong> <code>boolean</code> - Success status</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">// Hide a system message
+chat.messageSetVisibility(systemMsgId, false);
+
+// Show it again later
+chat.messageSetVisibility(systemMsgId, true);
+</code></pre>
+<h3><code>messageGetVisibility(msgid)</code></h3>
+<p><em>Available in v1.1.13+</em></p>
+<p>Checks if a message is currently visible.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>msgid</code></td>
+<td>number</td>
+<td>Target message ID</td>
+</tr>
+</tbody></table>
+<p><strong>Returns:</strong> <code>boolean</code> - Visibility status</p>
+<h3><code>setTagVisibility(tagName, isVisible)</code></h3>
+<p><em>Available in v1.1.14+</em></p>
+<p>Controls visibility for all messages with a specific tag.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>tagName</code></td>
+<td>string</td>
+<td>Tag name to target</td>
+</tr>
+<tr>
+<td><code>isVisible</code></td>
+<td>boolean</td>
+<td>Whether tagged messages should be visible</td>
+</tr>
+</tbody></table>
+<p><strong>Returns:</strong> <code>boolean</code> - Success status</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">// Hide all system messages
+chat.setTagVisibility(&#39;system&#39;, false);
+
+// Show all priority messages
+chat.setTagVisibility(&#39;priority&#39;, true);
+</code></pre>
+<h3><code>getTagVisibility(tagName)</code></h3>
+<p><em>Available in v1.1.14+</em></p>
+<p>Checks if messages with a specific tag are set to be visible.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>tagName</code></td>
+<td>string</td>
+<td>Tag name to check</td>
+</tr>
+</tbody></table>
+<p><strong>Returns:</strong> <code>boolean</code> - Whether the tag visibility is enabled</p>
+<h3><code>getActiveTags()</code></h3>
+<p><em>Available in v1.1.14+</em></p>
+<p>Returns all unique tags that have been used in the current chat.</p>
+<p><strong>Returns:</strong> <code>Array&lt;string&gt;</code> - Array of active tag names</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">const tags = chat.getActiveTags();
+console.log(&#39;Active tags:&#39;, tags); // [&#39;system&#39;, &#39;user&#39;, &#39;priority&#39;]
+</code></pre>
+<hr>
+<h2>History Management</h2>
+<h3><code>historyGet(start, end)</code></h3>
+<p>Retrieves a slice of the message history.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>start</code></td>
+<td>number</td>
+<td><code>0</code></td>
+<td>Starting index</td>
+</tr>
+<tr>
+<td><code>end</code></td>
+<td>number</td>
+<td><code>history.length</code></td>
+<td>Ending index</td>
+</tr>
+</tbody></table>
+<p><strong>Returns:</strong> <code>Array&lt;object&gt;</code> - Array of message objects</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">// Get last 5 messages
+const recent = chat.historyGet(-5);
+
+// Get messages 10-20
+const slice = chat.historyGet(10, 20);
+</code></pre>
+<h3><code>historyGetAllCopy()</code></h3>
+<p>Returns a complete copy of the chat history.</p>
+<p><strong>Returns:</strong> <code>Array&lt;object&gt;</code> - Deep copy of all messages</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">// Save chat for later or send to API
+const fullHistory = chat.historyGetAllCopy();
+localStorage.setItem(&#39;chatHistory&#39;, JSON.stringify(fullHistory));
+</code></pre>
+<h3><code>historyGetPage(page, pageSize, order)</code></h3>
+<p><em>Available in v1.1.15+</em></p>
+<p>Get a page of history messages with pagination support.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>page</code></td>
+<td>number</td>
+<td><code>1</code></td>
+<td>Page number (1-based)</td>
+</tr>
+<tr>
+<td><code>pageSize</code></td>
+<td>number</td>
+<td><code>50</code></td>
+<td>Number of messages per page</td>
+</tr>
+<tr>
+<td><code>order</code></td>
+<td>string</td>
+<td><code>&#39;asc&#39;</code></td>
+<td>Sort order: <code>&#39;asc&#39;</code> (oldest first) or <code>&#39;desc&#39;</code> (newest first)</td>
+</tr>
+</tbody></table>
+<p><strong>Returns:</strong> <code>object</code> - Object containing messages array and pagination metadata</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">// Get first page of 20 messages
+const result = chat.historyGetPage(1, 20);
+console.log(result.messages); // Array of 20 messages
+console.log(result.pagination); // { currentPage: 1, totalPages: 5, hasNext: true, ... }
+
+// Get newest messages first
+const recent = chat.historyGetPage(1, 10, &#39;desc&#39;);
+</code></pre>
+<h3><code>historySearch(criteria)</code></h3>
+<p><em>Available in v1.1.15+</em></p>
+<p>Search history for messages matching specified criteria.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>criteria.text</code></td>
+<td>string</td>
+<td>Text to search for in message content (case-insensitive)</td>
+</tr>
+<tr>
+<td><code>criteria.userString</code></td>
+<td>string</td>
+<td>Filter by user name</td>
+</tr>
+<tr>
+<td><code>criteria.role</code></td>
+<td>string</td>
+<td>Filter by role (user, assistant, system)</td>
+</tr>
+<tr>
+<td><code>criteria.tags</code></td>
+<td>Array<string></td>
+<td>Filter by tags (matches any tag)</td>
+</tr>
+<tr>
+<td><code>criteria.limit</code></td>
+<td>number</td>
+<td>Maximum results to return (default: 100)</td>
+</tr>
+</tbody></table>
+<p><strong>Returns:</strong> <code>Array&lt;object&gt;</code> - Array of matching messages</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">// Search for messages containing &quot;error&quot;
+const errors = chat.historySearch({ text: &#39;error&#39; });
+
+// Find all messages from Alice
+const aliceMessages = chat.historySearch({ userString: &#39;Alice&#39; });
+
+// Find important system messages
+const important = chat.historySearch({ 
+  role: &#39;system&#39;, 
+  tags: [&#39;important&#39;],
+  limit: 50
+});
+
+// Combined search
+const results = chat.historySearch({
+  text: &#39;login&#39;,
+  userString: &#39;Support&#39;,
+  role: &#39;assistant&#39;
+});
+</code></pre>
+<h3><code>historyGetInfo(pageSize)</code></h3>
+<p><em>Available in v1.1.15+</em></p>
+<p>Get metadata about the chat history.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>pageSize</code></td>
+<td>number</td>
+<td><code>50</code></td>
+<td>Page size for calculating total pages</td>
+</tr>
+</tbody></table>
+<p><strong>Returns:</strong> <code>object</code> - History metadata including size, pagination info, and memory usage</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">const info = chat.historyGetInfo(25);
+console.log(info);
+// {
+//   totalMessages: 150,
+//   totalPages: 6,
+//   oldestMessage: { msgid: 1, timestamp: &#39;...&#39;, userString: &#39;User&#39; },
+//   newestMessage: { msgid: 150, timestamp: &#39;...&#39;, userString: &#39;Bot&#39; },
+//   memoryUsage: { estimatedSize: 45000, averageMessageSize: 300 }
+// }
+</code></pre>
+<h3><code>historyClear()</code></h3>
+<p>Removes all messages and resets the chat.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">chat.historyClear(); // Fresh start
+</code></pre>
+<h3><code>historyRestoreAll(messageList)</code></h3>
+<p>Restores chat from a saved message array.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>messageList</code></td>
+<td>Array<object></td>
+<td>Array of message objects</td>
+</tr>
+</tbody></table>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">// Restore from saved data
+const saved = JSON.parse(localStorage.getItem(&#39;chatHistory&#39;));
+chat.historyRestoreAll(saved);
+</code></pre>
+<h3><code>historyGetLength()</code></h3>
+<p>Returns the number of messages in history.</p>
+<p><strong>Returns:</strong> <code>number</code> - Message count</p>
+<h3><code>historyGetMessage(index)</code></h3>
+<p>Gets a specific message by history index.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>index</code></td>
+<td>number</td>
+<td>History array index</td>
+</tr>
+</tbody></table>
+<p><strong>Returns:</strong> <code>object</code> - Message object or empty object if not found</p>
+<hr>
+<h2>UI Controls</h2>
+<h3><code>titleAreaShow()</code> / <code>titleAreaHide()</code> / <code>titleAreaToggle()</code></h3>
+<p>Controls title area visibility.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">chat.titleAreaShow();
+chat.titleAreaHide();
+chat.titleAreaToggle();
+</code></pre>
+<h3><code>titleAreaSetContents(title, align)</code></h3>
+<p>Updates title area content and alignment.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>title</code></td>
+<td>string</td>
+<td></td>
+<td>HTML content for title</td>
+</tr>
+<tr>
+<td><code>align</code></td>
+<td>string</td>
+<td><code>&#39;center&#39;</code></td>
+<td>Text alignment</td>
+</tr>
+</tbody></table>
+<h3><code>inputAreaShow()</code> / <code>inputAreaHide()</code> / <code>inputAreaToggle()</code></h3>
+<p>Controls input area visibility.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">// Create read-only chat display
+chat.inputAreaHide();
+</code></pre>
+<h3><code>changeTheme(newTheme)</code></h3>
+<p>Switches the chat theme.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>newTheme</code></td>
+<td>string</td>
+<td>CSS theme class name</td>
+</tr>
+</tbody></table>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">chat.changeTheme(&#39;quikchat-theme-dark&#39;);
+</code></pre>
+<h3><code>messageScrollToBottom()</code></h3>
+<p>Scrolls the message area to show the latest message.</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">chat.messageScrollToBottom();
+</code></pre>
+<hr>
+<h2>Static Methods</h2>
+<h3><code>quikchat.version()</code></h3>
+<p>Returns library version and metadata.</p>
+<p><strong>Returns:</strong> <code>object</code> - Version information</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">const info = quikchat.version();
+console.log(`QuikChat v${info.version}`);
+</code></pre>
+<h3><code>quikchat.loremIpsum(numChars, startSpot, startWithCapitalLetter)</code></h3>
+<p>Generates Lorem Ipsum text for testing.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>numChars</code></td>
+<td>number</td>
+<td>random 25-150</td>
+<td>Number of characters</td>
+</tr>
+<tr>
+<td><code>startSpot</code></td>
+<td>number</td>
+<td>random</td>
+<td>Starting position in lorem text</td>
+</tr>
+<tr>
+<td><code>startWithCapitalLetter</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Capitalize first letter</td>
+</tr>
+</tbody></table>
+<p><strong>Returns:</strong> <code>string</code> - Generated text</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">// Add test messages
+chat.messageAddNew(quikchat.loremIpsum(100), &#39;Test User&#39;, &#39;left&#39;);
+</code></pre>
+<h3><code>quikchat.tempMessageGenerator(domElement, content, interval, callback)</code></h3>
+<p>Creates a self-updating message element.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>domElement</code></td>
+<td>string|HTMLElement</td>
+<td>Target element</td>
+</tr>
+<tr>
+<td><code>content</code></td>
+<td>string</td>
+<td>Initial content</td>
+</tr>
+<tr>
+<td><code>interval</code></td>
+<td>number</td>
+<td>Update interval in ms</td>
+</tr>
+<tr>
+<td><code>callback</code></td>
+<td>function</td>
+<td>Content update function</td>
+</tr>
+</tbody></table>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">// Animate typing dots
+quikchat.tempMessageGenerator(&#39;#status&#39;, &#39;Typing&#39;, 500, 
+  (msg, count) =&gt; msg + (count % 3 === 0 ? &#39;&#39; : &#39;.&#39;)
+);
+</code></pre>
+<hr>
+<h2>Events &amp; Callbacks</h2>
+<h3>Constructor Callback: <code>onSend(chatInstance, message)</code></h3>
+<p>Called when user submits a message.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>chatInstance</code></td>
+<td>quikchat</td>
+<td>The chat instance</td>
+</tr>
+<tr>
+<td><code>message</code></td>
+<td>string</td>
+<td>User&#39;s message text</td>
+</tr>
+</tbody></table>
+<h3><code>setCallbackOnSend(callback)</code></h3>
+<p>Updates the send callback after construction.</p>
+<h3><code>setCallbackonMessageAdded(callback)</code></h3>
+<p>Sets a callback for when any message is added.</p>
+<p><strong>Callback Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>chatInstance</code></td>
+<td>quikchat</td>
+<td>The chat instance</td>
+</tr>
+<tr>
+<td><code>msgid</code></td>
+<td>number</td>
+<td>ID of the added message</td>
+</tr>
+</tbody></table>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">chat.setCallbackonMessageAdded((instance, msgid) =&gt; {
+  console.log(`Message ${msgid} added`);
+});
+</code></pre>
+<h3><code>setCallbackonMessageAppend(callback)</code></h3>
+<p><em>Available in v1.1.15+</em></p>
+<p>Sets a callback for when message content is appended.</p>
+<p><strong>Callback Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>chatInstance</code></td>
+<td>quikchat</td>
+<td>The chat instance</td>
+</tr>
+<tr>
+<td><code>msgid</code></td>
+<td>number</td>
+<td>ID of the appended message</td>
+</tr>
+<tr>
+<td><code>content</code></td>
+<td>string</td>
+<td>Content that was appended</td>
+</tr>
+</tbody></table>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">chat.setCallbackonMessageAppend((instance, msgid, content) =&gt; {
+  console.log(`Appended &quot;${content}&quot; to message ${msgid}`);
+});
+</code></pre>
+<h3><code>setCallbackonMessageReplace(callback)</code></h3>
+<p><em>Available in v1.1.15+</em></p>
+<p>Sets a callback for when message content is replaced.</p>
+<p><strong>Callback Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>chatInstance</code></td>
+<td>quikchat</td>
+<td>The chat instance</td>
+</tr>
+<tr>
+<td><code>msgid</code></td>
+<td>number</td>
+<td>ID of the replaced message</td>
+</tr>
+<tr>
+<td><code>content</code></td>
+<td>string</td>
+<td>New content of the message</td>
+</tr>
+</tbody></table>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">chat.setCallbackonMessageReplace((instance, msgid, content) =&gt; {
+  console.log(`Replaced message ${msgid} with &quot;${content}&quot;`);
+});
+</code></pre>
+<h3><code>setCallbackonMessageDelete(callback)</code></h3>
+<p><em>Available in v1.1.15+</em></p>
+<p>Sets a callback for when a message is deleted.</p>
+<p><strong>Callback Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>chatInstance</code></td>
+<td>quikchat</td>
+<td>The chat instance</td>
+</tr>
+<tr>
+<td><code>msgid</code></td>
+<td>number</td>
+<td>ID of the deleted message</td>
+</tr>
+</tbody></table>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">chat.setCallbackonMessageDelete((instance, msgid) =&gt; {
+  console.log(`Message ${msgid} deleted`);
+});
+</code></pre>
+<hr>
+<h2>CSS Classes Reference</h2>
+<p>QuikChat uses a structured CSS class system for styling and functionality:</p>
+<h3>Core Structure</h3>
+<ul>
+<li><code>.quikchat-base</code> - Main container</li>
+<li><code>.quikchat-theme-*</code> - Theme classes</li>
+<li><code>.quikchat-message</code> - Individual message container</li>
+<li><code>.quikchat-message-content</code> - Message content area</li>
+<li><code>.quikchat-user-label</code> - User name display</li>
+</ul>
+<h3>Message Positioning</h3>
+<ul>
+<li><code>.left-singleline</code> / <code>.left-multiline</code> - Left-aligned messages</li>
+<li><code>.right-singleline</code> / <code>.right-multiline</code> - Right-aligned messages  </li>
+<li><code>.center-singleline</code> / <code>.center-multiline</code> - Center-aligned messages</li>
+</ul>
+<h3>Visibility &amp; Tagging <em>(v1.1.14+)</em></h3>
+<ul>
+<li><code>.quikchat-tag-{tagname}</code> - Applied to tagged messages</li>
+<li><code>.quikchat-show-tag-{tagname}</code> - Applied to container to show tagged messages</li>
+</ul>
+<h3>Message IDs</h3>
+<ul>
+<li><code>.quikchat-msgid-{id}</code> - Unique identifier for each message (zero-padded)</li>
+</ul>
+<hr>
+<p><em>This reference covers QuikChat v1.1.14. For migration guides and practical examples, see the <a href="DEVELOPER-GUIDE.md">Developer Guide</a>.</em></p>
+
+    </article>
+    <script>
+        // Syntax highlighting
+        if (typeof Prism !== 'undefined') {
+            Prism.highlightAll();
+        }
+    </script>
+</body>
+</html>

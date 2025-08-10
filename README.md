@@ -8,7 +8,7 @@
 
 QuikChat is a lightweight, highly customizable chat interface that integrates seamlessly with any web project. Built with vanilla JavaScript, it provides powerful features for LLM applications, real-time chat, and interactive messaging experiences.
 
-**🚀 [Live Demo](https://deftio.github.io/quikchat/examples/example_umd.html) | 📚 [API Reference](API-REFERENCE.md) | 🛠 [Developer Guide](DEVELOPER-GUIDE.md)**
+**🚀 [Live Demo](https://deftio.github.io/quikchat/examples/example_umd.html) | 📚 [API Reference](docs/API-REFERENCE.md) | 🛠 [Developer Guide](docs/DEVELOPER-GUIDE.md)**
 
 
 
@@ -237,7 +237,7 @@ const chat = new quikchat('#chat', handler, {
 });
 ```
 
-**📖 [Complete Theming Guide](DEVELOPER-GUIDE.md#theming-guide)**
+**📖 [Complete Theming Guide](docs/DEVELOPER-GUIDE.md#theming-guide)**
 
 
 
@@ -276,7 +276,7 @@ streamingAPI.onChunk(chunk => {
 });
 ```
 
-**🛠 [Complete LLM Integration Guide](DEVELOPER-GUIDE.md#llm-integration-best-practices)**
+**🛠 [Complete LLM Integration Guide](docs/DEVELOPER-GUIDE.md#llm-integration-best-practices)**
 
 
 
@@ -313,7 +313,7 @@ export default {
 </script>
 ```
 
-**⚛️ [Framework Integration Examples](DEVELOPER-GUIDE.md#frontend-framework-integration)**
+**⚛️ [Framework Integration Examples](docs/DEVELOPER-GUIDE.md#frontend-framework-integration)**
 
 
 
@@ -321,8 +321,8 @@ export default {
 
 | Document | Description |
 |-|-|
-| **[API Reference](API-REFERENCE.md)** | Complete technical reference for all methods and options |
-| **[Developer Guide](DEVELOPER-GUIDE.md)** | Practical recipes and advanced patterns |
+| **[API Reference](docs/API-REFERENCE.md)** | Complete technical reference for all methods and options |
+| **[Developer Guide](docs/DEVELOPER-GUIDE.md)** | Practical recipes and advanced patterns |
 | **[Examples](examples/)** | Working code examples and demos |
 | **[Live Demo](https://deftio.github.io/quikchat/examples/)** | Interactive examples and showcase |
 
@@ -351,7 +351,7 @@ QuikChat is built for production use with excellent performance characteristics:
 - **Scalable**: Handles thousands of messages efficiently
 - **Memory Efficient**: Automatic cleanup and optimization
 
-**📊 [Performance Optimization Guide](DEVELOPER-GUIDE.md#performance-optimization)**
+**📊 [Performance Optimization Guide](docs/DEVELOPER-GUIDE.md#performance-optimization)**
 
 
 

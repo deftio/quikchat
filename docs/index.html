@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation Hub - QuikChat Documentation</title>
+    <link rel="stylesheet" href="https://unpkg.com/github-markdown-css@5/github-markdown.css">
+    <link rel="stylesheet" href="https://unpkg.com/prismjs@1/themes/prism.css">
+    <style>
+        body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        @media (max-width: 767px) {
+            body { padding: 15px; }
+        }
+        /* Ensure emojis display properly */
+        .markdown-body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+        }
+        /* Code block styling */
+        pre {
+            background-color: #f6f8fa;
+            border-radius: 6px;
+            padding: 16px;
+            overflow: auto;
+        }
+        code {
+            background-color: rgba(175, 184, 193, 0.2);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 85%;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        /* Table styling */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 16px;
+            margin-bottom: 16px;
+        }
+        table th, table td {
+            border: 1px solid #d0d7de;
+            padding: 6px 13px;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+    </style>
+    <script src="https://unpkg.com/prismjs@1/components/prism-core.min.js"></script>
+    <script src="https://unpkg.com/prismjs@1/plugins/autoloader/prism-autoloader.min.js"></script>
+</head>
+<body>
+    <article class="markdown-body">
+        <h1>QuikChat Documentation</h1>
+<p>Welcome to the QuikChat documentation hub.</p>
+<h2>📚 Documentation</h2>
+<ul>
+<li><a href="./API-REFERENCE.html">API Reference</a> - Complete technical reference for all methods and options</li>
+<li><a href="./DEVELOPER-GUIDE.html">Developer Guide</a> - Practical recipes and advanced patterns  </li>
+<li><a href="./release-notes.html">Release Notes</a> - Version history and changelog</li>
+</ul>
+<h2>🔗 Quick Links</h2>
+<ul>
+<li><a href="../">Main Project Page</a> - Return to QuikChat homepage</li>
+<li><a href="https://github.com/deftio/quikchat">GitHub Repository</a> - Source code and issues</li>
+<li><a href="https://www.npmjs.com/package/quikchat">NPM Package</a> - Package information</li>
+<li><a href="https://deftio.github.io/quikchat/examples/">Live Examples</a> - Interactive demos</li>
+</ul>
+<h2>🚀 Getting Started</h2>
+<pre><code class="language-bash">npm install quikchat
+</code></pre>
+<pre><code class="language-javascript">import quikchat from &#39;quikchat&#39;;
+import &#39;quikchat/dist/quikchat.css&#39;;
+
+const chat = new quikchat(&#39;#chat&#39;, (instance, message) =&gt; {
+    console.log(&#39;User said:&#39;, message);
+});
+</code></pre>
+
+    </article>
+    <script>
+        // Syntax highlighting
+        if (typeof Prism !== 'undefined') {
+            Prism.highlightAll();
+        }
+    </script>
+</body>
+</html>

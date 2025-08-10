@@ -1,5 +1,40 @@
 # Release Notes
 
+## 1.1.15 (In Development)
+
+### New Features
+
+#### Smart Scroll Behavior
+- **Fixed GitHub Issue #1**: Messages no longer force scroll to bottom when users are reading earlier messages
+- Added `'smart'` scroll mode - only scrolls if user is near bottom of chat
+- `scrollIntoView` parameter now accepts:
+  - `true` - Always scroll to new message
+  - `false` - Never scroll automatically  
+  - `'smart'` - Only scroll if user is near bottom (new!)
+
+#### Enhanced Callbacks for Message Modifications
+- `setCallbackonMessageAppend()` - Fired when content is appended to a message (useful for streaming)
+- `setCallbackonMessageReplace()` - Fired when message content is replaced
+- `setCallbackonMessageDelete()` - Fired when a message is deleted
+
+#### History API Improvements
+- **`historyGetPage()`** - Paginated history retrieval with ascending/descending order support
+- **`historySearch()`** - Search messages by text, user, role, or tags
+- **`historyGetInfo()`** - Get metadata about history size, memory usage, and pagination
+- Memory optimizations for better performance with 1000+ messages
+- Efficient handling of large chat histories without loading everything at once
+
+### Bug Fixes
+- Fixed auto-scroll disrupting users reading earlier messages
+- Removed unnecessary scroll triggers from append/replace operations
+
+### Developer Experience
+- Improved test coverage with 48 total tests
+- Comprehensive documentation updates
+- Better TypeScript compatibility preparation
+
+### Breaking Changes
+- None - all changes are backward compatible
 
 ## 1.1.14 
 

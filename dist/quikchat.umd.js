@@ -86,6 +86,16 @@
     }
   }
 
+  // Auto-generated version file - DO NOT EDIT MANUALLY
+  // This file is automatically updated by tools/updateVersion.js
+
+  var quikchatVersion = {
+    version: "1.1.15-dev4",
+    license: "BSD-2",
+    url: "https://github/deftio/quikchat",
+    fun: true
+  };
+
   var quikchat = /*#__PURE__*/function () {
     /**
      * 
@@ -224,6 +234,27 @@
       key: "setCallbackonMessageAdded",
       value: function setCallbackonMessageAdded(callback) {
         this._onMessageAdded = callback;
+      }
+
+      // set a callback for when message content is appended
+    }, {
+      key: "setCallbackonMessageAppend",
+      value: function setCallbackonMessageAppend(callback) {
+        this._onMessageAppend = callback;
+      }
+
+      // set a callback for when message content is replaced
+    }, {
+      key: "setCallbackonMessageReplace",
+      value: function setCallbackonMessageReplace(callback) {
+        this._onMessageReplace = callback;
+      }
+
+      // set a callback for when a message is deleted
+    }, {
+      key: "setCallbackonMessageDelete",
+      value: function setCallbackonMessageDelete(callback) {
+        this._onMessageDelete = callback;
       }
 
       // Public methods
@@ -383,10 +414,15 @@
           messageDiv.style.display = 'none';
         }
 
-        // Scroll to the last message only if the user is not actively scrolling up
-        if (!this.userScrolledUp || input.scrollIntoView) {
+        // Handle scroll behavior based on scrollIntoView parameter
+        // 'smart' = only scroll if near bottom, true = always scroll, false = never scroll
+        if (input.scrollIntoView === true) {
+          this.messageScrollToBottom();
+        } else if (input.scrollIntoView === 'smart' && !this.userScrolledUp) {
           this.messageScrollToBottom();
         }
+        // If scrollIntoView is false, don't scroll at all
+
         this._textEntry.value = '';
         this._adjustMessagesAreaHeight();
         this._handleShortLongMessageCSS(messageDiv, input.align); // Handle CSS for short/long messages
@@ -454,6 +490,11 @@
           this._history.splice(this._history.findIndex(function (item) {
             return item.msgid === n;
           }), 1);
+
+          // Call the onMessageDelete callback if it exists
+          if (this._onMessageDelete) {
+            this._onMessageDelete(this, n);
+          }
         }
         return sucess;
       }
@@ -524,10 +565,13 @@
           item.updatedtime = new Date().toISOString();
           success = true;
 
-          // Scroll to the last message only if the user is not actively scrolling up
-          if (!this.userScrolledUp) {
-            this._messagesArea.lastElementChild.scrollIntoView();
+          // Call the onMessageAppend callback if it exists
+          if (this._onMessageAppend) {
+            this._onMessageAppend(this, n, content);
           }
+
+          // Don't auto-scroll on append - let user control this
+          // Users can call messageScrollToBottom() if they want to scroll
         } catch (error) {
           console.log("".concat(String(n), " : Message ID not found"));
         }
@@ -550,10 +594,13 @@
           item.updatedtime = new Date().toISOString();
           success = true;
 
-          // Scroll to the last message only if the user is not actively scrolling up
-          if (!this.userScrolledUp) {
-            this._messagesArea.lastElementChild.scrollIntoView();
+          // Call the onMessageReplace callback if it exists
+          if (this._onMessageReplace) {
+            this._onMessageReplace(this, n, content);
           }
+
+          // Don't auto-scroll on append - let user control this
+          // Users can call messageScrollToBottom() if they want to scroll
         } catch (error) {
           console.log("".concat(String(n), " : Message ID not found"));
         }
@@ -709,6 +756,136 @@
       value: function historyGetAllCopy() {
         return this._history.slice();
       }
+
+      /**
+       * Get a page of history messages with pagination support
+       * @param {number} page - Page number (1-based)
+       * @param {number} pageSize - Number of messages per page (default 50)
+       * @param {string} order - 'asc' for oldest first, 'desc' for newest first (default 'asc')
+       * @returns {object} Object with messages array, pagination info
+       */
+    }, {
+      key: "historyGetPage",
+      value: function historyGetPage() {
+        var page = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
+        var pageSize = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 50;
+        var order = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'asc';
+        var totalMessages = this._history.length;
+        var totalPages = Math.ceil(totalMessages / pageSize);
+        var currentPage = Math.max(1, Math.min(page, totalPages || 1));
+        var start, end;
+        if (order === 'desc') {
+          // For descending order, page 1 shows the newest messages
+          start = Math.max(0, totalMessages - currentPage * pageSize);
+          end = totalMessages - (currentPage - 1) * pageSize;
+        } else {
+          // For ascending order, page 1 shows the oldest messages
+          start = (currentPage - 1) * pageSize;
+          end = Math.min(start + pageSize, totalMessages);
+        }
+        var messages = this._history.slice(start, end);
+
+        // Reverse messages array if descending order requested
+        if (order === 'desc') {
+          messages.reverse();
+        }
+        return {
+          messages: messages,
+          pagination: {
+            currentPage: currentPage,
+            pageSize: pageSize,
+            totalPages: totalPages,
+            totalMessages: totalMessages,
+            hasNext: currentPage < totalPages,
+            hasPrevious: currentPage > 1,
+            order: order
+          }
+        };
+      }
+
+      /**
+       * Get information about history size and pagination
+       * @param {number} pageSize - Size to calculate pages for (default 50)
+       * @returns {object} History metadata
+       */
+      /**
+       * Search history for messages matching criteria
+       * @param {object} criteria - Search criteria object
+       * @param {string} criteria.text - Text to search for in message content
+       * @param {string} criteria.userString - Filter by user name
+       * @param {string} criteria.role - Filter by role
+       * @param {array} criteria.tags - Filter by tags (messages with any of these tags)
+       * @param {number} criteria.limit - Maximum results to return (default 100)
+       * @returns {array} Array of matching messages
+       */
+    }, {
+      key: "historySearch",
+      value: function historySearch() {
+        var criteria = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        var results = this._history;
+
+        // Filter by text content (case-insensitive)
+        if (criteria.text) {
+          var searchText = criteria.text.toLowerCase();
+          results = results.filter(function (msg) {
+            return msg.content.toLowerCase().includes(searchText);
+          });
+        }
+
+        // Filter by user
+        if (criteria.userString) {
+          results = results.filter(function (msg) {
+            return msg.userString === criteria.userString;
+          });
+        }
+
+        // Filter by role
+        if (criteria.role) {
+          results = results.filter(function (msg) {
+            return msg.role === criteria.role;
+          });
+        }
+
+        // Filter by tags (match any tag)
+        if (criteria.tags && criteria.tags.length > 0) {
+          results = results.filter(function (msg) {
+            return msg.tags && msg.tags.some(function (tag) {
+              return criteria.tags.includes(tag);
+            });
+          });
+        }
+
+        // Limit results
+        var limit = criteria.limit || 100;
+        if (results.length > limit) {
+          results = results.slice(0, limit);
+        }
+        return results;
+      }
+    }, {
+      key: "historyGetInfo",
+      value: function historyGetInfo() {
+        var pageSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 50;
+        var totalMessages = this._history.length;
+        return {
+          totalMessages: totalMessages,
+          totalPages: Math.ceil(totalMessages / pageSize),
+          oldestMessage: totalMessages > 0 ? {
+            msgid: this._history[0].msgid,
+            timestamp: this._history[0].timestamp,
+            userString: this._history[0].userString
+          } : null,
+          newestMessage: totalMessages > 0 ? {
+            msgid: this._history[totalMessages - 1].msgid,
+            timestamp: this._history[totalMessages - 1].timestamp,
+            userString: this._history[totalMessages - 1].userString
+          } : null,
+          memoryUsage: {
+            estimatedSize: JSON.stringify(this._history).length,
+            averageMessageSize: totalMessages > 0 ? Math.round(JSON.stringify(this._history).length / totalMessages) : 0
+          }
+        };
+      }
     }, {
       key: "historyClear",
       value: function historyClear() {
@@ -809,12 +986,7 @@
     }], [{
       key: "version",
       value: function version() {
-        return {
-          "version": "1.1.14",
-          "license": "BSD-2",
-          "url": "https://github/deftio/quikchat",
-          "fun": true
-        };
+        return quikchatVersion;
       }
 
       /**

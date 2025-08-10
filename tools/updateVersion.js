@@ -9,29 +9,36 @@ const __dirname = path.dirname(__filename);
 // Path to the package.json file
 const packageJsonPath = path.join(__dirname, '../package.json');
 
-// Import the ES6 module dynamically
+// Path to the quikchat_version.js file
+const versionFilePath = path.join(__dirname, '../src/quikchat_version.js');
+
+// Update the version file from package.json
 async function updateVersion() {
   try {
-    // Dynamically import your ES6 module
-    const modulePath = path.join(__dirname, '../src/quikchat.js');
-    const { default: quikchat } = await import(modulePath);
-
-    // Create an instance of the class and get the version
-    //const quikChatInstance = new quikchat();
-    const version = quikchat.version().version; //static method
-
-    // Read the existing package.json file
+    // Read the package.json file
     const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
+    const version = packageJson.version;
 
-    // Update the version
-    packageJson.version = version;
+    // Generate the version module content
+    const versionFileContent = `// Auto-generated version file - DO NOT EDIT MANUALLY
+// This file is automatically updated by tools/updateVersion.js
 
-    // Write the updated package.json file back to disk
-    await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2), 'utf8');
+export const quikchatVersion = {
+    version: "${version}",
+    license: "BSD-2",
+    url: "https://github/deftio/quikchat",
+    fun: true
+};
 
-    console.log(`Updated package.json to version ${version}`);
+export default quikchatVersion;`;
+
+    // Write the version file
+    await fs.writeFile(versionFilePath, versionFileContent, 'utf8');
+
+    console.log(`Updated quikchat_version.js to version ${version}`);
   } catch (error) {
     console.error('Error updating version:', error);
+    process.exit(1);
   }
 }
 

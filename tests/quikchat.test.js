@@ -1,6 +1,10 @@
 import quikchat from '../src/quikchat';
-// Prevent scrollIntoView error in jsdom
-Element.prototype.scrollIntoView = () => {};
+// Prevent scrollIntoView error in jsdom - track calls for testing
+let scrollIntoViewCalls = 0;
+Element.prototype.scrollIntoView = function() {
+    scrollIntoViewCalls++;
+    this._scrolledIntoView = true;
+};
 
 describe('quikchat', () => {
     let parentElement;
@@ -346,6 +350,198 @@ describe('quikchat', () => {
             chatInstance.messageSetVisibility(msgId, true);
             const msgDom = chatInstance.messageGetDOMObject(msgId);
             expect(msgDom.style.display).not.toBe('none'); // It has an inline style to show it
+        });
+    });
+
+    describe('Message Callbacks', () => {
+        test('should trigger onMessageAppend callback', () => {
+            let callbackFired = false;
+            let receivedMsgId = null;
+            let receivedContent = null;
+            
+            chatInstance.setCallbackonMessageAppend((instance, msgId, content) => {
+                callbackFired = true;
+                receivedMsgId = msgId;
+                receivedContent = content;
+            });
+            
+            const msgId = chatInstance.messageAddNew('Initial message', 'User', 'left');
+            chatInstance.messageAppendContent(msgId, ' appended');
+            
+            expect(callbackFired).toBe(true);
+            expect(receivedMsgId).toBe(msgId);
+            expect(receivedContent).toBe(' appended');
+        });
+        
+        test('should trigger onMessageReplace callback', () => {
+            let callbackFired = false;
+            let receivedMsgId = null;
+            let receivedContent = null;
+            
+            chatInstance.setCallbackonMessageReplace((instance, msgId, content) => {
+                callbackFired = true;
+                receivedMsgId = msgId;
+                receivedContent = content;
+            });
+            
+            const msgId = chatInstance.messageAddNew('Initial message', 'User', 'left');
+            chatInstance.messageReplaceContent(msgId, 'Replaced content');
+            
+            expect(callbackFired).toBe(true);
+            expect(receivedMsgId).toBe(msgId);
+            expect(receivedContent).toBe('Replaced content');
+        });
+        
+        test('should trigger onMessageDelete callback', () => {
+            let callbackFired = false;
+            let receivedMsgId = null;
+            
+            chatInstance.setCallbackonMessageDelete((instance, msgId) => {
+                callbackFired = true;
+                receivedMsgId = msgId;
+            });
+            
+            const msgId = chatInstance.messageAddNew('Message to delete', 'User', 'left');
+            chatInstance.messageRemove(msgId);
+            
+            expect(callbackFired).toBe(true);
+            expect(receivedMsgId).toBe(msgId);
+        });
+    });
+
+    describe('History Pagination and Search', () => {
+        beforeEach(() => {
+            // Add 25 test messages for pagination testing
+            for (let i = 1; i <= 25; i++) {
+                chatInstance.messageAddNew(
+                    `Message ${i}`,
+                    i % 2 === 0 ? 'Alice' : 'Bob',
+                    i % 3 === 0 ? 'center' : (i % 2 === 0 ? 'left' : 'right'),
+                    i % 2 === 0 ? 'assistant' : 'user',
+                    false, // Don't scroll
+                    true,
+                    i % 5 === 0 ? ['important'] : []
+                );
+            }
+        });
+
+        test('historyGetPage should return paginated results', () => {
+            const page1 = chatInstance.historyGetPage(1, 10);
+            expect(page1.messages.length).toBe(10);
+            expect(page1.pagination.currentPage).toBe(1);
+            expect(page1.pagination.totalPages).toBe(3);
+            expect(page1.pagination.totalMessages).toBe(25);
+            expect(page1.pagination.hasNext).toBe(true);
+            expect(page1.pagination.hasPrevious).toBe(false);
+            expect(page1.messages[0].content).toBe('Message 1');
+        });
+
+        test('historyGetPage should handle last page correctly', () => {
+            const lastPage = chatInstance.historyGetPage(3, 10);
+            expect(lastPage.messages.length).toBe(5);
+            expect(lastPage.pagination.currentPage).toBe(3);
+            expect(lastPage.pagination.hasNext).toBe(false);
+            expect(lastPage.pagination.hasPrevious).toBe(true);
+        });
+
+        test('historyGetPage should support descending order', () => {
+            const page1Desc = chatInstance.historyGetPage(1, 10, 'desc');
+            expect(page1Desc.messages[0].content).toBe('Message 25');
+            expect(page1Desc.messages[9].content).toBe('Message 16');
+        });
+
+        test('historyGetInfo should return correct metadata', () => {
+            const info = chatInstance.historyGetInfo(10);
+            expect(info.totalMessages).toBe(25);
+            expect(info.totalPages).toBe(3);
+            expect(info.oldestMessage.userString).toBe('Bob');
+            expect(info.newestMessage.userString).toBe('Bob');
+            expect(info.memoryUsage.estimatedSize).toBeGreaterThan(0);
+        });
+
+        test('historySearch should filter by text', () => {
+            const results = chatInstance.historySearch({ text: 'Message 1', limit: 10 });
+            expect(results.length).toBe(10); // Messages 1, 10-19
+            expect(results[0].content).toBe('Message 1');
+        });
+
+        test('historySearch should filter by user', () => {
+            const results = chatInstance.historySearch({ userString: 'Alice' });
+            const allAlice = results.every(msg => msg.userString === 'Alice');
+            expect(allAlice).toBe(true);
+            expect(results.length).toBe(12); // Even numbered messages
+        });
+
+        test('historySearch should filter by role', () => {
+            const results = chatInstance.historySearch({ role: 'assistant' });
+            const allAssistant = results.every(msg => msg.role === 'assistant');
+            expect(allAssistant).toBe(true);
+        });
+
+        test('historySearch should filter by tags', () => {
+            const results = chatInstance.historySearch({ tags: ['important'] });
+            expect(results.length).toBe(5); // Messages 5, 10, 15, 20, 25
+            const allImportant = results.every(msg => msg.tags.includes('important'));
+            expect(allImportant).toBe(true);
+        });
+
+        test('historySearch should support combined filters', () => {
+            const results = chatInstance.historySearch({ 
+                userString: 'Alice',
+                text: '2'
+            });
+            // Should find Alice's messages containing '2': 2, 12, 20, 22, 24
+            const allMatch = results.every(msg => 
+                msg.userString === 'Alice' && msg.content.includes('2')
+            );
+            expect(allMatch).toBe(true);
+        });
+    });
+
+    describe('Scroll Behavior', () => {
+        beforeEach(() => {
+            scrollIntoViewCalls = 0;
+        });
+
+        test('should scroll to bottom when scrollIntoView is true', () => {
+            const initialCalls = scrollIntoViewCalls;
+            chatInstance.messageAddNew('Test message', 'User', 'left', 'user', true);
+            expect(scrollIntoViewCalls).toBeGreaterThan(initialCalls);
+        });
+
+        test('should NOT scroll when scrollIntoView is false', () => {
+            const initialCalls = scrollIntoViewCalls;
+            chatInstance.messageAddNew('Test message', 'User', 'left', 'user', false);
+            expect(scrollIntoViewCalls).toBe(initialCalls);
+        });
+
+        test('should provide smart scroll option to only scroll if near bottom', () => {
+            // Add multiple messages to create scrollable content
+            for (let i = 0; i < 10; i++) {
+                chatInstance.messageAddNew(`Message ${i}`, 'User', 'left', 'user', false);
+            }
+            
+            // Simulate user scrolled up
+            chatInstance.userScrolledUp = true;
+            const initialCalls = scrollIntoViewCalls;
+            
+            // Adding a message with smart scroll should not scroll
+            chatInstance.messageAddNew('New message', 'User', 'left', 'user', 'smart');
+            expect(scrollIntoViewCalls).toBe(initialCalls);
+            
+            // Simulate user near bottom
+            chatInstance.userScrolledUp = false;
+            
+            // Adding a message with smart scroll should scroll
+            chatInstance.messageAddNew('Another message', 'User', 'left', 'user', 'smart');
+            expect(scrollIntoViewCalls).toBeGreaterThan(initialCalls);
+        });
+
+        test('messageScrollToBottom should always scroll', () => {
+            const initialCalls = scrollIntoViewCalls;
+            chatInstance.messageAddNew('Test', 'User', 'left');
+            chatInstance.messageScrollToBottom();
+            expect(scrollIntoViewCalls).toBeGreaterThan(initialCalls);
         });
     });
     

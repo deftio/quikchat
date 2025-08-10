@@ -1,3 +1,5 @@
+import { quikchatVersion } from './quikchat_version.js';
+
 class quikchat {
     /**
      * 
@@ -126,6 +128,21 @@ class quikchat {
     setCallbackonMessageAdded(callback) {
         this._onMessageAdded = callback;
     }
+    
+    // set a callback for when message content is appended
+    setCallbackonMessageAppend(callback) {
+        this._onMessageAppend = callback;
+    }
+    
+    // set a callback for when message content is replaced
+    setCallbackonMessageReplace(callback) {
+        this._onMessageReplace = callback;
+    }
+    
+    // set a callback for when a message is deleted
+    setCallbackonMessageDelete(callback) {
+        this._onMessageDelete = callback;
+    }
 
     // Public methods
     titleAreaToggle() {
@@ -253,10 +270,14 @@ class quikchat {
             messageDiv.style.display = 'none';
         }
     
-        // Scroll to the last message only if the user is not actively scrolling up
-        if ((!this.userScrolledUp) || input.scrollIntoView) {
+        // Handle scroll behavior based on scrollIntoView parameter
+        // 'smart' = only scroll if near bottom, true = always scroll, false = never scroll
+        if (input.scrollIntoView === true) {
+            this.messageScrollToBottom();
+        } else if (input.scrollIntoView === 'smart' && !this.userScrolledUp) {
             this.messageScrollToBottom();
         }
+        // If scrollIntoView is false, don't scroll at all
     
         this._textEntry.value = '';
         this._adjustMessagesAreaHeight();
@@ -307,6 +328,11 @@ class quikchat {
 
             // better way to delete this from history
             this._history.splice(this._history.findIndex((item) => item.msgid === n), 1);
+            
+            // Call the onMessageDelete callback if it exists
+            if (this._onMessageDelete) {
+                this._onMessageDelete(this, n);
+            }
         }
         return sucess;
     }
@@ -366,11 +392,14 @@ class quikchat {
             item.content += content;
             item.updatedtime = new Date().toISOString();
             success = true;
-
-            // Scroll to the last message only if the user is not actively scrolling up
-            if (!this.userScrolledUp) {
-                this._messagesArea.lastElementChild.scrollIntoView();
+            
+            // Call the onMessageAppend callback if it exists
+            if (this._onMessageAppend) {
+                this._onMessageAppend(this, n, content);
             }
+
+            // Don't auto-scroll on append - let user control this
+            // Users can call messageScrollToBottom() if they want to scroll
         } catch (error) {
             console.log(`${String(n)} : Message ID not found`);
         }
@@ -388,11 +417,14 @@ class quikchat {
             item.content = content;
             item.updatedtime = new Date().toISOString();
             success = true;
-
-            // Scroll to the last message only if the user is not actively scrolling up
-            if (!this.userScrolledUp) {
-                this._messagesArea.lastElementChild.scrollIntoView();
+            
+            // Call the onMessageReplace callback if it exists
+            if (this._onMessageReplace) {
+                this._onMessageReplace(this, n, content);
             }
+
+            // Don't auto-scroll on append - let user control this
+            // Users can call messageScrollToBottom() if they want to scroll
         } catch (error) {
             console.log(`${String(n)} : Message ID not found`);
         }
@@ -541,6 +573,129 @@ class quikchat {
     historyGetAllCopy() {
         return this._history.slice();
     }
+    
+    /**
+     * Get a page of history messages with pagination support
+     * @param {number} page - Page number (1-based)
+     * @param {number} pageSize - Number of messages per page (default 50)
+     * @param {string} order - 'asc' for oldest first, 'desc' for newest first (default 'asc')
+     * @returns {object} Object with messages array, pagination info
+     */
+    historyGetPage(page = 1, pageSize = 50, order = 'asc') {
+        const totalMessages = this._history.length;
+        const totalPages = Math.ceil(totalMessages / pageSize);
+        const currentPage = Math.max(1, Math.min(page, totalPages || 1));
+        
+        let start, end;
+        if (order === 'desc') {
+            // For descending order, page 1 shows the newest messages
+            start = Math.max(0, totalMessages - (currentPage * pageSize));
+            end = totalMessages - ((currentPage - 1) * pageSize);
+        } else {
+            // For ascending order, page 1 shows the oldest messages
+            start = (currentPage - 1) * pageSize;
+            end = Math.min(start + pageSize, totalMessages);
+        }
+        
+        const messages = this._history.slice(start, end);
+        
+        // Reverse messages array if descending order requested
+        if (order === 'desc') {
+            messages.reverse();
+        }
+        
+        return {
+            messages: messages,
+            pagination: {
+                currentPage: currentPage,
+                pageSize: pageSize,
+                totalPages: totalPages,
+                totalMessages: totalMessages,
+                hasNext: currentPage < totalPages,
+                hasPrevious: currentPage > 1,
+                order: order
+            }
+        };
+    }
+    
+    /**
+     * Get information about history size and pagination
+     * @param {number} pageSize - Size to calculate pages for (default 50)
+     * @returns {object} History metadata
+     */
+    /**
+     * Search history for messages matching criteria
+     * @param {object} criteria - Search criteria object
+     * @param {string} criteria.text - Text to search for in message content
+     * @param {string} criteria.userString - Filter by user name
+     * @param {string} criteria.role - Filter by role
+     * @param {array} criteria.tags - Filter by tags (messages with any of these tags)
+     * @param {number} criteria.limit - Maximum results to return (default 100)
+     * @returns {array} Array of matching messages
+     */
+    historySearch(criteria = {}) {
+        let results = this._history;
+        
+        // Filter by text content (case-insensitive)
+        if (criteria.text) {
+            const searchText = criteria.text.toLowerCase();
+            results = results.filter(msg => 
+                msg.content.toLowerCase().includes(searchText)
+            );
+        }
+        
+        // Filter by user
+        if (criteria.userString) {
+            results = results.filter(msg => 
+                msg.userString === criteria.userString
+            );
+        }
+        
+        // Filter by role
+        if (criteria.role) {
+            results = results.filter(msg => 
+                msg.role === criteria.role
+            );
+        }
+        
+        // Filter by tags (match any tag)
+        if (criteria.tags && criteria.tags.length > 0) {
+            results = results.filter(msg => 
+                msg.tags && msg.tags.some(tag => criteria.tags.includes(tag))
+            );
+        }
+        
+        // Limit results
+        const limit = criteria.limit || 100;
+        if (results.length > limit) {
+            results = results.slice(0, limit);
+        }
+        
+        return results;
+    }
+    
+    historyGetInfo(pageSize = 50) {
+        const totalMessages = this._history.length;
+        return {
+            totalMessages: totalMessages,
+            totalPages: Math.ceil(totalMessages / pageSize),
+            oldestMessage: totalMessages > 0 ? {
+                msgid: this._history[0].msgid,
+                timestamp: this._history[0].timestamp,
+                userString: this._history[0].userString
+            } : null,
+            newestMessage: totalMessages > 0 ? {
+                msgid: this._history[totalMessages - 1].msgid,
+                timestamp: this._history[totalMessages - 1].timestamp,
+                userString: this._history[totalMessages - 1].userString
+            } : null,
+            memoryUsage: {
+                estimatedSize: JSON.stringify(this._history).length,
+                averageMessageSize: totalMessages > 0 ? 
+                    Math.round(JSON.stringify(this._history).length / totalMessages) : 0
+            }
+        };
+    }
 
     historyClear() {
         this.msgid = 0;
@@ -604,7 +759,7 @@ class quikchat {
      * @returns {object} - Returns the version and license information for the library.
      */
     static version() {
-        return { "version": "1.1.14", "license": "BSD-2", "url": "https://github/deftio/quikchat", "fun": true };
+        return quikchatVersion;
     }
 
     /**

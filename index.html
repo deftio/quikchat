@@ -172,7 +172,55 @@ const chat = new quikchat(&#39;#chat-container&#39;, (instance, message) =&gt; {
 </code></pre>
 <h3 id="direct-download">Direct Download</h3>
 <p>Download the latest release from <a href="https://github.com/deftio/quikchat/releases">GitHub Releases</a></p>
-<h2 id="🆕-whats-new-in-v1114">🆕 What&#39;s New in v1.1.14</h2>
+<h2 id="🆕-whats-new-in-v1115-in-development">🆕 What&#39;s New in v1.1.15 (In Development)</h2>
+<h3 id="🎯-smart-scroll-behavior">🎯 Smart Scroll Behavior</h3>
+<p>Improved user experience when reading chat history:</p>
+<pre><code class="language-javascript">// Never auto-scroll (user has full control)
+chat.messageAddNew(&#39;New message&#39;, &#39;Bot&#39;, &#39;left&#39;, &#39;assistant&#39;, false);
+
+// Smart scroll - only scrolls if user is near bottom
+chat.messageAddNew(&#39;New message&#39;, &#39;Bot&#39;, &#39;left&#39;, &#39;assistant&#39;, &#39;smart&#39;);
+
+// Always scroll to new messages (default)
+chat.messageAddNew(&#39;New message&#39;, &#39;Bot&#39;, &#39;left&#39;, &#39;assistant&#39;, true);
+</code></pre>
+<h3 id="🔔-enhanced-message-callbacks">🔔 Enhanced Message Callbacks</h3>
+<p>Track message modifications for streaming and real-time updates:</p>
+<pre><code class="language-javascript">// Track streaming content as it arrives
+chat.setCallbackonMessageAppend((instance, msgId, content) =&gt; {
+  console.log(`Streaming: ${content} added to message ${msgId}`);
+});
+
+// Monitor message edits
+chat.setCallbackonMessageReplace((instance, msgId, newContent) =&gt; {
+  console.log(`Message ${msgId} updated`);
+});
+
+// Track deletions
+chat.setCallbackonMessageDelete((instance, msgId) =&gt; {
+  console.log(`Message ${msgId} deleted`);
+});
+</code></pre>
+<h3 id="📚-powerful-history-management">📚 Powerful History Management</h3>
+<p>Efficiently handle large chat histories with pagination and search:</p>
+<pre><code class="language-javascript">// Paginated history retrieval
+const page = chat.historyGetPage(1, 20, &#39;desc&#39;); // Get newest 20 messages
+console.log(page.messages);
+console.log(page.pagination.hasNext); // Check if more pages exist
+
+// Search through history
+const results = chat.historySearch({ 
+  text: &#39;error&#39;,
+  userString: &#39;Support&#39;,
+  limit: 50 
+});
+
+// Get history metadata
+const info = chat.historyGetInfo();
+console.log(`Total messages: ${info.totalMessages}`);
+console.log(`Memory used: ${info.memoryUsage.estimatedSize} bytes`);
+</code></pre>
+<h2 id="📦-previous-release-v1114">📦 Previous Release: v1.1.14</h2>
 <h3 id="🏷-tagged-message-system">🏷 Tagged Message System</h3>
 <p>Group and control message visibility with powerful tagging:</p>
 <pre><code class="language-javascript">// Add messages with tags

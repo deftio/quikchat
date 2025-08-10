@@ -77,7 +77,7 @@ Adds a new message to the chat with simplified parameters.
 | `userString` | string | `"user"` | Display name for the message sender | v1.0+ |
 | `align` | string | `"right"` | Message alignment: `left`, `right`, `center` | v1.0+ |
 | `role` | string | `"user"` | Semantic role (for history/LLM context) | v1.0+ |
-| `scrollIntoView` | boolean | `true` | Auto-scroll to message after adding | v1.0+ |
+| `scrollIntoView` | boolean\|'smart' | `true` | Scroll behavior: `true` = always scroll, `false` = never scroll, `'smart'` = only scroll if near bottom | v1.0+ (smart mode v1.1.15+) |
 | `visible` | boolean | `true` | Whether message is initially visible | v1.1.13+ |
 | `tags` | Array<string> | `[]` | Array of tag strings for grouping | v1.1.14+ |
 
@@ -115,7 +115,7 @@ Adds a message with complete control over all properties.
 | `input.userID` | number | `-1` | Numeric user identifier | v1.0+ |
 | `input.timestamp` | string\|boolean | `false` | ISO timestamp or false for auto | v1.0+ |
 | `input.updatedtime` | string\|boolean | `false` | Last update time | v1.0+ |
-| `input.scrollIntoView` | boolean | `true` | Auto-scroll behavior | v1.0+ |
+| `input.scrollIntoView` | boolean\|'smart' | `true` | Scroll behavior: `true` = always, `false` = never, `'smart'` = only if near bottom | v1.0+ (smart mode v1.1.15+) |
 | `input.visible` | boolean | `true` | Initial visibility | v1.1.13+ |
 | `input.tags` | Array<string> | `[]` | Tag array | v1.1.14+ |
 
@@ -362,6 +362,98 @@ const fullHistory = chat.historyGetAllCopy();
 localStorage.setItem('chatHistory', JSON.stringify(fullHistory));
 ```
 
+### `historyGetPage(page, pageSize, order)`
+*Available in v1.1.15+*
+
+Get a page of history messages with pagination support.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `page` | number | `1` | Page number (1-based) |
+| `pageSize` | number | `50` | Number of messages per page |
+| `order` | string | `'asc'` | Sort order: `'asc'` (oldest first) or `'desc'` (newest first) |
+
+**Returns:** `object` - Object containing messages array and pagination metadata
+
+**Example:**
+```javascript
+// Get first page of 20 messages
+const result = chat.historyGetPage(1, 20);
+console.log(result.messages); // Array of 20 messages
+console.log(result.pagination); // { currentPage: 1, totalPages: 5, hasNext: true, ... }
+
+// Get newest messages first
+const recent = chat.historyGetPage(1, 10, 'desc');
+```
+
+### `historySearch(criteria)`
+*Available in v1.1.15+*
+
+Search history for messages matching specified criteria.
+
+**Parameters:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `criteria.text` | string | Text to search for in message content (case-insensitive) |
+| `criteria.userString` | string | Filter by user name |
+| `criteria.role` | string | Filter by role (user, assistant, system) |
+| `criteria.tags` | Array<string> | Filter by tags (matches any tag) |
+| `criteria.limit` | number | Maximum results to return (default: 100) |
+
+**Returns:** `Array<object>` - Array of matching messages
+
+**Example:**
+```javascript
+// Search for messages containing "error"
+const errors = chat.historySearch({ text: 'error' });
+
+// Find all messages from Alice
+const aliceMessages = chat.historySearch({ userString: 'Alice' });
+
+// Find important system messages
+const important = chat.historySearch({ 
+  role: 'system', 
+  tags: ['important'],
+  limit: 50
+});
+
+// Combined search
+const results = chat.historySearch({
+  text: 'login',
+  userString: 'Support',
+  role: 'assistant'
+});
+```
+
+### `historyGetInfo(pageSize)`
+*Available in v1.1.15+*
+
+Get metadata about the chat history.
+
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `pageSize` | number | `50` | Page size for calculating total pages |
+
+**Returns:** `object` - History metadata including size, pagination info, and memory usage
+
+**Example:**
+```javascript
+const info = chat.historyGetInfo(25);
+console.log(info);
+// {
+//   totalMessages: 150,
+//   totalPages: 6,
+//   oldestMessage: { msgid: 1, timestamp: '...', userString: 'User' },
+//   newestMessage: { msgid: 150, timestamp: '...', userString: 'Bot' },
+//   memoryUsage: { estimatedSize: 45000, averageMessageSize: 300 }
+// }
+```
+
 ### `historyClear()`
 
 Removes all messages and resets the chat.
@@ -557,6 +649,65 @@ Sets a callback for when any message is added.
 ```javascript
 chat.setCallbackonMessageAdded((instance, msgid) => {
   console.log(`Message ${msgid} added`);
+});
+```
+
+### `setCallbackonMessageAppend(callback)` 
+*Available in v1.1.15+*
+
+Sets a callback for when message content is appended.
+
+**Callback Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `chatInstance` | quikchat | The chat instance |
+| `msgid` | number | ID of the appended message |
+| `content` | string | Content that was appended |
+
+**Example:**
+```javascript
+chat.setCallbackonMessageAppend((instance, msgid, content) => {
+  console.log(`Appended "${content}" to message ${msgid}`);
+});
+```
+
+### `setCallbackonMessageReplace(callback)`
+*Available in v1.1.15+*
+
+Sets a callback for when message content is replaced.
+
+**Callback Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `chatInstance` | quikchat | The chat instance |
+| `msgid` | number | ID of the replaced message |
+| `content` | string | New content of the message |
+
+**Example:**
+```javascript
+chat.setCallbackonMessageReplace((instance, msgid, content) => {
+  console.log(`Replaced message ${msgid} with "${content}"`);
+});
+```
+
+### `setCallbackonMessageDelete(callback)`
+*Available in v1.1.15+*
+
+Sets a callback for when a message is deleted.
+
+**Callback Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `chatInstance` | quikchat | The chat instance |
+| `msgid` | number | ID of the deleted message |
+
+**Example:**
+```javascript
+chat.setCallbackonMessageDelete((instance, msgid) => {
+  console.log(`Message ${msgid} deleted`);
 });
 ```
 

@@ -97,7 +97,65 @@ Download the latest release from [GitHub Releases](https://github.com/deftio/qui
 
 
 
-## 🆕 What's New in v1.1.14
+## 🆕 What's New in v1.1.15 (In Development)
+
+### 🎯 Smart Scroll Behavior
+Improved user experience when reading chat history:
+
+```javascript
+// Never auto-scroll (user has full control)
+chat.messageAddNew('New message', 'Bot', 'left', 'assistant', false);
+
+// Smart scroll - only scrolls if user is near bottom
+chat.messageAddNew('New message', 'Bot', 'left', 'assistant', 'smart');
+
+// Always scroll to new messages (default)
+chat.messageAddNew('New message', 'Bot', 'left', 'assistant', true);
+```
+
+### 🔔 Enhanced Message Callbacks
+Track message modifications for streaming and real-time updates:
+
+```javascript
+// Track streaming content as it arrives
+chat.setCallbackonMessageAppend((instance, msgId, content) => {
+  console.log(`Streaming: ${content} added to message ${msgId}`);
+});
+
+// Monitor message edits
+chat.setCallbackonMessageReplace((instance, msgId, newContent) => {
+  console.log(`Message ${msgId} updated`);
+});
+
+// Track deletions
+chat.setCallbackonMessageDelete((instance, msgId) => {
+  console.log(`Message ${msgId} deleted`);
+});
+```
+
+### 📚 Powerful History Management
+Efficiently handle large chat histories with pagination and search:
+
+```javascript
+// Paginated history retrieval
+const page = chat.historyGetPage(1, 20, 'desc'); // Get newest 20 messages
+console.log(page.messages);
+console.log(page.pagination.hasNext); // Check if more pages exist
+
+// Search through history
+const results = chat.historySearch({ 
+  text: 'error',
+  userString: 'Support',
+  limit: 50 
+});
+
+// Get history metadata
+const info = chat.historyGetInfo();
+console.log(`Total messages: ${info.totalMessages}`);
+console.log(`Memory used: ${info.memoryUsage.estimatedSize} bytes`);
+```
+
+## 📦 Previous Release: v1.1.14
 
 ### 🏷 Tagged Message System
 Group and control message visibility with powerful tagging:

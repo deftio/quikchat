@@ -1,69 +1,113 @@
-# QuikChat JS TODO list
+# QuikChat Development Roadmap
 
-* show/hide timestamps
-* add support for right to left languages by making css with [send] on left etc
-* add support for inline "user" icon with chat message instead of on top => [user][message]
-* example Anthropic
-* example Mistral
-* example React Component
-* test suite coverage to 90%
-* clean up scroll to bottom behavior (in progress)
-* add stats api (num messages, users, total chars written etc)
-* add callbacks : onMessageAppend, onMessageReplace
-As a deeply experienced web developer, here's my honest assessment:
+## 🐛 Open GitHub Issues
 
-  QuikChat - The Reality
+- [x] **Issue #1**: "Sending message moves page back to top" - FIXED in v1.1.15 with smart scroll behavior
 
-  Where It Shines
+## 🚨 Critical (v1.2.0) - Production Readiness  
 
-  - Zero dependencies is genuinely impressive - no framework lock-in
-  - Simple mental model - just messages in a container
-  - Streaming support works well for LLM use cases
-  - History export/import is well-thought-out
+- [ ] **Accessibility**: ARIA labels, keyboard navigation, screen reader support
+- [ ] **Security**: XSS protection, sanitization hooks for innerHTML
+- [ ] **Performance**: Virtual scrolling for 1000+ messages (DOM bloat issue)
+- [ ] **TypeScript**: Add .d.ts type definitions
+- [x] **Pagination**: COMPLETED in v1.1.15 - Added historyGetPage() with full pagination support
+- [ ] **Mobile Experience**: Fix textarea handling for mobile keyboards
+- [ ] **Error Boundaries**: Add error handling APIs and recovery mechanisms
 
-  Where It Falls Short
+## 🎯 High Priority (v1.3.0) - Core Features  
 
-  - No virtual scrolling - Will struggle with 1000+ messages (DOM bloat)
-  - No message diffing - Full re-renders on updates
-  - Limited extensibility - Can't inject custom components (reactions, embeds, etc.)
-  - No accessibility - Missing ARIA labels, keyboard navigation
-  - No i18n - Hardcoded strings, no RTL support
-  - Security concerns - innerHTML usage without sanitization hooks
+- [ ] **i18n/RTL**: Internationalization support, right-to-left languages
+- [ ] **Message Reactions**: Emoji reactions on messages
+- [ ] **File Attachments**: Image preview, file upload support
+- [ ] **Markdown Support**: Code blocks, formatting
+- [x] **Enhanced Callbacks**: COMPLETED in v1.1.15 - Added onMessageAppend, onMessageReplace, onMessageDelete
+- [ ] **Stats API**: Message counts, user stats, total chars written
+- [ ] **Show/Hide Timestamps**: Toggle timestamp visibility
+- [ ] **User Avatars**: Inline icon support [user][message] format
 
-  Compared to Alternatives
+## 📈 Medium Priority (v1.4.0) - Enhanced UX
+- [x] **Message Search**: COMPLETED in v1.1.15 - historySearch() with text, user, role, tags filters
+- [ ] **Message Threading**: Reply to specific messages
+- [ ] **Message Editing**: Edit sent messages with history
+- [ ] **Connection Status**: Online/offline indicators
+- [ ] **LocalStorage Persistence**: Save/restore from browser storage
+- [ ] **Message Grouping**: Group consecutive messages from same user
+- [ ] **Typing Indicators**: Show when users are typing
+- [ ] **Read Receipts**: Message delivery/read status
+- [ ] **Code Syntax Highlighting**: Highlight code blocks in messages
+- [ ] **Gesture Navigation**: Support swipe and touch gestures on mobile
+- [ ] **Incremental Updates**: Avoid full re-renders on message updates
+- [ ] **WebSocket Integration Hooks**: Built-in support for real-time sync
+- [ ] **Telemetry/Analytics Hooks**: Built-in instrumentation points
+- [ ] **Undo/Redo**: Message edit history with undo/redo support
 
-  - vs stream-chat-react: QuikChat is 100x simpler but 10x less capable
-  - vs ChatUI libraries: Lacks message threading, typing indicators, read receipts
-  - vs Custom React/Vue: QuikChat wins on simplicity, loses on everything else
+## 🔮 Future Enhancements 
 
-  Verdict: Perfect for prototypes, concerning for production at scale
-==========
+- [ ] **Plugin System**: Extensibility for custom features
+- [ ] **Custom Message Types**: System messages, cards, buttons
+- [ ] **Voice Messages**: Audio recording and playback
+- [ ] **Video Embeds**: YouTube, video previews
+- [ ] **AI Features**: Auto-complete, suggestions
+- [ ] **Message Diffing**: Optimize updates without full re-renders
+- [ ] **Theme Builder**: Programmatic theme generation
 
-## some icons
+## 📚 Documentation & Examples  
 
-robot icon
+- [ ] **React Component Example**: Complete React integration
+- [ ] **Vue Component Example**: Complete Vue integration  
+- [ ] **Anthropic API Example**: Claude integration
+- [ ] **Mistral API Example**: Mistral integration
+- [ ] **Test Coverage**: Increase to 90%
+- [ ] **Clean Up Scroll Behavior**: Fix scrolling issues (related to Issue #1)
 
-```html
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect x="18" y="20" width="28" height="28" rx="6" ry="6" stroke="#000" stroke-width="3" fill="none"/>
-  <circle cx="26" cy="30" r="3" fill="#000"/>
-  <circle cx="38" cy="30" r="3" fill="#000"/>
-  <rect x="30" y="14" width="4" height="6" fill="#000"/>
-  <path d="M26 38 Q32 44 38 38" stroke="#000" stroke-width="2" fill="none"/>
-  <rect x="14" y="24" width="4" height="10" rx="2" ry="2" stroke="#000" stroke-width="3" fill="none"/>
-  <rect x="46" y="24" width="4" height="10" rx="2" ry="2" stroke="#000" stroke-width="3" fill="none"/>
-</svg>
-```
+## ⚠️ Known Scalability Limits & Recommendations
 
-person icon
+### Current Performance Ceilings
+- **Good until**: ~200-500 messages, ~10 concurrent users, desktop-focused
+- **Breaks at**: 1000+ messages (DOM bloat), large conversations, mobile usage
+- **Document size**: Works well under 50KB of chat history
+- **Migration path**: Abstract interfaces NOW to make future swapping easier
 
-```html
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <circle cx="32" cy="24" r="12" stroke="#000" stroke-width="3" fill="none"/>
-  <path d="M16 50 Q32 38 48 50" stroke="#000" stroke-width="3" fill="none"/>
-  <circle cx="28" cy="22" r="2" fill="#000"/>
-  <circle cx="36" cy="22" r="2" fill="#000"/>
-  <path d="M30 28 Q32 30 34 28" stroke="#000" stroke-width="2" fill="none"/>
-</svg>
+### Recommended Usage Limits (for production)
+- Max 500 messages per conversation
+- Max 50KB document/history size  
+- Desktop-first (mobile as secondary)
+- Set explicit user expectations about limits
 
-```
+### Architecture Recommendations
+1. **Keep data model separate** from QuikChat implementation
+2. **Abstract the chat interface** to allow future library swaps
+3. **Plan for migration** when you hit 100+ active users
+4. **Consider bundling** - Tree-shaking could reduce size significantly
+
+## 📝 Developer Feedback Notes
+
+### Where QuikChat Shines
+
+- Zero dependencies is genuinely impressive - no framework lock-in
+- Simple mental model - just messages in a container
+- Streaming support works well for LLM use cases
+- History export/import is well-thought-out
+
+### Current Limitations 
+
+- No virtual scrolling - Will struggle with 1000+ messages (DOM bloat)
+- No message diffing - Full re-renders on updates
+- Limited extensibility - Can't inject custom components (reactions, embeds, etc.)
+- No accessibility - Missing ARIA labels, keyboard navigation
+- No i18n - Hardcoded strings, no RTL support
+- Security concerns - innerHTML usage without sanitization hooks
+
+### Comparison to Alternatives 
+
+- vs stream-chat-react: QuikChat is 100x simpler but 10x less capable
+- vs ChatUI libraries: Lacks message threading, typing indicators, read receipts
+- vs Custom React/Vue: QuikChat wins on simplicity, loses on everything else
+
+### Verdict 
+
+Perfect for prototypes, concerning for production at scale - addressing accessibility, performance, and security would make it production-ready while maintaining simplicity advantage.
+
+---
+*Last updated: 2025-08-09*
+*Current development version: 1.1.15-dev1 

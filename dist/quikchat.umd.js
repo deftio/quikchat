@@ -96,11 +96,45 @@
     fun: true
   };
 
+  /**
+   * QuikChat - A zero-dependency JavaScript chat widget for modern web applications
+   * @class quikchat
+   * @version 1.1.15
+   */
   var quikchat = /*#__PURE__*/function () {
     /**
+     * Creates a new QuikChat instance
+     * @constructor
+     * @param {string|HTMLElement} parentElement - CSS selector or DOM element to attach the chat widget to
+     * @param {Function} [onSend] - Callback function triggered when user sends a message
+     * @param {Object} [options] - Configuration options
+     * @param {string} [options.theme='quikchat-theme-light'] - CSS theme class name
+     * @param {boolean} [options.trackHistory=true] - Whether to track message history
+     * @param {Object} [options.titleArea] - Title area configuration
+     * @param {string} [options.titleArea.title='Chat'] - Title text/HTML
+     * @param {boolean} [options.titleArea.show=false] - Whether to show title area initially
+     * @param {'left'|'center'|'right'} [options.titleArea.align='center'] - Title alignment
+     * @param {Object} [options.messagesArea] - Messages area configuration
+     * @param {boolean} [options.messagesArea.alternating=true] - Alternate message colors
+     * @param {Object} [options.inputArea] - Input area configuration
+     * @param {boolean} [options.inputArea.show=true] - Whether to show input area initially
+     * @param {boolean} [options.sendOnEnter=true] - Send message on Enter key
+     * @param {boolean} [options.sendOnShiftEnter=false] - Send message on Shift+Enter
+     * @param {string} [options.instanceClass=''] - Additional CSS class for the widget instance
+     * @example
+     * // Basic usage
+     * const chat = new quikchat('#chat-container', (instance, message) => {
+     *   console.log('User sent:', message);
+     * });
      * 
-     * @param string or DOM element  parentElement 
-     * @param {*} meta 
+     * @example
+     * // With options
+     * const chat = new quikchat('#chat', handleMessage, {
+     *   theme: 'quikchat-theme-dark',
+     *   titleArea: { title: 'Support Chat', show: true },
+     *   sendOnEnter: false,
+     *   sendOnShiftEnter: true
+     * });
      */
     function quikchat(parentElement) {
       var onSend = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
@@ -236,21 +270,53 @@
         this._onMessageAdded = callback;
       }
 
-      // set a callback for when message content is appended
+      /**
+       * Sets the callback function for when content is appended to a message
+       * @param {Function} callback - Function to call when content is appended
+       * @param {quikchat} callback.instance - The QuikChat instance
+       * @param {number} callback.msgId - The ID of the message being appended to
+       * @param {string} callback.content - The content being appended
+       * @since 1.1.15
+       * @example
+       * chat.setCallbackonMessageAppend((instance, msgId, content) => {
+       *   console.log(`Appended "${content}" to message ${msgId}`);
+       * });
+       */
     }, {
       key: "setCallbackonMessageAppend",
       value: function setCallbackonMessageAppend(callback) {
         this._onMessageAppend = callback;
       }
 
-      // set a callback for when message content is replaced
+      /**
+       * Sets the callback function for when a message's content is replaced
+       * @param {Function} callback - Function to call when content is replaced
+       * @param {quikchat} callback.instance - The QuikChat instance
+       * @param {number} callback.msgId - The ID of the message being replaced
+       * @param {string} callback.content - The new content
+       * @since 1.1.15
+       * @example
+       * chat.setCallbackonMessageReplace((instance, msgId, content) => {
+       *   console.log(`Message ${msgId} replaced with: ${content}`);
+       * });
+       */
     }, {
       key: "setCallbackonMessageReplace",
       value: function setCallbackonMessageReplace(callback) {
         this._onMessageReplace = callback;
       }
 
-      // set a callback for when a message is deleted
+      /**
+       * Sets the callback function for when a message is deleted
+       * @param {Function} callback - Function to call when a message is deleted
+       * @param {quikchat} callback.instance - The QuikChat instance
+       * @param {number} callback.msgId - The ID of the deleted message
+       * @since 1.1.15
+       * @example
+       * chat.setCallbackonMessageDelete((instance, msgId) => {
+       *   console.log(`Message ${msgId} was deleted`);
+       * });
+       */
     }, {
       key: "setCallbackonMessageDelete",
       value: function setCallbackonMessageDelete(callback) {
@@ -258,23 +324,46 @@
       }
 
       // Public methods
+      /**
+       * Toggles the visibility of the title area
+       * @returns {void}
+       */
     }, {
       key: "titleAreaToggle",
       value: function titleAreaToggle() {
         this._titleArea.style.display === 'none' ? this.titleAreaShow() : this.titleAreaHide();
       }
+
+      /**
+       * Shows the title area
+       * @returns {void}
+       */
     }, {
       key: "titleAreaShow",
       value: function titleAreaShow() {
         this._titleArea.style.display = '';
         this._adjustMessagesAreaHeight();
       }
+
+      /**
+       * Hides the title area
+       * @returns {void}
+       */
     }, {
       key: "titleAreaHide",
       value: function titleAreaHide() {
         this._titleArea.style.display = 'none';
         this._adjustMessagesAreaHeight();
       }
+
+      /**
+       * Sets the contents of the title area
+       * @param {string} title - HTML content to display in the title area
+       * @param {'left'|'center'|'right'} [align='center'] - Text alignment
+       * @returns {void}
+       * @example
+       * chat.titleAreaSetContents('<h2>Support Chat</h2>', 'center');
+       */
     }, {
       key: "titleAreaSetContents",
       value: function titleAreaSetContents(title) {
@@ -282,6 +371,11 @@
         this._titleArea.innerHTML = title;
         this._titleArea.style.textAlign = align;
       }
+
+      /**
+       * Gets the current contents of the title area
+       * @returns {string} The HTML content of the title area
+       */
     }, {
       key: "titleAreaGetContents",
       value: function titleAreaGetContents() {
@@ -356,7 +450,29 @@
       value: function messagesAreaAlternateColorsGet() {
         return this._messagesArea.classList.contains('quikchat-messages-area-alt');
       }
-      // message functions
+      /**
+       * Adds a new message to the chat with full configuration options
+       * @param {Object} input - Message configuration object
+       * @param {string} [input.content=''] - Message content (HTML allowed)
+       * @param {string} [input.userString='user'] - Display name for the message sender
+       * @param {'left'|'right'|'center'} [input.align='right'] - Message alignment
+       * @param {string} [input.role='user'] - Role identifier (user, assistant, system)
+       * @param {number} [input.userID=-1] - User ID for the message
+       * @param {string|false} [input.timestamp=false] - ISO timestamp or false for auto
+       * @param {string|false} [input.updatedtime=false] - Last updated timestamp
+       * @param {boolean|'smart'} [input.scrollIntoView=true] - Scroll behavior (true/false/'smart')
+       * @param {boolean} [input.visible=true] - Whether message is initially visible
+       * @param {string[]} [input.tags=[]] - Tags for message categorization
+       * @returns {number} Message ID for the newly added message
+       * @example
+       * const msgId = chat.messageAddFull({
+       *   content: 'Hello!',
+       *   userString: 'Bot',
+       *   align: 'left',
+       *   scrollIntoView: 'smart',
+       *   tags: ['greeting']
+       * });
+       */
     }, {
       key: "messageAddFull",
       value: function messageAddFull() {
@@ -449,6 +565,24 @@
         }
         return msgid;
       }
+
+      /**
+       * Adds a new message to the chat (simplified version of messageAddFull)
+       * @param {string} [content=''] - Message content (HTML allowed)
+       * @param {string} [userString='user'] - Display name for the message sender
+       * @param {'left'|'right'|'center'} [align='right'] - Message alignment
+       * @param {string} [role='user'] - Role identifier (user, assistant, system)
+       * @param {boolean|'smart'} [scrollIntoView=true] - Scroll behavior
+       * @param {boolean} [visible=true] - Whether message is initially visible
+       * @param {string[]} [tags=[]] - Tags for message categorization
+       * @returns {number} Message ID for the newly added message
+       * @example
+       * // Simple message
+       * chat.messageAddNew('Hello!', 'User', 'right');
+       * 
+       * // Bot message with smart scroll
+       * chat.messageAddNew('Hi there!', 'Bot', 'left', 'assistant', 'smart');
+       */
     }, {
       key: "messageAddNew",
       value: function messageAddNew() {
@@ -471,6 +605,14 @@
         // this.messageScrollToBottom();
         return retvalue;
       }
+
+      /**
+       * Removes a message from the chat by its ID
+       * @param {number} n - Message ID to remove
+       * @returns {boolean} True if message was removed, false if not found
+       * @example
+       * const success = chat.messageRemove(5);
+       */
     }, {
       key: "messageRemove",
       value: function messageRemove(n) {
@@ -500,6 +642,11 @@
       }
       /* returns the message html object from the DOM
       */
+      /**
+       * Gets the DOM element for a message by its ID
+       * @param {number} n - Message ID
+       * @returns {HTMLElement|null} The message DOM element or null if not found
+       */
     }, {
       key: "messageGetDOMObject",
       value: function messageGetDOMObject(n) {
@@ -514,6 +661,11 @@
       }
       /* returns the message content only
       */
+      /**
+       * Gets the content of a message by its ID
+       * @param {number} n - Message ID
+       * @returns {string} The message content or empty string if not found
+       */
     }, {
       key: "messageGetContent",
       value: function messageGetContent(n) {
@@ -736,6 +888,18 @@
        * @param {*} m 
        * @returns array of history messages
        */
+      /**
+       * Gets a slice of message history
+       * @param {number} [n] - Start index (defaults to 0)
+       * @param {number} [m] - End index (defaults to history length)
+       * @returns {Array} Array of message objects
+       * @example
+       * // Get first 10 messages
+       * const messages = chat.historyGet(0, 10);
+       * 
+       * // Get all messages
+       * const allMessages = chat.historyGet();
+       */
     }, {
       key: "historyGet",
       value: function historyGet(n, m) {
@@ -751,6 +915,14 @@
 
         return this._history.slice(n, m);
       }
+
+      /**
+       * Gets a copy of the entire message history
+       * @returns {Array} Complete array of all message objects
+       * @example
+       * const history = chat.historyGetAllCopy();
+       * console.log(`Total messages: ${history.length}`);
+       */
     }, {
       key: "historyGetAllCopy",
       value: function historyGetAllCopy() {
@@ -818,6 +990,31 @@
        * @param {number} criteria.limit - Maximum results to return (default 100)
        * @returns {array} Array of matching messages
        */
+      /**
+       * Searches through message history with various filters
+       * @param {Object} [criteria={}] - Search criteria
+       * @param {string} [criteria.text] - Text to search for in message content
+       * @param {string} [criteria.userString] - Filter by specific user
+       * @param {string} [criteria.role] - Filter by role (user, assistant, system)
+       * @param {string[]} [criteria.tags] - Filter by tags (messages must have at least one)
+       * @param {number} [criteria.limit=100] - Maximum number of results
+       * @returns {Array} Array of matching messages
+       * @since 1.1.15
+       * @example
+       * // Search for messages containing 'error'
+       * const errors = chat.historySearch({ text: 'error' });
+       * 
+       * // Find all bot messages
+       * const botMessages = chat.historySearch({ role: 'assistant' });
+       * 
+       * // Complex search
+       * const results = chat.historySearch({
+       *   text: 'help',
+       *   userString: 'Support',
+       *   tags: ['urgent'],
+       *   limit: 20
+       * });
+       */
     }, {
       key: "historySearch",
       value: function historySearch() {
@@ -862,6 +1059,22 @@
         }
         return results;
       }
+
+      /**
+       * Gets metadata and statistics about the message history
+       * @param {number} [pageSize=50] - Page size for calculating total pages
+       * @returns {Object} History information object
+       * @returns {number} returns.totalMessages - Total number of messages
+       * @returns {number} returns.totalPages - Total pages based on page size
+       * @returns {Object|null} returns.oldestMessage - First message info
+       * @returns {Object|null} returns.newestMessage - Last message info
+       * @returns {Object} returns.memoryUsage - Memory usage statistics
+       * @since 1.1.15
+       * @example
+       * const info = chat.historyGetInfo();
+       * console.log(`Messages: ${info.totalMessages}`);
+       * console.log(`Memory: ${info.memoryUsage.estimatedSize} bytes`);
+       */
     }, {
       key: "historyGetInfo",
       value: function historyGetInfo() {
@@ -886,6 +1099,13 @@
           }
         };
       }
+
+      /**
+       * Clears all messages and resets the chat
+       * @returns {void}
+       * @example
+       * chat.historyClear(); // Removes all messages
+       */
     }, {
       key: "historyClear",
       value: function historyClear() {
@@ -955,9 +1175,35 @@
        * 
        * @returns {object} - Returns the version and license information for the library.
        */
+      /**
+       * Gets the QuikChat version information
+       * @static
+       * @returns {Object} Version information object
+       * @returns {string} returns.version - Version number (e.g., '1.1.15')
+       * @returns {string} returns.license - License type (e.g., 'BSD-2')
+       * @returns {string} returns.url - Project URL
+       * @returns {boolean} returns.fun - Easter egg flag
+       * @example
+       * const version = quikchat.version();
+       * console.log(`QuikChat v${version.version}`);
+       */
     }, {
       key: "setTagVisibility",
-      value: function setTagVisibility(tagName, isVisible) {
+      value:
+      /**
+       * Sets visibility for all messages with a specific tag
+       * @param {string} tagName - Tag name to control
+       * @param {boolean} isVisible - Whether to show or hide messages with this tag
+       * @returns {boolean} True if successful, false if invalid tag name
+       * @since 1.1.14
+       * @example
+       * // Hide all system messages
+       * chat.setTagVisibility('system', false);
+       * 
+       * // Show urgent messages
+       * chat.setTagVisibility('urgent', true);
+       */
+      function setTagVisibility(tagName, isVisible) {
         if (typeof tagName !== 'string' || !/^[a-zA-Z0-9-]+$/.test(tagName)) {
           return false;
         }
@@ -970,6 +1216,15 @@
         this._updateMessageStyles();
         return true;
       }
+
+      /**
+       * Gets the visibility state of a tag
+       * @param {string} tagName - Tag name to check
+       * @returns {boolean} True if tag is visible, false otherwise
+       * @since 1.1.14
+       * @example
+       * const isVisible = chat.getTagVisibility('system');
+       */
     }, {
       key: "getTagVisibility",
       value: function getTagVisibility(tagName) {
@@ -978,6 +1233,15 @@
         }
         return this._chatWidget.classList.contains("quikchat-show-tag-".concat(tagName));
       }
+
+      /**
+       * Gets all active tags in the chat
+       * @returns {string[]} Array of all tags currently in use
+       * @since 1.1.14
+       * @example
+       * const tags = chat.getActiveTags();
+       * console.log('Active tags:', tags);
+       */
     }, {
       key: "getActiveTags",
       value: function getActiveTags() {
@@ -1005,6 +1269,21 @@
        * @example 
        * //Returns a 200 Lorem Ipsum characters starting from a random index
        * loremIpsum(200);
+       */
+
+      /**
+       * Generates Lorem Ipsum placeholder text
+       * @static
+       * @param {number} [numChars] - Length of text to generate (random if not specified)
+       * @param {number} [startSpot] - Starting offset in Lorem text (random if not specified)
+       * @param {boolean} [startWithCapitalLetter=true] - Whether to capitalize first letter
+       * @returns {string} Generated Lorem Ipsum text
+       * @example
+       * // Generate 100 characters
+       * const text = quikchat.loremIpsum(100);
+       * 
+       * // Generate random length
+       * const randomText = quikchat.loremIpsum();
        */
     }, {
       key: "loremIpsum",
@@ -1045,7 +1324,27 @@
       }
     }, {
       key: "tempMessageGenerator",
-      value: function tempMessageGenerator(domElement, content, interval) {
+      value:
+      /**
+       * Creates a temporary message that updates periodically
+       * @static
+       * @param {string|HTMLElement} domElement - Element selector or DOM element
+       * @param {string} content - Initial message content
+       * @param {number} interval - Update interval in milliseconds (min 100ms)
+       * @param {Function} [cb=null] - Callback to generate new content
+       * @param {string} cb.message - Current message
+       * @param {number} cb.count - Update count
+       * @returns {void}
+       * @example
+       * // Simple loading indicator
+       * quikchat.tempMessageGenerator('#loading', 'Loading', 500);
+       * 
+       * // Custom update function
+       * quikchat.tempMessageGenerator('#status', 'Processing', 1000, (msg, count) => {
+       *   return `Processing... ${count}%`;
+       * });
+       */
+      function tempMessageGenerator(domElement, content, interval) {
         var cb = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
         interval = Math.max(interval, 100); // Ensure at least 100ms interval
 

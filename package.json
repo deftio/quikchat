@@ -16,6 +16,7 @@
   "module": "dist/quikchat.min.js",
   "unpkg": "dist/quikchat.umd.min.js",
   "browser": "dist/quikchat.umd.min.js",
+  "types": "dist/quikchat.d.ts",
   "files": [
     "dist"
   ],
@@ -28,6 +29,7 @@
     "minifyCSS": "node ./tools/minifyCSS.cjs",
     "updateVersion": "node ./tools/updateVersion",
     "buildDocs": "node ./tools/buildDocs.js",
+    "docs:api": "npx jsdoc src/quikchat.js -d docs/api",
     "updateExampleCopies": "cp dist/quikchat.umd.min.js examples/fastapi_llm/static && cp dist/quikchat.min.css examples/fastapi_llm/static && cp dist/quikchat.umd.min.js examples/npm_express/static && cp dist/quikchat.min.css examples/npm_express/static",
     "build": "npm run updateVersion && npm run buildDocs && npm run minifyCSS && rollup -c && npm run updateExampleCopies"
   },

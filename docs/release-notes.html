@@ -99,9 +99,28 @@
 </ul>
 <h3>Developer Experience</h3>
 <ul>
-<li>Improved test coverage with 48 total tests</li>
+<li>Improved test coverage with 57 total tests  </li>
 <li>Comprehensive documentation updates</li>
 <li>Better TypeScript compatibility preparation</li>
+</ul>
+<h3>Documentation Infrastructure</h3>
+<ul>
+<li><strong>Replaced outdated <code>docbat</code> with modern <code>marked</code> markdown parser</strong></li>
+<li><strong>Reorganized documentation structure</strong>:<ul>
+<li>All documentation moved to <code>docs/</code> folder</li>
+<li>Only README.md and LICENSE.txt remain in root</li>
+<li>Claude configuration consolidated in <code>.claude/memory.md</code></li>
+</ul>
+</li>
+<li><strong>New documentation build system</strong>:<ul>
+<li>Automatic HTML generation from markdown files</li>
+<li>Proper Unicode/emoji support (no more character encoding issues)</li>
+<li>GitHub-style markdown CSS for clean, familiar styling</li>
+<li>Syntax highlighting with Prism.js</li>
+<li>Created <code>docs/index.html</code> as documentation hub</li>
+</ul>
+</li>
+<li><strong>Integrated into build pipeline</strong>: <code>npm run build</code> automatically regenerates all docs</li>
 </ul>
 <h3>Breaking Changes</h3>
 <ul>

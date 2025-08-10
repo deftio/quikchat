@@ -29,9 +29,23 @@
 - Removed unnecessary scroll triggers from append/replace operations
 
 ### Developer Experience
-- Improved test coverage with 48 total tests
+- Improved test coverage with 57 total tests  
 - Comprehensive documentation updates
 - Better TypeScript compatibility preparation
+
+### Documentation Infrastructure
+- **Replaced outdated `docbat` with modern `marked` markdown parser**
+- **Reorganized documentation structure**:
+  - All documentation moved to `docs/` folder
+  - Only README.md and LICENSE.txt remain in root
+  - Claude configuration consolidated in `.claude/memory.md`
+- **New documentation build system**:
+  - Automatic HTML generation from markdown files
+  - Proper Unicode/emoji support (no more character encoding issues)
+  - GitHub-style markdown CSS for clean, familiar styling
+  - Syntax highlighting with Prism.js
+  - Created `docs/index.html` as documentation hub
+- **Integrated into build pipeline**: `npm run build` automatically regenerates all docs
 
 ### Breaking Changes
 - None - all changes are backward compatible

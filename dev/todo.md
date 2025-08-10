@@ -10,18 +10,37 @@
 - [ ] **Security**: XSS protection, sanitization hooks for innerHTML
 - [ ] **Performance**: Virtual scrolling for 1000+ messages (DOM bloat issue)
 - [ ] **TypeScript**: Add .d.ts type definitions
+  - Create `dist/quikchat.d.ts` with full type definitions
+  - Define interfaces for options, callbacks, message objects
+  - Add JSDoc comments for better IDE support
+  - Ensure compatibility with TypeScript strict mode
 - [x] **Pagination**: COMPLETED in v1.1.15 - Added historyGetPage() with full pagination support
 - [ ] **Mobile Experience**: Fix textarea handling for mobile keyboards
+  - Fix viewport issues when keyboard appears (textarea gets hidden)
+  - Add touch-friendly send button sizing
+  - Improve scroll behavior on mobile Safari/Chrome
+  - Handle orientation changes gracefully
+  - Fix iOS rubber-band scrolling issues
 - [ ] **Error Boundaries**: Add error handling APIs and recovery mechanisms
+  - **What are Error Boundaries?** Mechanisms to catch and handle errors gracefully without crashing the entire chat widget
+  - **Implementation needed:**
+    - Try-catch wrapping around critical operations (message rendering, callbacks)
+    - `onError` callback for handling errors: `setCallbackOnError((error, context) => {})`
+    - Fallback UI when messages fail to render
+    - Recovery methods: `recoverFromError()`, `clearErrorState()`
+    - Error logging with context (which method failed, message ID, etc.)
+    - Graceful degradation when external APIs fail (LLM timeouts, network issues)
+  - **Example use case:** If a message with malformed HTML crashes rendering, show error message instead of breaking entire chat
+  - [ ] **Stats API**: Message counts, user stats, total chars written
+
 
 ##  High Priority - Core Features  
 
 - [ ] **i18n/RTL**: Internationalization support, right-to-left languages
-- [ ] **Message Reactions**: Emoji reactions on messages
-- [ ] **File Attachments**: Image preview, file upload support
+- [ ] **Message Reactions**: Emoji reactions on messages (?)
+- [ ] **File Attachments**: Image preview, file upload support (?)
 - [ ] **Markdown Support**: Code blocks, formatting
 - [x] **Enhanced Callbacks**: COMPLETED in v1.1.15 - Added onMessageAppend, onMessageReplace, onMessageDelete
-- [ ] **Stats API**: Message counts, user stats, total chars written
 - [ ] **Show/Hide Timestamps**: Toggle timestamp visibility
 - [ ] **User Avatars**: Inline icon support [user][message] format
 
@@ -109,5 +128,5 @@
 Perfect for prototypes, concerning for production at scale - addressing accessibility, performance, and security would make it production-ready while maintaining simplicity advantage.
 
 ---
-*Last updated: 2025-08-09*
-*Current development version: 1.1.15-dev1 
+*Last updated: 2025-08-10*
+*Current development version: 1.1.15-dev4*

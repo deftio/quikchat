@@ -1,4 +1,32 @@
-import { quikchatVersion } from './quikchat_version.js';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: quikchat.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: quikchat.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { quikchatVersion } from './quikchat_version.js';
 
 /**
  * QuikChat - A zero-dependency JavaScript chat widget for modern web applications
@@ -102,16 +130,16 @@ class quikchat {
     _createWidget() {
         const widgetHTML =
             `
-            <div class="quikchat-base ${this.theme}">
-                <div class="quikchat-title-area">
-                    <span style="font-size: 1.5em; font-weight: 600;">Title Area</span>
-                </div>
-                <div class="quikchat-messages-area"></div>
-                <div class="quikchat-input-area">
-                    <textarea class="quikchat-input-textbox"></textarea>
-                    <button class="quikchat-input-send-btn">Send</button>
-                </div>
-            </div>
+            &lt;div class="quikchat-base ${this.theme}">
+                &lt;div class="quikchat-title-area">
+                    &lt;span style="font-size: 1.5em; font-weight: 600;">Title Area&lt;/span>
+                &lt;/div>
+                &lt;div class="quikchat-messages-area">&lt;/div>
+                &lt;div class="quikchat-input-area">
+                    &lt;textarea class="quikchat-input-textbox">&lt;/textarea>
+                    &lt;button class="quikchat-input-send-btn">Send&lt;/button>
+                &lt;/div>
+            &lt;/div>
             `;
 
         this._parentElement.innerHTML = widgetHTML;
@@ -134,7 +162,7 @@ class quikchat {
         this._textEntry.addEventListener('keydown', (event) => {
 
             // Check if Shift + Enter is pressed then we just do carraige
-            if (event.shiftKey && event.keyCode === 13) {
+            if (event.shiftKey &amp;&amp; event.keyCode === 13) {
                 // Prevent default behavior (adding new line)
                 if (this.sendOnShiftEnter) {
                     event.preventDefault();
@@ -150,7 +178,7 @@ class quikchat {
 
         this._messagesArea.addEventListener('scroll', () => {
             const { scrollTop, scrollHeight, clientHeight } = this._messagesArea;
-            this.userScrolledUp = scrollTop + clientHeight < scrollHeight;
+            this.userScrolledUp = scrollTop + clientHeight &lt; scrollHeight;
         });
     }
 
@@ -243,7 +271,7 @@ class quikchat {
      * @param {'left'|'center'|'right'} [align='center'] - Text alignment
      * @returns {void}
      * @example
-     * chat.titleAreaSetContents('<h2>Support Chat</h2>', 'center');
+     * chat.titleAreaSetContents('&lt;h2>Support Chat&lt;/h2>', 'center');
      */
     titleAreaSetContents(title, align = 'center') {
         this._titleArea.innerHTML = title;
@@ -342,7 +370,7 @@ class quikchat {
 
         if (Array.isArray(input.tags)) {
             input.tags.forEach(tag => {
-                if (typeof tag === 'string' && /^[a-zA-Z0-9-]+$/.test(tag)) {
+                if (typeof tag === 'string' &amp;&amp; /^[a-zA-Z0-9-]+$/.test(tag)) {
                     messageDiv.classList.add(`quikchat-tag-${tag}`);
                     this._activeTags.add(tag);
                 }
@@ -386,7 +414,7 @@ class quikchat {
         // 'smart' = only scroll if near bottom, true = always scroll, false = never scroll
         if (input.scrollIntoView === true) {
             this.messageScrollToBottom();
-        } else if (input.scrollIntoView === 'smart' && !this.userScrolledUp) {
+        } else if (input.scrollIntoView === 'smart' &amp;&amp; !this.userScrolledUp) {
             this.messageScrollToBottom();
         }
         // If scrollIntoView is false, don't scroll at all
@@ -600,7 +628,7 @@ class quikchat {
 
     messageSetVisibility(msgid, isVisible) {
         const message = this._history.find(item => item.msgid === msgid);
-        if (message && message.messageDiv) {
+        if (message &amp;&amp; message.messageDiv) {
             message.messageDiv.style.display = isVisible ? '' : 'none';
             message.visible = isVisible;
             this._updateMessageStyles();
@@ -611,7 +639,7 @@ class quikchat {
 
     messageGetVisibility(msgid) {
         const message = this._history.find(item => item.msgid === msgid);
-        if (message && message.messageDiv) {
+        if (message &amp;&amp; message.messageDiv) {
             return message.messageDiv.style.display !== 'none';
         }
         return false; // Return false if not found or no messageDiv
@@ -720,7 +748,7 @@ class quikchat {
             m = this._history.length;
         }
         if (m === undefined) {
-            m = n < 0 ? m : n + 1;
+            m = n &lt; 0 ? m : n + 1;
         }
         // remember that entries could be deleted.  TODO: So we need to return the actual history entries
         // so now we need to find the array index that correspondes to messageIds n (start) and m (end)
@@ -776,7 +804,7 @@ class quikchat {
                 pageSize: pageSize,
                 totalPages: totalPages,
                 totalMessages: totalMessages,
-                hasNext: currentPage < totalPages,
+                hasNext: currentPage &lt; totalPages,
                 hasPrevious: currentPage > 1,
                 order: order
             }
@@ -849,9 +877,9 @@ class quikchat {
         }
         
         // Filter by tags (match any tag)
-        if (criteria.tags && criteria.tags.length > 0) {
+        if (criteria.tags &amp;&amp; criteria.tags.length > 0) {
             results = results.filter(msg => 
-                msg.tags && msg.tags.some(tag => criteria.tags.includes(tag))
+                msg.tags &amp;&amp; msg.tags.some(tag => criteria.tags.includes(tag))
             );
         }
         
@@ -920,7 +948,7 @@ class quikchat {
     }
 
     historyGetMessage(n) {
-        if (n >= 0 && n < this._history.length) {
+        if (n >= 0 &amp;&amp; n &lt; this._history.length) {
             return this._history[n];
         }
         return {};
@@ -928,7 +956,7 @@ class quikchat {
     }
 
     historyGetMessageContent(n) {
-        if (n >= 0 && n < this._history.length)
+        if (n >= 0 &amp;&amp; n &lt; this._history.length)
             return this._history[n].content;
         else
             return "";
@@ -1043,7 +1071,7 @@ class quikchat {
 
         let s = "";
         while (numChars > 0) {
-            s += numChars < l.length ? l.substring(0, numChars) : l;
+            s += numChars &lt; l.length ? l.substring(0, numChars) : l;
             numChars -= l.length;
         }
 
@@ -1086,7 +1114,7 @@ class quikchat {
 
         let defaultCB = (msg, count) => {msg += "."; return msg; };
 
-        if (cb && typeof cb !== 'function') {
+        if (cb &amp;&amp; typeof cb !== 'function') {
             cb = null;
         }
 
@@ -1125,7 +1153,7 @@ class quikchat {
         updateInterval = Math.max(updateInterval, 100);
         
         // Validate callback; if not a function, ignore it.
-        if (callback && typeof callback !== 'function') {
+        if (callback &amp;&amp; typeof callback !== 'function') {
           callback = null;
         }
         // Default callback simply appends a dot.
@@ -1140,12 +1168,12 @@ class quikchat {
         const uniqueId = "tempMsg_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
       
         // Build and return the HTML string.
-        // Note the use of <\/script> (with a backslash) so that the inline script is not terminated early.
+        // Note the use of &lt;\/script> (with a backslash) so that the inline script is not terminated early.
         return `
-          <span id="${uniqueId}" ${containerClass ? `class="${containerClass}"` : ''}>
+          &lt;span id="${uniqueId}" ${containerClass ? `class="${containerClass}"` : ''}>
             ${initialContent}
-          </span>
-          <script>
+          &lt;/span>
+          &lt;script>
             (function(){
               // Get our container element by its unique id.
               var container = document.getElementById("${uniqueId}");
@@ -1167,7 +1195,7 @@ class quikchat {
                 container.innerHTML = currentMsg;
               }, interval);
             })();
-          <\/script>
+          &lt;\/script>
         `;
       }
       
@@ -1227,3 +1255,26 @@ class quikchat {
 }
 
 export default quikchat;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="quikchat.html">quikchat</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Sat Aug 09 2025 23:07:02 GMT-0700 (Pacific Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

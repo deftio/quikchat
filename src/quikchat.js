@@ -186,6 +186,8 @@ class SimpleVirtualScroller {
         messageDiv.className = `quikchat-message quikchat-message-${item.align || 'left'} quikchat-msgid-${String(item.msgid).padStart(10, '0')}`;
         messageDiv.setAttribute('data-index', index);
         messageDiv.setAttribute('data-msgid', item.msgid);
+        messageDiv.setAttribute('role', 'article');
+        messageDiv.setAttribute('aria-label', `Message from ${item.userString || 'user'}`);
         
         if (item.tags && item.tags.length > 0) {
             item.tags.forEach(tag => messageDiv.classList.add(`quikchat-tag-${tag}`));
@@ -194,10 +196,12 @@ class SimpleVirtualScroller {
         const userDiv = document.createElement('div');
         userDiv.className = 'quikchat-message-user';
         userDiv.innerHTML = item.userString || '';
+        userDiv.setAttribute('aria-label', 'User');
         
         const contentDiv = document.createElement('div');
         contentDiv.className = 'quikchat-message-content';
         contentDiv.innerHTML = item.content || '';
+        contentDiv.setAttribute('aria-label', 'Message content');
         
         messageDiv.appendChild(userDiv);
         messageDiv.appendChild(contentDiv);
@@ -342,9 +346,24 @@ class quikchat {
             sendOnShiftEnter: false,
             instanceClass: '',
             virtualScrolling: true,  // Default to true for better performance
-            virtualScrollingThreshold: 500  // Lower threshold since it performs so well
+            virtualScrollingThreshold: 500,  // Lower threshold since it performs so well
+            // i18n support
+            lang: 'en',
+            dir: 'ltr',  // 'ltr' or 'rtl'
+            translations: {
+                'en': {
+                    sendButton: 'Send',
+                    inputPlaceholder: 'Type a message...',
+                    titleDefault: 'Chat'
+                }
+            }
         };
         const meta = { ...defaultOpts, ...options }; // merge options with defaults
+        
+        // Merge user translations with defaults
+        if (options.translations) {
+            meta.translations = { ...defaultOpts.translations, ...options.translations };
+        }
 
         if (typeof parentElement === 'string') {
             parentElement = document.querySelector(parentElement);
@@ -353,6 +372,12 @@ class quikchat {
         this._parentElement = parentElement;
         this._theme = meta.theme;
         this._onSend = onSend ? onSend : () => { }; // call back function for onSend
+        
+        // i18n settings
+        this.lang = meta.lang;
+        this.dir = meta.dir;
+        this.translations = meta.translations;
+        this.currentTranslations = this.translations[this.lang] || this.translations['en'];
         this._createWidget();
 
         if (meta.instanceClass) {
@@ -451,16 +476,25 @@ class quikchat {
     }
 
     _createWidget() {
+        const sendButtonText = this.currentTranslations.sendButton || 'Send';
+        const inputPlaceholder = this.currentTranslations.inputPlaceholder || 'Type a message...';
+        
         const widgetHTML =
             `
-            <div class="quikchat-base ${this.theme}">
-                <div class="quikchat-title-area">
+            <div class="quikchat-base ${this._theme}" dir="${this.dir}" lang="${this.lang}" role="region" aria-label="Chat widget">
+                <div class="quikchat-title-area" role="heading" aria-level="2">
                     <span style="font-size: 1.5em; font-weight: 600;">Title Area</span>
                 </div>
-                <div class="quikchat-messages-area"></div>
-                <div class="quikchat-input-area">
-                    <textarea class="quikchat-input-textbox"></textarea>
-                    <button class="quikchat-input-send-btn">Send</button>
+                <div class="quikchat-messages-area" role="log" aria-live="polite" aria-label="Chat messages"></div>
+                <div class="quikchat-input-area" role="form" aria-label="Message input">
+                    <textarea class="quikchat-input-textbox" 
+                              placeholder="${inputPlaceholder}"
+                              aria-label="Type your message"
+                              autocomplete="off"
+                              autocapitalize="sentences"></textarea>
+                    <button class="quikchat-input-send-btn" 
+                            aria-label="Send message"
+                            type="button">${sendButtonText}</button>
                 </div>
             </div>
             `;
@@ -473,6 +507,64 @@ class quikchat {
         this._textEntry = this._inputArea.querySelector('.quikchat-input-textbox');
         this._sendButton = this._inputArea.querySelector('.quikchat-input-send-btn');
         this.msgid = 0;
+        
+        // Add mobile viewport handling
+        this._setupMobileSupport();
+    }
+
+    /**
+     * Setup mobile support - prevent zoom on input focus and handle virtual keyboard
+     * @private
+     */
+    _setupMobileSupport() {
+        // Prevent zoom on input focus for mobile
+        let meta = document.querySelector('meta[name="viewport"]');
+        if (!meta) {
+            meta = document.createElement('meta');
+            meta.name = 'viewport';
+            document.head.appendChild(meta);
+        }
+        
+        // Store original content
+        this._originalViewport = meta.content;
+        
+        // Prevent zoom on focus
+        this._textEntry.addEventListener('focus', () => {
+            if (window.innerWidth <= 768) {  // Mobile device width
+                meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0';
+            }
+        });
+        
+        this._textEntry.addEventListener('blur', () => {
+            if (this._originalViewport) {
+                meta.content = this._originalViewport;
+            } else {
+                meta.content = 'width=device-width, initial-scale=1.0';
+            }
+        });
+        
+        // Handle virtual keyboard resize
+        if ('visualViewport' in window) {
+            window.visualViewport.addEventListener('resize', () => {
+                this._handleVirtualKeyboard();
+            });
+        }
+    }
+    
+    /**
+     * Handle virtual keyboard appearance/disappearance
+     * @private
+     */
+    _handleVirtualKeyboard() {
+        // Adjust layout when virtual keyboard appears
+        const keyboardHeight = window.innerHeight - window.visualViewport.height;
+        if (keyboardHeight > 0) {
+            // Keyboard is visible - adjust chat widget height
+            this._chatWidget.style.paddingBottom = `${keyboardHeight}px`;
+        } else {
+            // Keyboard hidden - restore original padding
+            this._chatWidget.style.paddingBottom = '';
+        }
     }
 
     /**
@@ -728,6 +820,8 @@ class quikchat {
             const msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
             const userIdClass = 'quikchat-userid-' + String(input.userString).padStart(10, '0'); // hash this..
             messageDiv.classList.add('quikchat-message', msgidClass, 'quikchat-structure');
+            messageDiv.setAttribute('role', 'article');
+            messageDiv.setAttribute('aria-label', `Message from ${input.userString || 'user'}`);
 
             if (Array.isArray(input.tags)) {
                 input.tags.forEach(tag => {
@@ -1675,6 +1769,80 @@ class quikchat {
             active: this.virtualScroller !== null,
             threshold: this.virtualScrollingThreshold
         };
+    }
+    
+    /**
+     * Set the language for the widget
+     * @param {string} lang - Language code (e.g., 'en', 'es', 'fr')
+     * @param {Object} [translations] - Optional translations object for the language
+     * @example
+     * chat.setLanguage('es', {
+     *   sendButton: 'Enviar',
+     *   inputPlaceholder: 'Escribe un mensaje...',
+     *   titleDefault: 'Chat'
+     * });
+     */
+    setLanguage(lang, translations) {
+        this.lang = lang;
+        
+        // Add translations if provided
+        if (translations) {
+            this.translations[lang] = { ...this.translations[lang], ...translations };
+        }
+        
+        // Update current translations
+        this.currentTranslations = this.translations[lang] || this.translations['en'];
+        
+        // Update UI elements
+        this._updateUITranslations();
+    }
+    
+    /**
+     * Get current language
+     * @returns {string} Current language code
+     */
+    getLanguage() {
+        return this.lang;
+    }
+    
+    /**
+     * Set text direction (LTR or RTL)
+     * @param {string} dir - Direction ('ltr' or 'rtl')
+     */
+    setDirection(dir) {
+        if (dir === 'ltr' || dir === 'rtl') {
+            this.dir = dir;
+            this._chatWidget.setAttribute('dir', dir);
+        }
+    }
+    
+    /**
+     * Get current text direction
+     * @returns {string} Current direction ('ltr' or 'rtl')
+     */
+    getDirection() {
+        return this.dir;
+    }
+    
+    /**
+     * Update UI elements with current translations
+     * @private
+     */
+    _updateUITranslations() {
+        // Update send button text
+        if (this._sendButton) {
+            this._sendButton.textContent = this.currentTranslations.sendButton || 'Send';
+        }
+        
+        // Update input placeholder
+        if (this._textEntry) {
+            this._textEntry.placeholder = this.currentTranslations.inputPlaceholder || 'Type a message...';
+        }
+        
+        // Update widget language attribute
+        if (this._chatWidget) {
+            this._chatWidget.setAttribute('lang', this.lang);
+        }
     }
 }
 

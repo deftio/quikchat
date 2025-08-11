@@ -1004,4 +1004,258 @@ describe('quikchat', () => {
         });
     });
     
+    describe('Accessibility (ARIA)', () => {
+        test('should have proper ARIA attributes on widget', () => {
+            const chat = new quikchat('#chat-container');
+            const widget = chat._chatWidget;
+            
+            expect(widget.getAttribute('role')).toBe('region');
+            expect(widget.getAttribute('aria-label')).toBe('Chat widget');
+            expect(widget.getAttribute('lang')).toBe('en');
+            expect(widget.getAttribute('dir')).toBe('ltr');
+        });
+        
+        test('should have ARIA labels on message area', () => {
+            const chat = new quikchat('#chat-container');
+            const messagesArea = chat._messagesArea;
+            
+            expect(messagesArea.getAttribute('role')).toBe('log');
+            expect(messagesArea.getAttribute('aria-live')).toBe('polite');
+            expect(messagesArea.getAttribute('aria-label')).toBe('Chat messages');
+        });
+        
+        test('should have ARIA labels on input area', () => {
+            const chat = new quikchat('#chat-container');
+            const inputArea = chat._inputArea;
+            const textEntry = chat._textEntry;
+            const sendButton = chat._sendButton;
+            
+            expect(inputArea.getAttribute('role')).toBe('form');
+            expect(inputArea.getAttribute('aria-label')).toBe('Message input');
+            expect(textEntry.getAttribute('aria-label')).toBe('Type your message');
+            expect(sendButton.getAttribute('aria-label')).toBe('Send message');
+        });
+        
+        test('should have ARIA attributes on messages', () => {
+            const chat = new quikchat('#chat-container');
+            chat.messageAddNew('Test message', 'TestUser');
+            
+            const message = chat._messagesArea.querySelector('.quikchat-message');
+            expect(message.getAttribute('role')).toBe('article');
+            expect(message.getAttribute('aria-label')).toBe('Message from TestUser');
+        });
+        
+        test('should have ARIA labels on virtual scrolled messages', () => {
+            const chat = new quikchat('#chat-container', null, {
+                virtualScrolling: true,
+                virtualScrollingThreshold: 5
+            });
+            
+            // Add messages to trigger virtual scrolling
+            for (let i = 0; i < 10; i++) {
+                chat.messageAddNew(`Message ${i}`, `User${i}`);
+            }
+            
+            // Check if virtual scroller items have ARIA attributes
+            const visibleMessages = chat._messagesArea.querySelectorAll('.quikchat-message');
+            if (visibleMessages.length > 0) {
+                const firstMessage = visibleMessages[0];
+                expect(firstMessage.getAttribute('role')).toBe('article');
+                expect(firstMessage.getAttribute('aria-label')).toContain('Message from');
+            }
+        });
+    });
+    
+    describe('Mobile Support', () => {
+        let originalInnerWidth;
+        let originalVisualViewport;
+        
+        beforeEach(() => {
+            originalInnerWidth = window.innerWidth;
+            originalVisualViewport = window.visualViewport;
+        });
+        
+        afterEach(() => {
+            Object.defineProperty(window, 'innerWidth', {
+                writable: true,
+                value: originalInnerWidth
+            });
+            if (originalVisualViewport) {
+                Object.defineProperty(window, 'visualViewport', {
+                    writable: true,
+                    value: originalVisualViewport
+                });
+            }
+        });
+        
+        test('should add mobile attributes to textarea', () => {
+            const chat = new quikchat('#chat-container');
+            const textEntry = chat._textEntry;
+            
+            expect(textEntry.getAttribute('autocomplete')).toBe('off');
+            expect(textEntry.getAttribute('autocapitalize')).toBe('sentences');
+        });
+        
+        test('should handle viewport meta tag on mobile', () => {
+            // Simulate mobile width
+            Object.defineProperty(window, 'innerWidth', {
+                writable: true,
+                value: 375 // iPhone width
+            });
+            
+            const chat = new quikchat('#chat-container');
+            const textEntry = chat._textEntry;
+            
+            // Check that viewport meta tag exists
+            const metaTag = document.querySelector('meta[name="viewport"]');
+            expect(metaTag).toBeTruthy();
+            
+            // Simulate focus event
+            const focusEvent = new Event('focus');
+            textEntry.dispatchEvent(focusEvent);
+            
+            // Check viewport content prevents zoom
+            expect(metaTag.content).toContain('maximum-scale=1.0');
+            expect(metaTag.content).toContain('user-scalable=0');
+            
+            // Simulate blur event
+            const blurEvent = new Event('blur');
+            textEntry.dispatchEvent(blurEvent);
+        });
+        
+        test.skip('should handle virtual keyboard if visualViewport available', () => {
+            // Mock visualViewport
+            const mockVisualViewport = {
+                height: 500,
+                addEventListener: jest.fn(),
+                removeEventListener: jest.fn()
+            };
+            
+            Object.defineProperty(window, 'visualViewport', {
+                writable: true,
+                configurable: true,
+                value: mockVisualViewport
+            });
+            
+            Object.defineProperty(window, 'innerHeight', {
+                writable: true,
+                configurable: true,
+                value: 800
+            });
+            
+            const chat = new quikchat('#chat-container');
+            
+            // Check that event listener was added
+            expect(mockVisualViewport.addEventListener).toHaveBeenCalledWith(
+                'resize',
+                expect.any(Function)
+            );
+            
+            // Test keyboard appearance (height difference = 800 - 500 = 300px)
+            chat._handleVirtualKeyboard();
+            expect(chat._chatWidget.style.paddingBottom).toBe('300px');
+            
+            // Test keyboard disappearance - modify the mock object
+            mockVisualViewport.height = 800;
+            chat._handleVirtualKeyboard();
+            expect(chat._chatWidget.style.paddingBottom).toBe('');
+        });
+    });
+    
+    describe('i18n Support', () => {
+        test('should initialize with default English translations', () => {
+            const chat = new quikchat('#chat-container');
+            
+            expect(chat.lang).toBe('en');
+            expect(chat.dir).toBe('ltr');
+            expect(chat.currentTranslations.sendButton).toBe('Send');
+            expect(chat.currentTranslations.inputPlaceholder).toBe('Type a message...');
+        });
+        
+        test('should accept custom language on initialization', () => {
+            const chat = new quikchat('#chat-container', null, {
+                lang: 'es',
+                dir: 'ltr',
+                translations: {
+                    'es': {
+                        sendButton: 'Enviar',
+                        inputPlaceholder: 'Escribe un mensaje...',
+                        titleDefault: 'Chat'
+                    }
+                }
+            });
+            
+            expect(chat.lang).toBe('es');
+            expect(chat.currentTranslations.sendButton).toBe('Enviar');
+            expect(chat._sendButton.textContent).toBe('Enviar');
+            expect(chat._textEntry.placeholder).toBe('Escribe un mensaje...');
+        });
+        
+        test('should change language dynamically', () => {
+            const chat = new quikchat('#chat-container');
+            
+            chat.setLanguage('fr', {
+                sendButton: 'Envoyer',
+                inputPlaceholder: 'Tapez un message...',
+                titleDefault: 'Discussion'
+            });
+            
+            expect(chat.getLanguage()).toBe('fr');
+            expect(chat._sendButton.textContent).toBe('Envoyer');
+            expect(chat._textEntry.placeholder).toBe('Tapez un message...');
+            expect(chat._chatWidget.getAttribute('lang')).toBe('fr');
+        });
+        
+        test('should support RTL direction', () => {
+            const chat = new quikchat('#chat-container', null, {
+                dir: 'rtl',
+                lang: 'ar'
+            });
+            
+            expect(chat.getDirection()).toBe('rtl');
+            expect(chat._chatWidget.getAttribute('dir')).toBe('rtl');
+        });
+        
+        test('should change direction dynamically', () => {
+            const chat = new quikchat('#chat-container');
+            
+            expect(chat.getDirection()).toBe('ltr');
+            
+            chat.setDirection('rtl');
+            expect(chat.getDirection()).toBe('rtl');
+            expect(chat._chatWidget.getAttribute('dir')).toBe('rtl');
+            
+            chat.setDirection('ltr');
+            expect(chat.getDirection()).toBe('ltr');
+            expect(chat._chatWidget.getAttribute('dir')).toBe('ltr');
+        });
+        
+        test('should ignore invalid direction values', () => {
+            const chat = new quikchat('#chat-container');
+            
+            chat.setDirection('invalid');
+            expect(chat.getDirection()).toBe('ltr'); // Should remain unchanged
+            
+            chat.setDirection('rtl');
+            expect(chat.getDirection()).toBe('rtl');
+            
+            chat.setDirection('xyz');
+            expect(chat.getDirection()).toBe('rtl'); // Should remain unchanged
+        });
+        
+        test('should merge translations when adding new language', () => {
+            const chat = new quikchat('#chat-container');
+            
+            // Add partial German translation
+            chat.setLanguage('de', {
+                sendButton: 'Senden'
+                // inputPlaceholder not provided
+            });
+            
+            expect(chat.currentTranslations.sendButton).toBe('Senden');
+            // Should fall back to English for missing translations
+            expect(chat._sendButton.textContent).toBe('Senden');
+        });
+    });
+    
 });

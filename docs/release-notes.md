@@ -1,5 +1,33 @@
 # Release Notes
 
+## 1.1.17 (Development)
+
+### New Features
+
+#### Accessibility (ARIA) Support
+- Full ARIA label implementation for screen reader compatibility
+- `role="log"` and `aria-live="polite"` for message area
+- Proper labeling for all interactive elements (input, send button)
+- Configurable ARIA labels via constructor options
+
+#### Mobile Experience Enhancements
+- Automatic viewport meta tag management to prevent zoom on input focus
+- Virtual keyboard detection and layout adjustment
+- Dynamic padding adjustment when virtual keyboard appears/disappears
+- Smooth transitions for keyboard show/hide events
+
+#### Internationalization (i18n) Support
+- Built-in translation system with zero dependencies
+- Support for multiple languages via `setLanguage()` method
+- RTL/LTR text direction support with `setDirection()` method
+- Translatable UI elements: send button, input placeholder, title
+- Default English translations with easy extension for other languages
+
+### Test Coverage
+- Added 21 new tests covering all new features
+- Maintained 80%+ overall test coverage
+- Comprehensive testing for ARIA, mobile, and i18n functionality
+
 ## 1.1.16 (2025-08-10)
 
 ### Major Performance Enhancement: Virtual Scrolling

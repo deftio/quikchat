@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Comparison Test</title>
+    <link rel="stylesheet" href="../dist/quikchat.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .chat-wrapper {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .chat-container {
+            height: 400px;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .metrics {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .good { color: green; }
+        .bad { color: red; }
+        .warning { color: orange; }
+    </style>
+</head>
+<body>
+    <h1>Performance Comparison: With vs Without Sanitizer</h1>
+    
+    <div style="margin-bottom: 20px;">
+        <button onclick="runTest(100)">Test 100 Messages</button>
+        <button onclick="runTest(500)">Test 500 Messages</button>
+        <button onclick="runTest(1000)">Test 1000 Messages</button>
+        <button onclick="runTest(5000)">Test 5000 Messages</button>
+        <button onclick="clearAll()">Clear All</button>
+    </div>
+    
+    <div class="container">
+        <div class="chat-wrapper">
+            <h3>Without Sanitizer (Baseline)</h3>
+            <div class="metrics" id="metrics1">
+                <div>Messages: <span id="count1">0</span></div>
+                <div>Time: <span id="time1">0</span>ms</div>
+                <div>Per msg: <span id="permsg1">0</span>ms</div>
+                <div>Virtual: <span id="virtual1">No</span></div>
+                <div>DOM nodes: <span id="dom1">0</span></div>
+            </div>
+            <div id="chat1" class="chat-container"></div>
+        </div>
+        
+        <div class="chat-wrapper">
+            <h3>With Sanitizer</h3>
+            <div class="metrics" id="metrics2">
+                <div>Messages: <span id="count2">0</span></div>
+                <div>Time: <span id="time2">0</span>ms</div>
+                <div>Per msg: <span id="permsg2">0</span>ms</div>
+                <div>Virtual: <span id="virtual2">No</span></div>
+                <div>DOM nodes: <span id="dom2">0</span></div>
+                <div>Overhead: <span id="overhead">0</span>%</div>
+            </div>
+            <div id="chat2" class="chat-container"></div>
+        </div>
+    </div>
+    
+    <div style="margin-top: 20px; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+        <h3>Test Results Log</h3>
+        <div id="log" style="font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto;"></div>
+    </div>
+
+    <script src="../dist/quikchat.umd.js"></script>
+    <script>
+        let chat1 = null;
+        let chat2 = null;
+        
+        function log(msg) {
+            const logEl = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            logEl.innerHTML = '[' + time + '] ' + msg + '<br>' + logEl.innerHTML;
+        }
+        
+        function initChats() {
+            // Clear containers
+            document.getElementById('chat1').innerHTML = '';
+            document.getElementById('chat2').innerHTML = '';
+            
+            // Chat without sanitizer
+            chat1 = new quikchat('#chat1', null, {
+                virtualScrolling: true,
+                virtualScrollingThreshold: 500
+            });
+            
+            // Chat with sanitizer
+            chat2 = new quikchat('#chat2', null, {
+                virtualScrolling: true,
+                virtualScrollingThreshold: 500,
+                sanitizer: quikchat.sanitizers ? quikchat.sanitizers.escapeHTML : null
+            });
+            
+            log('Initialized chats. Sanitizer available: ' + (quikchat.sanitizers ? 'Yes' : 'No'));
+        }
+        
+        function runTest(count) {
+            log('Starting test with ' + count + ' messages...');
+            
+            // Initialize fresh chats
+            initChats();
+            
+            // Test content with HTML that would need sanitization
+            const testContent = 'Message with <b>bold</b> and <i>italic</i> text ';
+            
+            // Test chat 1 (no sanitizer)
+            const start1 = performance.now();
+            for (let i = 0; i < count; i++) {
+                chat1.messageAddNew(
+                    testContent + i,
+                    'User' + (i % 5),
+                    i % 2 === 0 ? 'right' : 'left'
+                );
+            }
+            const time1 = performance.now() - start1;
+            
+            // Test chat 2 (with sanitizer)
+            const start2 = performance.now();
+            for (let i = 0; i < count; i++) {
+                chat2.messageAddNew(
+                    testContent + i,
+                    'User' + (i % 5),
+                    i % 2 === 0 ? 'right' : 'left'
+                );
+            }
+            const time2 = performance.now() - start2;
+            
+            // Update metrics
+            updateMetrics(1, count, time1, chat1);
+            updateMetrics(2, count, time2, chat2);
+            
+            // Calculate overhead
+            const overhead = ((time2 - time1) / time1 * 100).toFixed(1);
+            document.getElementById('overhead').textContent = overhead;
+            
+            // Color code overhead
+            const overheadEl = document.getElementById('overhead');
+            if (overhead < 5) {
+                overheadEl.className = 'good';
+            } else if (overhead < 20) {
+                overheadEl.className = 'warning';
+            } else {
+                overheadEl.className = 'bad';
+            }
+            
+            // Log results
+            log('Results: No sanitizer=' + time1.toFixed(0) + 'ms, With sanitizer=' + time2.toFixed(0) + 'ms, Overhead=' + overhead + '%');
+            
+            // Check virtual scrolling activation
+            const vs1Active = chat1.isVirtualScrollingEnabled();
+            const vs2Active = chat2.isVirtualScrollingEnabled();
+            
+            if (count >= 500 && !vs1Active) {
+                log('WARNING: Virtual scrolling did not activate for chat1!');
+            }
+            if (count >= 500 && !vs2Active) {
+                log('WARNING: Virtual scrolling did not activate for chat2!');
+            }
+        }
+        
+        function updateMetrics(num, count, time, chat) {
+            document.getElementById('count' + num).textContent = count;
+            document.getElementById('time' + num).textContent = time.toFixed(0);
+            document.getElementById('permsg' + num).textContent = (time / count).toFixed(3);
+            
+            const vsEnabled = chat.isVirtualScrollingEnabled();
+            document.getElementById('virtual' + num).textContent = vsEnabled ? 'Yes' : 'No';
+            
+            const domNodes = document.querySelectorAll('#chat' + num + ' .quikchat-message').length;
+            document.getElementById('dom' + num).textContent = domNodes;
+            
+            // Color code performance
+            const timeEl = document.getElementById('time' + num);
+            const perMsgTime = time / count;
+            if (perMsgTime < 0.5) {
+                timeEl.className = 'good';
+            } else if (perMsgTime < 2) {
+                timeEl.className = 'warning';
+            } else {
+                timeEl.className = 'bad';
+            }
+        }
+        
+        function clearAll() {
+            if (chat1) chat1.historyClear();
+            if (chat2) chat2.historyClear();
+            
+            // Reset metrics
+            ['1', '2'].forEach(num => {
+                document.getElementById('count' + num).textContent = '0';
+                document.getElementById('time' + num).textContent = '0';
+                document.getElementById('permsg' + num).textContent = '0';
+                document.getElementById('virtual' + num).textContent = 'No';
+                document.getElementById('dom' + num).textContent = '0';
+            });
+            document.getElementById('overhead').textContent = '0';
+            
+            log('Cleared all chats');
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', function() {
+            log('Page loaded. QuikChat version: ' + (quikchat.version ? quikchat.version().version : 'unknown'));
+            initChats();
+        });
+    </script>
+</body>
+</html>

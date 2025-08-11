@@ -2,14 +2,11 @@
 
 ## 🎯 Critical - Production Readiness
 
-- [ ] **Accessibility**: ARIA labels, keyboard navigation, screen reader support
 - [ ] **Security**: XSS protection, sanitization hooks for innerHTML
-- [ ] **Mobile Experience**: Fix textarea handling for mobile keyboards
 - [ ] **Error Boundaries**: Add error handling and recovery mechanisms
 
 ## ⚡ High Priority - Core Features
 
-- [ ] **i18n/RTL**: Internationalization support, right-to-left languages
 - [ ] **Markdown Support**: Code blocks, formatting
 - [ ] **Show/Hide Timestamps**: Toggle timestamp visibility
 - [ ] **User Avatars**: Inline icon support [user][message] format
@@ -62,13 +59,13 @@
 - Streaming support for LLM responses
 - Theme customization
 - Smart scroll behavior
+- Accessibility (ARIA labels, screen reader support)
+- Mobile experience (viewport handling, virtual keyboard support)
+- Internationalization (i18n/RTL support)
 
 ### ⚠️ Needs Work for Production
-- **Accessibility** - Missing ARIA labels, keyboard navigation
 - **Security** - No XSS protection or sanitization hooks
-- **Mobile UX** - Textarea handling issues with keyboards
 - **Error handling** - No error boundaries or recovery mechanisms
-- **i18n** - No internationalization support
 
 ---
 *Last updated: 2025-08-11*

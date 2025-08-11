@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security - QuikChat Documentation</title>
+    <link rel="stylesheet" href="https://unpkg.com/github-markdown-css@5/github-markdown.css">
+    <link rel="stylesheet" href="https://unpkg.com/prismjs@1/themes/prism.css">
+    <style>
+        body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        @media (max-width: 767px) {
+            body { padding: 15px; }
+        }
+        /* Ensure emojis display properly */
+        .markdown-body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+        }
+        /* Code block styling */
+        pre {
+            background-color: #f6f8fa;
+            border-radius: 6px;
+            padding: 16px;
+            overflow: auto;
+        }
+        code {
+            background-color: rgba(175, 184, 193, 0.2);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 85%;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        /* Table styling */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 16px;
+            margin-bottom: 16px;
+        }
+        table th, table td {
+            border: 1px solid #d0d7de;
+            padding: 6px 13px;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+    </style>
+    <script src="https://unpkg.com/prismjs@1/components/prism-core.min.js"></script>
+    <script src="https://unpkg.com/prismjs@1/plugins/autoloader/prism-autoloader.min.js"></script>
+</head>
+<body>
+    <article class="markdown-body">
+        <h1>Security Guide</h1>
+<h2>Overview</h2>
+<p>QuikChat provides built-in XSS (Cross-Site Scripting) protection through optional content sanitization. By default, QuikChat does <strong>not</strong> sanitize content (backward compatible), allowing developers full control over content handling.</p>
+<h2>Understanding XSS in Chat Widgets</h2>
+<h3>The Risk</h3>
+<p>When user input is displayed in a chat widget without sanitization, it can execute malicious scripts:</p>
+<pre><code class="language-javascript">// User types: &lt;script&gt;alert(&#39;XSS&#39;)&lt;/script&gt;
+chat.messageAddNew(userInput, &#39;User&#39;);  // ⚠️ Script will execute!
+</code></pre>
+<h3>When You Need Sanitization</h3>
+<p>You should enable sanitization when:</p>
+<ul>
+<li>Displaying user-generated content</li>
+<li>Showing messages from untrusted sources</li>
+<li>Building multi-user chat applications</li>
+<li>Accepting input from external APIs</li>
+</ul>
+<h3>When Sanitization May Not Be Needed</h3>
+<p>Sanitization might not be necessary when:</p>
+<ul>
+<li>Only displaying programmer-controlled content</li>
+<li>Building internal tools with trusted users</li>
+<li>Intentionally displaying HTML/Markdown content</li>
+<li>Using your own sanitization layer</li>
+</ul>
+<h2>Using Built-in Sanitizers</h2>
+<h3>Option 1: Enable at Construction</h3>
+<pre><code class="language-javascript">const chat = new quikchat(&#39;#chat&#39;, onSend, {
+    sanitizer: quikchat.sanitizers.escapeHTML
+});
+</code></pre>
+<h3>Option 2: Set After Construction</h3>
+<pre><code class="language-javascript">const chat = new quikchat(&#39;#chat&#39;);
+chat.setSanitizer(quikchat.sanitizers.escapeHTML);
+</code></pre>
+<h3>Built-in Sanitizers</h3>
+<h4>escapeHTML</h4>
+<p>Escapes HTML entities to prevent script execution:</p>
+<pre><code class="language-javascript">// Input: &lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;Hello
+// Output: &amp;lt;script&amp;gt;alert(&#39;xss&#39;)&amp;lt;/script&amp;gt;Hello
+</code></pre>
+<h4>stripHTML</h4>
+<p>Removes all HTML tags but preserves text content:</p>
+<pre><code class="language-javascript">// Input: &lt;b&gt;Bold&lt;/b&gt; and &lt;i&gt;italic&lt;/i&gt; text
+// Output: Bold and italic text
+</code></pre>
+<h2>Custom Sanitizers</h2>
+<p>You can provide your own sanitization function:</p>
+<pre><code class="language-javascript">// Example: Using DOMPurify
+const chat = new quikchat(&#39;#chat&#39;, onSend, {
+    sanitizer: (content) =&gt; DOMPurify.sanitize(content)
+});
+
+// Example: Custom markdown sanitizer
+const chat = new quikchat(&#39;#chat&#39;, onSend, {
+    sanitizer: (content) =&gt; {
+        // Allow only specific markdown elements
+        return content
+            .replace(/[&lt;&gt;]/g, &#39;&#39;)  // Remove HTML brackets
+            .replace(/\*\*(.*?)\*\*/g, &#39;&lt;b&gt;$1&lt;/b&gt;&#39;)  // Bold
+            .replace(/\*(.*?)\*/g, &#39;&lt;i&gt;$1&lt;/i&gt;&#39;);     // Italic
+    }
+});
+</code></pre>
+<h2>Common Patterns</h2>
+<h3>Secure User Input Handling</h3>
+<pre><code class="language-javascript">const chat = new quikchat(&#39;#chat&#39;, (instance, message) =&gt; {
+    // User input is automatically sanitized when displayed
+    instance.messageAddNew(message, &#39;User&#39;, &#39;right&#39;);
+    
+    // Send to backend (sanitize server-side too!)
+    sendToServer(message);
+}, {
+    sanitizer: quikchat.sanitizers.escapeHTML
+});
+</code></pre>
+<h3>Different Sanitization for Different Users</h3>
+<pre><code class="language-javascript">const chat = new quikchat(&#39;#chat&#39;);
+
+// Escape HTML for user messages
+chat.setSanitizer(quikchat.sanitizers.escapeHTML);
+chat.messageAddNew(userInput, &#39;User&#39;, &#39;right&#39;);
+
+// Allow HTML for system messages (trusted source)
+chat.setSanitizer(null);
+chat.messageAddNew(&#39;&lt;b&gt;System:&lt;/b&gt; User joined&#39;, &#39;System&#39;, &#39;center&#39;);
+
+// Re-enable for next user message
+chat.setSanitizer(quikchat.sanitizers.escapeHTML);
+</code></pre>
+<h3>Streaming with Sanitization</h3>
+<pre><code class="language-javascript">const chat = new quikchat(&#39;#chat&#39;, null, {
+    sanitizer: quikchat.sanitizers.escapeHTML
+});
+
+// Safe streaming - each append is sanitized
+const msgId = chat.messageAddNew(&#39;&#39;, &#39;Assistant&#39;, &#39;left&#39;);
+streamResponse.on(&#39;data&#39;, (chunk) =&gt; {
+    chat.messageAppendContent(msgId, chunk);  // Sanitized automatically
+});
+</code></pre>
+<h2>Performance Considerations</h2>
+<h3>Impact</h3>
+<ul>
+<li><strong>escapeHTML</strong>: ~2-5% overhead for typical use</li>
+<li><strong>stripHTML</strong>: ~1-3% overhead</li>
+<li><strong>Custom sanitizers</strong>: Varies (DOMPurify: ~10-20% overhead)</li>
+</ul>
+<h3>Benchmarks</h3>
+<p>Based on 1000 messages:</p>
+<ul>
+<li>Without sanitizer: ~40ms</li>
+<li>With escapeHTML: ~42ms (5% overhead)</li>
+<li>Per message cost: ~0.002ms</li>
+</ul>
+<h3>Optimization Tips</h3>
+<ol>
+<li><strong>Use built-in sanitizers</strong> when possible (optimized for performance)</li>
+<li><strong>Avoid heavy sanitizers</strong> for streaming content</li>
+<li><strong>Consider batching</strong> for bulk message additions</li>
+<li><strong>Enable virtual scrolling</strong> for large message volumes</li>
+</ol>
+<h2>Security Best Practices</h2>
+<h3>1. Defense in Depth</h3>
+<p>Always sanitize on both client and server:</p>
+<pre><code class="language-javascript">// Client-side
+const chat = new quikchat(&#39;#chat&#39;, null, {
+    sanitizer: quikchat.sanitizers.escapeHTML
+});
+
+// Server-side (Node.js example)
+app.post(&#39;/message&#39;, (req, res) =&gt; {
+    const sanitized = escapeHtml(req.body.message);
+    broadcast(sanitized);
+});
+</code></pre>
+<h3>2. Content Security Policy (CSP)</h3>
+<p>QuikChat is CSP-compatible. Add appropriate headers:</p>
+<pre><code class="language-html">&lt;meta http-equiv=&quot;Content-Security-Policy&quot; 
+      content=&quot;default-src &#39;self&#39;; style-src &#39;self&#39; &#39;unsafe-inline&#39;;&quot;&gt;
+</code></pre>
+<h3>3. Regular Updates</h3>
+<p>Keep QuikChat updated for the latest security improvements:</p>
+<pre><code class="language-bash">npm update quikchat
+</code></pre>
+<h2>Testing Your Implementation</h2>
+<h3>Manual Testing</h3>
+<p>Try these payloads to verify sanitization:</p>
+<pre><code class="language-javascript">// XSS attempts
+&#39;&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;&#39;
+&#39;&lt;img src=x onerror=alert(&quot;XSS&quot;)&gt;&#39;
+&#39;&lt;svg onload=alert(&quot;XSS&quot;)&gt;&#39;
+&#39;javascript:alert(&quot;XSS&quot;)&#39;
+
+// HTML injection
+&#39;&lt;marquee&gt;Annoying&lt;/marquee&gt;&#39;
+&#39;&lt;style&gt;body{display:none}&lt;/style&gt;&#39;
+</code></pre>
+<h3>Automated Testing</h3>
+<pre><code class="language-javascript">describe(&#39;Security&#39;, () =&gt; {
+    test(&#39;should prevent XSS&#39;, () =&gt; {
+        const chat = new quikchat(&#39;#chat&#39;, null, {
+            sanitizer: quikchat.sanitizers.escapeHTML
+        });
+        
+        chat.messageAddNew(&#39;&lt;script&gt;window.xss=true&lt;/script&gt;&#39;, &#39;User&#39;);
+        
+        expect(window.xss).toBeUndefined();
+        expect(document.querySelector(&#39;.quikchat-message-content&#39;).innerHTML)
+            .toBe(&#39;&amp;lt;script&amp;gt;window.xss=true&amp;lt;/script&amp;gt;&#39;);
+    });
+});
+</code></pre>
+<h2>Migration Guide</h2>
+<h3>From Unsanitized to Sanitized</h3>
+<pre><code class="language-javascript">// Before (no sanitization)
+const chat = new quikchat(&#39;#chat&#39;, handleMessage);
+
+// After (with sanitization)
+const chat = new quikchat(&#39;#chat&#39;, handleMessage, {
+    sanitizer: quikchat.sanitizers.escapeHTML
+});
+
+// Or update existing instance
+existingChat.setSanitizer(quikchat.sanitizers.escapeHTML);
+</code></pre>
+<h3>Supporting Rich Content Safely</h3>
+<pre><code class="language-javascript">// Option 1: Use markdown library with built-in sanitization
+const chat = new quikchat(&#39;#chat&#39;, null, {
+    sanitizer: (content) =&gt; {
+        const html = markdownLibrary.render(content);
+        return DOMPurify.sanitize(html);
+    }
+});
+
+// Option 2: Whitelist specific HTML tags
+const chat = new quikchat(&#39;#chat&#39;, null, {
+    sanitizer: (content) =&gt; {
+        return DOMPurify.sanitize(content, {
+            ALLOWED_TAGS: [&#39;b&#39;, &#39;i&#39;, &#39;em&#39;, &#39;strong&#39;, &#39;a&#39;, &#39;code&#39;],
+            ALLOWED_ATTR: [&#39;href&#39;]
+        });
+    }
+});
+</code></pre>
+<h2>FAQ</h2>
+<h3>Q: Does sanitization affect performance?</h3>
+<p>A: Built-in sanitizers add minimal overhead (2-5%). Heavy sanitizers like DOMPurify may add 10-20% overhead.</p>
+<h3>Q: Can I display HTML/Markdown with sanitization enabled?</h3>
+<p>A: Yes, use a custom sanitizer that allows safe HTML tags or use a markdown parser with sanitization.</p>
+<h3>Q: Is sanitization enabled by default?</h3>
+<p>A: No, to maintain backward compatibility. You must explicitly enable it.</p>
+<h3>Q: Does sanitization protect against all attacks?</h3>
+<p>A: It protects against XSS via message content. Always implement server-side validation and sanitization too.</p>
+<h3>Q: Can I use different sanitizers for different message types?</h3>
+<p>A: Yes, use <code>setSanitizer()</code> to change the sanitizer dynamically.</p>
+<h2>Support</h2>
+<p>For security issues, please email <a href="mailto:security@quikchat.com">security@quikchat.com</a> rather than using public issue trackers.</p>
+<p>For questions and discussions, visit our <a href="https://github.com/deftio/quikchat/discussions">GitHub Discussions</a>.</p>
+
+    </article>
+    <script>
+        // Syntax highlighting
+        if (typeof Prism !== 'undefined') {
+            Prism.highlightAll();
+        }
+    </script>
+</body>
+</html>

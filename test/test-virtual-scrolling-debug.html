@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Scrolling Debug</title>
+    <link rel="stylesheet" href="../dist/quikchat.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .chat-container {
+            height: 400px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .status {
+            padding: 10px;
+            background: #f0f9ff;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Virtual Scrolling Debug Test</h1>
+    
+    <div class="status" id="status">Ready</div>
+
+    <div>
+        <button onclick="testBasic()">Test Basic (10 msgs)</button>
+        <button onclick="testThreshold()">Test At Threshold (500 msgs)</button>
+        <button onclick="testWithSanitizer()">Test With Sanitizer (500 msgs)</button>
+        <button onclick="clearChat()">Clear</button>
+    </div>
+
+    <div id="chat1" class="chat-container"></div>
+
+    <script src="../dist/quikchat.umd.min.js"></script>
+    <script>
+        let chat = null;
+        
+        function log(msg, isError = false) {
+            console.log(msg);
+            const status = document.getElementById('status');
+            const time = new Date().toLocaleTimeString();
+            status.innerHTML += '<div class="' + (isError ? 'error' : '') + '">[' + time + '] ' + msg + '</div>';
+            // Keep only last 10 messages
+            const lines = status.innerHTML.split('\n');
+            if (lines.length > 10) {
+                status.innerHTML = lines.slice(-10).join('\n');
+            }
+        }
+        
+        function testBasic() {
+            try {
+                log('Creating basic chat...');
+                
+                // Destroy previous chat if exists
+                if (chat && chat.historyClear) {
+                    chat.historyClear();
+                }
+                
+                // Create new chat WITHOUT sanitizer first
+                chat = new quikchat('#chat1', null, {
+                    virtualScrolling: true,
+                    virtualScrollingThreshold: 500
+                });
+                
+                log('Chat created. Adding 10 messages...');
+                
+                for (let i = 0; i < 10; i++) {
+                    const content = 'Basic message ' + i;
+                    chat.messageAddNew(content, 'User', i % 2 === 0 ? 'right' : 'left');
+                }
+                
+                log('Added 10 messages. Virtual scrolling: ' + chat.isVirtualScrollingEnabled());
+                log('DOM nodes: ' + document.querySelectorAll('#chat1 .quikchat-message').length);
+                
+            } catch (e) {
+                log('Error: ' + e.message, true);
+                console.error(e);
+            }
+        }
+        
+        function testThreshold() {
+            try {
+                log('Testing at threshold (500 messages)...');
+                
+                if (chat && chat.historyClear) {
+                    chat.historyClear();
+                }
+                
+                chat = new quikchat('#chat1', null, {
+                    virtualScrolling: true,
+                    virtualScrollingThreshold: 500
+                });
+                
+                log('Adding messages in batches...');
+                
+                // Add in smaller batches to avoid blocking
+                let count = 0;
+                const batchSize = 50;
+                const totalMessages = 500;
+                
+                function addBatch() {
+                    const start = count;
+                    const end = Math.min(count + batchSize, totalMessages);
+                    
+                    for (let i = start; i < end; i++) {
+                        const content = 'Message ' + i;
+                        chat.messageAddNew(content, 'User ' + (i % 3), i % 2 === 0 ? 'right' : 'left');
+                    }
+                    
+                    count = end;
+                    log('Added ' + end + '/' + totalMessages + ' messages');
+                    
+                    if (count < totalMessages) {
+                        setTimeout(addBatch, 10);
+                    } else {
+                        log('Completed! Virtual scrolling: ' + chat.isVirtualScrollingEnabled());
+                        log('DOM nodes: ' + document.querySelectorAll('#chat1 .quikchat-message').length);
+                    }
+                }
+                
+                addBatch();
+                
+            } catch (e) {
+                log('Error: ' + e.message, true);
+                console.error(e);
+            }
+        }
+        
+        function testWithSanitizer() {
+            try {
+                log('Testing with sanitizer...');
+                
+                if (chat && chat.historyClear) {
+                    chat.historyClear();
+                }
+                
+                // Test if sanitizer exists
+                if (!quikchat.sanitizers) {
+                    log('ERROR: quikchat.sanitizers not found!', true);
+                    return;
+                }
+                
+                if (!quikchat.sanitizers.escapeHTML) {
+                    log('ERROR: escapeHTML sanitizer not found!', true);
+                    return;
+                }
+                
+                log('Creating chat with sanitizer...');
+                
+                chat = new quikchat('#chat1', null, {
+                    sanitizer: quikchat.sanitizers.escapeHTML,
+                    virtualScrolling: true,
+                    virtualScrollingThreshold: 500
+                });
+                
+                log('Chat created with sanitizer. Adding test messages...');
+                
+                // Add just a few messages first
+                for (let i = 0; i < 5; i++) {
+                    const content = '<b>Test ' + i + '</b>';
+                    try {
+                        chat.messageAddNew(content, 'User', 'right');
+                        log('Added message ' + i);
+                    } catch (e) {
+                        log('Error adding message ' + i + ': ' + e.message, true);
+                        return;
+                    }
+                }
+                
+                log('Successfully added 5 messages with sanitizer');
+                
+                // Check if content is sanitized
+                const firstMessage = document.querySelector('.quikchat-message-content');
+                if (firstMessage) {
+                    log('First message content: ' + firstMessage.innerHTML);
+                    if (firstMessage.innerHTML.includes('&lt;b&gt;')) {
+                        log('✅ Sanitization working!', false);
+                    } else {
+                        log('⚠️ Sanitization may not be working', true);
+                    }
+                }
+                
+            } catch (e) {
+                log('Error: ' + e.message, true);
+                console.error(e);
+            }
+        }
+        
+        function clearChat() {
+            if (chat && chat.historyClear) {
+                chat.historyClear();
+                log('Chat cleared');
+            }
+            document.getElementById('status').innerHTML = 'Ready';
+        }
+        
+        // Initial test on load
+        window.addEventListener('load', function() {
+            log('Page loaded. QuikChat version: ' + (quikchat.version ? quikchat.version().version : 'unknown'));
+            
+            // Check if required features exist
+            if (typeof quikchat === 'undefined') {
+                log('ERROR: quikchat not loaded!', true);
+            } else {
+                log('quikchat loaded ✓');
+                
+                if (quikchat.sanitizers) {
+                    log('Sanitizers available ✓');
+                } else {
+                    log('WARNING: Sanitizers not available', true);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

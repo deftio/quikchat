@@ -13,7 +13,7 @@
   },
   "homepage": "https://github.com/deftio/quikchat",
   "main": "dist/quikchat.umd.min.js",
-  "module": "dist/quikchat.min.js",
+  "module": "dist/quikchat.esm.min.js",
   "unpkg": "dist/quikchat.umd.min.js",
   "browser": "dist/quikchat.umd.min.js",
   "types": "dist/quikchat.d.ts",
@@ -26,6 +26,8 @@
   },
   "scripts": {
     "test": "jest --coverage",
+    "test:unit": "jest --coverage",
+    "test:e2e": "npx playwright test --config=playwright.config.cjs",
     "minifyCSS": "node ./tools/minifyCSS.cjs",
     "updateVersion": "node ./tools/updateVersion",
     "buildDocs": "node ./tools/buildDocs.js",
@@ -73,6 +75,7 @@
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.3",
     "@babel/preset-react": "^7.24.7",
+    "@playwright/test": "^1.54.2",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
@@ -86,6 +89,7 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "marked": "^16.1.2",
+    "playwright": "^1.54.2",
     "rollup": "^4.18.1",
     "rollup-plugin-css-only": "^4.5.2",
     "rollup-plugin-postcss": "^4.0.2"

@@ -97,7 +97,16 @@ This document outlines the standard process for developing features and creating
    - Verify all examples work
    - Check console for errors
 
-4. **Rebuild documentation**
+4. **Run Playwright E2E tests (optional but recommended)**
+   ```bash
+   npm run test:e2e
+   ```
+   - Tests virtual scrolling with sanitizer
+   - Verifies XSS protection
+   - Checks performance with large message counts
+   - Note: Not included in CI/CD to avoid brittleness
+
+5. **Rebuild documentation**
    ```bash
    npm run buildDocs
    ```

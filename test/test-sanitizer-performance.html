@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuikChat Sanitizer Performance Test</title>
+    <link rel="stylesheet" href="../dist/quikchat.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .chat-container {
+            height: 400px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .controls {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .metric {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .test-content {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f0f9ff;
+            border-radius: 8px;
+        }
+        .result-row {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .result-row:last-child {
+            border-bottom: none;
+        }
+        .good { color: #10b981; }
+        .warning { color: #f59e0b; }
+        .bad { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <h1>QuikChat Sanitizer Performance Test</h1>
+    
+    <div class="controls">
+        <h2>Test Configuration</h2>
+        <label>
+            Number of Messages: 
+            <input type="number" id="messageCount" value="100" min="10" max="10000">
+        </label>
+        <label style="margin-left: 20px;">
+            Iterations: 
+            <input type="number" id="iterations" value="5" min="1" max="20">
+        </label>
+        
+        <div style="margin-top: 15px;">
+            <button onclick="runPerformanceTest()">Run Performance Test</button>
+            <button onclick="runStreamingTest()">Test Streaming Performance</button>
+            <button onclick="clearResults()">Clear Results</button>
+        </div>
+        
+        <div class="test-content">
+            Test content includes: <code>&lt;script&gt;alert("xss")&lt;/script&gt;&lt;b&gt;Bold&lt;/b&gt; &lt;i&gt;italic&lt;/i&gt; text with &amp; special "characters"</code>
+        </div>
+    </div>
+
+    <div class="container">
+        <div>
+            <h3>No Sanitizer (Control)</h3>
+            <div id="chat1" class="chat-container"></div>
+        </div>
+        <div>
+            <h3>With escapeHTML Sanitizer</h3>
+            <div id="chat2" class="chat-container"></div>
+        </div>
+    </div>
+
+    <div class="results" id="results">
+        <h2>Performance Results</h2>
+        <div id="resultsContent">
+            <p>Click "Run Performance Test" to begin...</p>
+        </div>
+    </div>
+
+    <script src="../dist/quikchat.umd.min.js"></script>
+    <script>
+        // Initialize chats
+        const chat1 = new quikchat('#chat1', null, {
+            virtualScrolling: false  // Disable to measure pure sanitization impact
+        });
+        
+        const chat2 = new quikchat('#chat2', null, {
+            sanitizer: quikchat.sanitizers.escapeHTML,
+            virtualScrolling: false  // Disable to measure pure sanitization impact
+        });
+        
+        const testContent = '<script>alert("xss")</script><b>Bold</b> <i>italic</i> text with & special "characters"';
+        
+        function measurePerformance(chat, messageCount, label) {
+            const startTime = performance.now();
+            
+            for (let i = 0; i < messageCount; i++) {
+                chat.messageAddNew(
+                    testContent + ' Message #' + i,
+                    i % 2 === 0 ? 'User' : 'Bot',
+                    i % 2 === 0 ? 'right' : 'left'
+                );
+            }
+            
+            const endTime = performance.now();
+            return endTime - startTime;
+        }
+        
+        function measureStreamingPerformance(chat, messageCount, label) {
+            const startTime = performance.now();
+            
+            // Add initial messages
+            const msgIds = [];
+            for (let i = 0; i < messageCount; i++) {
+                msgIds.push(chat.messageAddNew('Initial ', 'Bot', 'left'));
+            }
+            
+            // Simulate streaming by appending content
+            for (let i = 0; i < msgIds.length; i++) {
+                for (let j = 0; j < 10; j++) {
+                    chat.messageAppendContent(msgIds[i], testContent);
+                }
+            }
+            
+            const endTime = performance.now();
+            return endTime - startTime;
+        }
+        
+        async function runPerformanceTest() {
+            const messageCount = parseInt(document.getElementById('messageCount').value);
+            const iterations = parseInt(document.getElementById('iterations').value);
+            
+            const results = {
+                noSanitizer: [],
+                withSanitizer: []
+            };
+            
+            document.getElementById('resultsContent').innerHTML = '<p>Running test...</p>';
+            
+            for (let i = 0; i < iterations; i++) {
+                // Clear chats
+                chat1.historyClear();
+                chat2.historyClear();
+                
+                // Wait a bit for DOM to settle
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Run tests
+                results.noSanitizer.push(measurePerformance(chat1, messageCount, 'No Sanitizer'));
+                
+                // Clear and wait
+                chat1.historyClear();
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                results.withSanitizer.push(measurePerformance(chat2, messageCount, 'With Sanitizer'));
+                
+                // Clear for next iteration
+                chat2.historyClear();
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            displayResults(results, messageCount, iterations, 'Standard Message Addition');
+        }
+        
+        async function runStreamingTest() {
+            const messageCount = parseInt(document.getElementById('messageCount').value);
+            const iterations = parseInt(document.getElementById('iterations').value);
+            
+            const results = {
+                noSanitizer: [],
+                withSanitizer: []
+            };
+            
+            document.getElementById('resultsContent').innerHTML = '<p>Running streaming test...</p>';
+            
+            for (let i = 0; i < iterations; i++) {
+                // Clear chats
+                chat1.historyClear();
+                chat2.historyClear();
+                
+                // Wait a bit for DOM to settle
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Run tests
+                results.noSanitizer.push(measureStreamingPerformance(chat1, messageCount, 'No Sanitizer'));
+                
+                // Clear and wait
+                chat1.historyClear();
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                results.withSanitizer.push(measureStreamingPerformance(chat2, messageCount, 'With Sanitizer'));
+                
+                // Clear for next iteration
+                chat2.historyClear();
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            displayResults(results, messageCount, iterations, 'Streaming Performance (10 appends per message)');
+        }
+        
+        function displayResults(results, messageCount, iterations, testType) {
+            const avgNoSanitizer = results.noSanitizer.reduce((a, b) => a + b, 0) / iterations;
+            const avgWithSanitizer = results.withSanitizer.reduce((a, b) => a + b, 0) / iterations;
+            const overhead = avgWithSanitizer - avgNoSanitizer;
+            const overheadPercent = (overhead / avgNoSanitizer * 100).toFixed(2);
+            
+            // Calculate standard deviation
+            const stdDevNoSanitizer = Math.sqrt(results.noSanitizer.reduce((sq, n) => sq + Math.pow(n - avgNoSanitizer, 2), 0) / iterations);
+            const stdDevWithSanitizer = Math.sqrt(results.withSanitizer.reduce((sq, n) => sq + Math.pow(n - avgWithSanitizer, 2), 0) / iterations);
+            
+            const perMessageOverhead = overhead / messageCount;
+            
+            let overheadClass = 'good';
+            if (overheadPercent > 10) overheadClass = 'warning';
+            if (overheadPercent > 25) overheadClass = 'bad';
+            
+            const html = `
+                <h3>${testType}</h3>
+                <div class="result-row">
+                    <strong>Test Parameters:</strong>
+                    <span>${messageCount} messages, ${iterations} iterations</span>
+                </div>
+                <div class="result-row">
+                    <strong>No Sanitizer:</strong>
+                    <span>${avgNoSanitizer.toFixed(2)}ms (±${stdDevNoSanitizer.toFixed(2)}ms)</span>
+                </div>
+                <div class="result-row">
+                    <strong>With escapeHTML:</strong>
+                    <span>${avgWithSanitizer.toFixed(2)}ms (±${stdDevWithSanitizer.toFixed(2)}ms)</span>
+                </div>
+                <div class="result-row">
+                    <strong>Overhead:</strong>
+                    <span class="${overheadClass}">${overhead.toFixed(2)}ms (${overheadPercent}%)</span>
+                </div>
+                <div class="result-row">
+                    <strong>Per Message:</strong>
+                    <span>${perMessageOverhead.toFixed(4)}ms</span>
+                </div>
+                <div class="result-row">
+                    <strong>Messages/Second:</strong>
+                    <span>
+                        No Sanitizer: ${(1000 / (avgNoSanitizer / messageCount)).toFixed(0)} msg/s<br>
+                        With Sanitizer: ${(1000 / (avgWithSanitizer / messageCount)).toFixed(0)} msg/s
+                    </span>
+                </div>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value ${overheadClass}">${overheadPercent}%</div>
+                        <div class="metric-label">Performance Impact</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${perMessageOverhead.toFixed(3)}ms</div>
+                        <div class="metric-label">Per Message Cost</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">${(1000 / (avgWithSanitizer / messageCount)).toFixed(0)}</div>
+                        <div class="metric-label">Messages/Second</div>
+                    </div>
+                </div>
+                <p style="margin-top: 20px; color: #666; font-size: 14px;">
+                    ${overheadPercent < 5 ? '✅ Excellent: Negligible performance impact' : 
+                      overheadPercent < 10 ? '✅ Good: Minor performance impact' :
+                      overheadPercent < 25 ? '⚠️ Acceptable: Moderate performance impact' :
+                      '⚠️ Consider optimization for high-volume use cases'}
+                </p>
+            `;
+            
+            document.getElementById('resultsContent').innerHTML = html;
+        }
+        
+        function clearResults() {
+            chat1.historyClear();
+            chat2.historyClear();
+            document.getElementById('resultsContent').innerHTML = '<p>Click "Run Performance Test" to begin...</p>';
+        }
+    </script>
+</body>
+</html>

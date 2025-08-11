@@ -16,6 +16,7 @@ class SimpleVirtualScroller {
         this.itemPositions = new Map();  // Cache positions
         this.totalHeight = 0;
         this.onRenderItem = options.onRenderItem || (() => {});
+        this.sanitizer = options.sanitizer || null;  // Content sanitizer
         
         this._initStructure();
         this._attachScrollListener();
@@ -29,8 +30,14 @@ class SimpleVirtualScroller {
         this.container.style.overflow = 'auto';
         
         // Ensure container has height
-        if (!this.container.style.height && this.container.offsetHeight === 0) {
-            this.container.style.height = '100%';
+        if (this.container.offsetHeight === 0) {
+            // Try to get height from computed style or parent
+            const computedHeight = window.getComputedStyle(this.container).height;
+            if (computedHeight === '0px' || computedHeight === 'auto') {
+                // If still no height, use a reasonable default
+                this.container.style.height = '400px';
+                console.warn('QuikChat Virtual Scrolling: Container has no height, setting to 400px');
+            }
         }
         
         this.spacer = document.createElement('div');
@@ -107,6 +114,12 @@ class SimpleVirtualScroller {
     _updateVisibleRange() {
         const scrollTop = this.container.scrollTop;
         const viewportHeight = this.container.clientHeight;
+        
+        // If container has no height, don't render anything (avoid infinite loop)
+        if (viewportHeight === 0) {
+            this.visibleRange = { start: 0, end: 0 };
+            return;
+        }
         
         // Find first visible item based on positions
         let startIndex = 0;
@@ -195,12 +208,12 @@ class SimpleVirtualScroller {
         
         const userDiv = document.createElement('div');
         userDiv.className = 'quikchat-message-user';
-        userDiv.innerHTML = item.userString || '';
+        userDiv.innerHTML = this.sanitizer ? this.sanitizer(item.userString || '') : (item.userString || '');
         userDiv.setAttribute('aria-label', 'User');
         
         const contentDiv = document.createElement('div');
         contentDiv.className = 'quikchat-message-content';
-        contentDiv.innerHTML = item.content || '';
+        contentDiv.innerHTML = this.sanitizer ? this.sanitizer(item.content || '') : (item.content || '');
         contentDiv.setAttribute('aria-label', 'Message content');
         
         messageDiv.appendChild(userDiv);
@@ -298,7 +311,6 @@ class SimpleVirtualScroller {
 /**
  * QuikChat - A zero-dependency JavaScript chat widget for modern web applications
  * @class quikchat
- * @version 1.1.16-dev1
  */
 class quikchat {
     /**
@@ -356,7 +368,9 @@ class quikchat {
                     inputPlaceholder: 'Type a message...',
                     titleDefault: 'Chat'
                 }
-            }
+            },
+            // Security: content sanitizer callback
+            sanitizer: null  // null = no sanitization (backward compatible)
         };
         const meta = { ...defaultOpts, ...options }; // merge options with defaults
         
@@ -421,6 +435,9 @@ class quikchat {
         this.virtualScrollingThreshold = meta.virtualScrollingThreshold;
         this.virtualScroller = null;
         
+        // Sanitizer setup
+        this._sanitizer = meta.sanitizer || null;
+        
         // Don't initialize virtual scrolling immediately - wait for threshold
         // Virtual scrolling will be initialized when message count exceeds threshold
     }
@@ -436,6 +453,7 @@ class quikchat {
                 this.virtualScroller = new SimpleVirtualScroller(this._messagesArea, {
                     itemHeight: 80,
                     buffer: 5,
+                    sanitizer: this._sanitizer,  // Pass sanitizer to virtual scroller
                     onRenderItem: (content) => {
                         // Apply alternating colors if enabled
                         if (this._messagesArea.classList.contains('quikchat-messages-area-alt')) {
@@ -457,8 +475,7 @@ class quikchat {
     _migrateToVirtualScrolling() {
         if (!this.virtualScroller) return;
         
-        // Clear DOM but keep history
-        this._messagesArea.innerHTML = '';
+        // Don't clear DOM here - virtual scroller will do it in _initStructure
         
         // Add all messages to virtual scroller
         const items = this._history.map(msg => ({
@@ -473,6 +490,14 @@ class quikchat {
         }));
         
         this.virtualScroller.addItems(items);
+        
+        // Force a render in case container needs time to get dimensions
+        setTimeout(() => {
+            if (this.virtualScroller) {
+                this.virtualScroller._updateVisibleRange();
+                this.virtualScroller._renderVisibleItems();
+            }
+        }, 10);
     }
 
     _createWidget() {
@@ -689,7 +714,7 @@ class quikchat {
      * chat.titleAreaSetContents('<h2>Support Chat</h2>', 'center');
      */
     titleAreaSetContents(title, align = 'center') {
-        this._titleArea.innerHTML = title;
+        this._titleArea.innerHTML = this._sanitizeContent(title);
         this._titleArea.style.textAlign = align;
     }
 
@@ -833,7 +858,7 @@ class quikchat {
             }
 
             const userDiv = document.createElement('div');
-            userDiv.innerHTML = input.userString;
+            userDiv.innerHTML = this._sanitizeContent(input.userString);
             userDiv.classList.add('quikchat-user-label');
             userDiv.style.textAlign = input.align;
         
@@ -852,7 +877,7 @@ class quikchat {
                 }
             }
         
-            contentDiv.innerHTML = input.content;
+            contentDiv.innerHTML = this._sanitizeContent(input.content);
         
             messageDiv.appendChild(userDiv);
             messageDiv.appendChild(contentDiv);
@@ -1024,13 +1049,13 @@ class quikchat {
                 // Find the item index in virtual scroller
                 const index = this.virtualScroller.items.findIndex(item => item.msgid === n);
                 if (index >= 0) {
-                    this.virtualScroller.items[index].content += content;
+                    this.virtualScroller.items[index].content += content;  // Don't double-sanitize, it's done on render
                     // Re-render if the item is currently visible
                     this.virtualScroller.updateItem(index, { content: this.virtualScroller.items[index].content });
                 }
             } else {
                 // Regular DOM manipulation
-                this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML += content;
+                this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML += this._sanitizeContent(content);
             }
             
             success = true;
@@ -1063,13 +1088,13 @@ class quikchat {
                 // Find the item index in virtual scroller
                 const index = this.virtualScroller.items.findIndex(item => item.msgid === n);
                 if (index >= 0) {
-                    this.virtualScroller.items[index].content = content;
+                    this.virtualScroller.items[index].content = content;  // Don't double-sanitize, it's done on render
                     // Re-render if the item is currently visible
                     this.virtualScroller.updateItem(index, { content: content });
                 }
             } else {
                 // Regular DOM manipulation
-                this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML = content;
+                this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML = this._sanitizeContent(content);
             }
             
             success = true;
@@ -1091,8 +1116,14 @@ class quikchat {
      * Scrolls the messages area to the bottom.
      */
     messageScrollToBottom() {
-        if (this._messagesArea.lastElementChild) {
-            this._messagesArea.lastElementChild.scrollIntoView();
+        if (this.virtualScroller) {
+            // For virtual scrolling, scroll to the maximum scroll position
+            this._messagesArea.scrollTop = this._messagesArea.scrollHeight - this._messagesArea.clientHeight;
+        } else {
+            // For regular DOM, use the last element
+            if (this._messagesArea.lastElementChild) {
+                this._messagesArea.lastElementChild.scrollIntoView();
+            }
         }
     }
 
@@ -1503,6 +1534,46 @@ class quikchat {
     }
 
     /**
+     * Built-in content sanitizers for XSS protection
+     * @static
+     * @type {Object}
+     * @property {Function} escapeHTML - Escapes HTML entities
+     * @property {Function} stripHTML - Removes all HTML tags
+     * @example
+     * // Use built-in HTML escaper
+     * const chat = new quikchat('#chat', onSend, {
+     *   sanitizer: quikchat.sanitizers.escapeHTML
+     * });
+     */
+    static sanitizers = {
+        /**
+         * Escapes HTML entities to prevent XSS
+         * @param {string} str - String to escape
+         * @returns {string} Escaped string
+         */
+        escapeHTML: (str) => {
+            if (typeof str !== 'string') return str;
+            return str.replace(/[&<>"']/g, (m) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[m]);
+        },
+        
+        /**
+         * Strips all HTML tags but keeps text content
+         * @param {string} str - String to strip
+         * @returns {string} Text without HTML tags
+         */
+        stripHTML: (str) => {
+            if (typeof str !== 'string') return str;
+            return str.replace(/<[^>]*>/g, '');
+        }
+    };
+
+    /**
      * quikchat.loremIpsum() - Generate a simple string of Lorem Ipsum text (sample typographer's text) of numChars in length.
      * borrowed from github.com/deftio/bitwrench.js
      * @param {number} numChars - The number of characters to generate (random btw 25 and 150 if undefined).    
@@ -1843,6 +1914,54 @@ class quikchat {
         if (this._chatWidget) {
             this._chatWidget.setAttribute('lang', this.lang);
         }
+    }
+    
+    /**
+     * Sets the content sanitizer function
+     * @param {Function|null} sanitizer - Function to sanitize content or null to disable
+     * @returns {void}
+     * @example
+     * // Use built-in HTML escaper
+     * chat.setSanitizer(quikchat.sanitizers.escapeHTML);
+     * 
+     * // Use custom sanitizer (e.g., DOMPurify)
+     * chat.setSanitizer((content) => DOMPurify.sanitize(content));
+     * 
+     * // Disable sanitization
+     * chat.setSanitizer(null);
+     */
+    setSanitizer(sanitizer) {
+        if (sanitizer === null || typeof sanitizer === 'function') {
+            this._sanitizer = sanitizer;
+        } else {
+            console.warn('Sanitizer must be a function or null');
+        }
+    }
+    
+    /**
+     * Gets the current content sanitizer function
+     * @returns {Function|null} The current sanitizer function or null
+     * @example
+     * const sanitizer = chat.getSanitizer();
+     * if (sanitizer) {
+     *   console.log('Sanitization is enabled');
+     * }
+     */
+    getSanitizer() {
+        return this._sanitizer;
+    }
+    
+    /**
+     * Internal method to apply sanitizer to content
+     * @private
+     * @param {string} content - Content to sanitize
+     * @returns {string} Sanitized content
+     */
+    _sanitizeContent(content) {
+        if (this._sanitizer && typeof this._sanitizer === 'function') {
+            return this._sanitizer(content);
+        }
+        return content;
     }
 }
 

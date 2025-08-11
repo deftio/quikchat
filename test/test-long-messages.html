@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Long Message Virtual Scrolling Test</title>
-    <link rel="stylesheet" href="../dist/quikchat.css">
+    <link rel="stylesheet" href="../dist/quikchat.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -164,7 +164,7 @@
     <script>
         
         // Initialize chat with virtual scrolling
-        const chat = new quikchat('#chat1', (instance, message) => {
+        window.chat = new quikchat('#chat1', (instance, message) => {
             instance.messageAddNew(message, 'You', 'right');
         }, {
             theme: 'quikchat-theme-light',
@@ -180,7 +180,7 @@
         window.addShortMessage = function() {
             const startTime = performance.now();
             const msg = quikchat.loremIpsum(50); // Short message
-            chat.messageAddNew(msg, 'User', Math.random() > 0.5 ? 'left' : 'right', 'user');
+            window.chat.messageAddNew(msg, 'User', Math.random() > 0.5 ? 'left' : 'right', 'user');
             lastRenderTime = performance.now() - startTime;
             updateStats();
         };
@@ -188,7 +188,7 @@
         window.addLongMessage = function() {
             const startTime = performance.now();
             const msg = quikchat.loremIpsum(2500); // ~500 words
-            chat.messageAddNew(msg, 'Assistant', 'left', 'assistant');
+            window.chat.messageAddNew(msg, 'Assistant', 'left', 'assistant');
             lastRenderTime = performance.now() - startTime;
             updateStats();
         };
@@ -196,7 +196,7 @@
         window.addVeryLongMessage = function() {
             const startTime = performance.now();
             const msg = quikchat.loremIpsum(10000); // ~2000 words
-            chat.messageAddNew(msg, 'System', 'left', 'system');
+            window.chat.messageAddNew(msg, 'System', 'left', 'system');
             lastRenderTime = performance.now() - startTime;
             updateStats();
         };
@@ -231,7 +231,7 @@
                         align = 'left';
                     }
                     
-                    chat.messageAddNew(msg, sender, align);
+                    window.chat.messageAddNew(msg, sender, align);
                 }
                 
                 added += currentBatch;
@@ -251,7 +251,7 @@
         
         window.clearMessages = function() {
             const startTime = performance.now();
-            chat.historyClear();
+            window.chat.historyClear();
             lastRenderTime = performance.now() - startTime;
             updateStats();
         };
@@ -271,7 +271,7 @@
         };
         
         window.updateStats = function() {
-            const messageCount = chat.historyGetLength();
+            const messageCount = window.chat.historyGetLength();
             document.getElementById('messageCount').textContent = messageCount;
             
             // Count DOM nodes in messages area
@@ -293,7 +293,7 @@
             }
             
             // Check virtual scrolling status
-            const vsConfig = chat.getVirtualScrollingConfig();
+            const vsConfig = window.chat.getVirtualScrollingConfig();
             const vsStatusEl = document.getElementById('vsStatus');
             vsStatusEl.textContent = vsConfig.active ? 'Active' : 
                                     vsConfig.enabled ? `Enabled (waiting for ${vsConfig.threshold} msgs)` : 
@@ -304,10 +304,10 @@
             }
             
             // Get visible range if virtual scrolling is active
-            if (chat.virtualScroller) {
-                const range = chat.virtualScroller.visibleRange;
+            if (window.chat.virtualScroller) {
+                const range = window.chat.virtualScroller.visibleRange;
                 document.getElementById('visibleRange').textContent = 
-                    `${range.start}-${range.end} of ${chat.virtualScroller.items.length}`;
+                    `${range.start}-${range.end} of ${window.chat.virtualScroller.items.length}`;
             } else {
                 document.getElementById('visibleRange').textContent = 'All visible';
             }
@@ -325,7 +325,7 @@
             }
             
             // Estimate memory usage
-            const historyInfo = chat.historyGetInfo();
+            const historyInfo = window.chat.historyGetInfo();
             const memoryKB = (historyInfo.memoryUsage.estimatedSize / 1024).toFixed(1);
             document.getElementById('memoryUsage').textContent = `${memoryKB} KB`;
         };

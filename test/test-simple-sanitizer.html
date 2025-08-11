@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Sanitizer Test</title>
+    <link rel="stylesheet" href="../dist/quikchat.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .chat-container {
+            height: 300px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .output {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Sanitizer Test</h1>
+    
+    <div>
+        <button onclick="test1()">Test 1: No Sanitizer</button>
+        <button onclick="test2()">Test 2: With escapeHTML</button>
+        <button onclick="test3()">Test 3: Direct Sanitizer Test</button>
+        <button onclick="clearAll()">Clear</button>
+    </div>
+    
+    <div id="output" class="output">Click a test button...</div>
+    
+    <div id="chat1" class="chat-container"></div>
+
+    <script src="../dist/quikchat.umd.min.js"></script>
+    <script>
+        let chat = null;
+        const output = document.getElementById('output');
+        
+        function log(msg) {
+            output.textContent += msg + '\n';
+            console.log(msg);
+        }
+        
+        function test1() {
+            output.textContent = 'Test 1: No Sanitizer\n';
+            
+            try {
+                // Clear container first
+                document.getElementById('chat1').innerHTML = '';
+                
+                chat = new quikchat('#chat1', null, {
+                    virtualScrolling: false  // Disable to isolate sanitizer
+                });
+                
+                log('Created chat without sanitizer');
+                
+                const testContent = '<script>alert("xss")</' + 'script><b>Bold Text</b>';
+                chat.messageAddNew(testContent, 'User', 'right');
+                
+                log('Added message with HTML content');
+                
+                const msgContent = document.querySelector('.quikchat-message-content');
+                if (msgContent) {
+                    log('DOM content: ' + msgContent.innerHTML);
+                    log('Result: HTML preserved (as expected without sanitizer)');
+                }
+                
+            } catch (e) {
+                log('ERROR: ' + e.message);
+                console.error(e);
+            }
+        }
+        
+        function test2() {
+            output.textContent = 'Test 2: With escapeHTML Sanitizer\n';
+            
+            try {
+                // Clear container first
+                document.getElementById('chat1').innerHTML = '';
+                
+                // Check if sanitizer exists
+                if (!quikchat.sanitizers) {
+                    log('ERROR: quikchat.sanitizers is undefined!');
+                    log('Available properties: ' + Object.keys(quikchat).join(', '));
+                    return;
+                }
+                
+                if (!quikchat.sanitizers.escapeHTML) {
+                    log('ERROR: escapeHTML sanitizer not found!');
+                    log('Available sanitizers: ' + Object.keys(quikchat.sanitizers).join(', '));
+                    return;
+                }
+                
+                chat = new quikchat('#chat1', null, {
+                    sanitizer: quikchat.sanitizers.escapeHTML,
+                    virtualScrolling: false  // Disable to isolate sanitizer
+                });
+                
+                log('Created chat with escapeHTML sanitizer');
+                
+                const testContent = '<script>alert("xss")</' + 'script><b>Bold Text</b>';
+                chat.messageAddNew(testContent, 'User', 'right');
+                
+                log('Added message with HTML content');
+                
+                const msgContent = document.querySelector('.quikchat-message-content');
+                if (msgContent) {
+                    log('DOM content: ' + msgContent.innerHTML);
+                    
+                    if (msgContent.innerHTML.includes('&lt;')) {
+                        log('✅ SUCCESS: HTML was escaped!');
+                    } else {
+                        log('❌ FAIL: HTML was not escaped');
+                    }
+                }
+                
+            } catch (e) {
+                log('ERROR: ' + e.message);
+                console.error(e);
+            }
+        }
+        
+        function test3() {
+            output.textContent = 'Test 3: Direct Sanitizer Test\n';
+            
+            try {
+                // Test sanitizer directly
+                if (!quikchat.sanitizers) {
+                    log('ERROR: quikchat.sanitizers is undefined!');
+                    return;
+                }
+                
+                const testString = '<b>Test</b> & "quotes"';
+                const escaped = quikchat.sanitizers.escapeHTML(testString);
+                
+                log('Input: ' + testString);
+                log('Output: ' + escaped);
+                log('Expected: &lt;b&gt;Test&lt;/b&gt; &amp; &quot;quotes&quot;');
+                
+                if (escaped === '&lt;b&gt;Test&lt;/b&gt; &amp; &quot;quotes&quot;') {
+                    log('✅ Direct sanitizer test PASSED');
+                } else {
+                    log('❌ Direct sanitizer test FAILED');
+                }
+                
+            } catch (e) {
+                log('ERROR: ' + e.message);
+                console.error(e);
+            }
+        }
+        
+        function clearAll() {
+            document.getElementById('chat1').innerHTML = '';
+            output.textContent = 'Cleared\n';
+        }
+        
+        // Check on load
+        window.addEventListener('load', function() {
+            log('Page loaded');
+            log('quikchat defined: ' + (typeof quikchat !== 'undefined'));
+            
+            if (typeof quikchat !== 'undefined') {
+                log('quikchat.version: ' + (quikchat.version ? quikchat.version().version : 'no version method'));
+                log('quikchat.sanitizers defined: ' + (quikchat.sanitizers !== undefined));
+                
+                if (quikchat.sanitizers) {
+                    log('Available sanitizers: ' + Object.keys(quikchat.sanitizers).join(', '));
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -722,6 +722,20 @@ describe('quikchat', () => {
                     virtualChat.messageAddNew(`Message ${i}`);
                 }
                 
+                // Mock container dimensions for the test
+                Object.defineProperty(virtualChat._messagesArea, 'offsetHeight', {
+                    configurable: true,
+                    value: 400
+                });
+                Object.defineProperty(virtualChat._messagesArea, 'clientHeight', {
+                    configurable: true,
+                    value: 400
+                });
+                
+                // Force update after setting dimensions
+                virtualChat.virtualScroller._updateVisibleRange();
+                virtualChat.virtualScroller._renderVisibleItems();
+                
                 // Check that not all items are in DOM
                 const renderedCount = virtualChat.virtualScroller.renderedElements.size;
                 expect(renderedCount).toBeLessThan(100);
@@ -747,6 +761,22 @@ describe('quikchat', () => {
                     virtualChat.messageAddNew(`Message ${i}`);
                 }
                 
+                // Mock container dimensions for the test
+                Object.defineProperty(virtualChat._messagesArea, 'offsetHeight', {
+                    configurable: true,
+                    value: 400
+                });
+                Object.defineProperty(virtualChat._messagesArea, 'clientHeight', {
+                    configurable: true,
+                    value: 400
+                });
+                Object.defineProperty(virtualChat._messagesArea, 'scrollHeight', {
+                    configurable: true,
+                    value: 2500 // 100 items * 25px
+                });
+                
+                // Initial update to set first range
+                virtualChat.virtualScroller._updateVisibleRange();
                 const initialRange = { ...virtualChat.virtualScroller.visibleRange };
                 
                 // Simulate scroll
@@ -1255,6 +1285,188 @@ describe('quikchat', () => {
             expect(chat.currentTranslations.sendButton).toBe('Senden');
             // Should fall back to English for missing translations
             expect(chat._sendButton.textContent).toBe('Senden');
+        });
+    });
+
+    describe('Content Sanitization', () => {
+        test('should not sanitize by default (backward compatibility)', () => {
+            const chat = new quikchat('#chat-container');
+            const xssContent = '<script>alert("xss")</script>Hello';
+            
+            const msgId = chat.messageAddNew(xssContent, 'User');
+            const messageContent = document.querySelector('.quikchat-message-content').innerHTML;
+            
+            // Without sanitizer, HTML should be preserved
+            expect(messageContent).toBe(xssContent);
+        });
+        
+        test('should use built-in escapeHTML sanitizer', () => {
+            const chat = new quikchat('#chat-container', null, {
+                sanitizer: quikchat.sanitizers.escapeHTML
+            });
+            
+            const xssContent = '<script>alert("xss")</script>Hello';
+            const msgId = chat.messageAddNew(xssContent, 'User');
+            const messageContent = document.querySelector('.quikchat-message-content').innerHTML;
+            
+            // With escapeHTML sanitizer, HTML should be escaped
+            expect(messageContent).toBe('&lt;script&gt;alert("xss")&lt;/script&gt;Hello');
+        });
+        
+        test('should use built-in stripHTML sanitizer', () => {
+            const chat = new quikchat('#chat-container', null, {
+                sanitizer: quikchat.sanitizers.stripHTML
+            });
+            
+            const htmlContent = '<b>Bold</b> and <i>italic</i> text';
+            const msgId = chat.messageAddNew(htmlContent, 'User');
+            const messageContent = document.querySelector('.quikchat-message-content').innerHTML;
+            
+            // With stripHTML sanitizer, tags should be removed
+            expect(messageContent).toBe('Bold and italic text');
+        });
+        
+        test('should use custom sanitizer function', () => {
+            const customSanitizer = (content) => content.toUpperCase();
+            const chat = new quikchat('#chat-container', null, {
+                sanitizer: customSanitizer
+            });
+            
+            const msgId = chat.messageAddNew('hello world', 'User');
+            const messageContent = document.querySelector('.quikchat-message-content').innerHTML;
+            
+            expect(messageContent).toBe('HELLO WORLD');
+        });
+        
+        test('setSanitizer should update sanitizer at runtime', () => {
+            const chat = new quikchat('#chat-container');
+            
+            // Add message without sanitizer
+            chat.messageAddNew('<b>Test 1</b>', 'User');
+            let messageContent = document.querySelector('.quikchat-message-content').innerHTML;
+            expect(messageContent).toBe('<b>Test 1</b>');
+            
+            // Set sanitizer
+            chat.setSanitizer(quikchat.sanitizers.escapeHTML);
+            
+            // Add message with sanitizer
+            chat.messageAddNew('<b>Test 2</b>', 'User');
+            const messages = document.querySelectorAll('.quikchat-message-content');
+            expect(messages[1].innerHTML).toBe('&lt;b&gt;Test 2&lt;/b&gt;');
+            
+            // Remove sanitizer
+            chat.setSanitizer(null);
+            
+            // Add message without sanitizer again
+            chat.messageAddNew('<b>Test 3</b>', 'User');
+            const messages2 = document.querySelectorAll('.quikchat-message-content');
+            expect(messages2[2].innerHTML).toBe('<b>Test 3</b>');
+        });
+        
+        test('getSanitizer should return current sanitizer', () => {
+            const customSanitizer = (content) => content;
+            const chat = new quikchat('#chat-container', null, {
+                sanitizer: customSanitizer
+            });
+            
+            expect(chat.getSanitizer()).toBe(customSanitizer);
+            
+            chat.setSanitizer(quikchat.sanitizers.escapeHTML);
+            expect(chat.getSanitizer()).toBe(quikchat.sanitizers.escapeHTML);
+            
+            chat.setSanitizer(null);
+            expect(chat.getSanitizer()).toBe(null);
+        });
+        
+        test('should sanitize appended content', () => {
+            const chat = new quikchat('#chat-container', null, {
+                sanitizer: quikchat.sanitizers.escapeHTML
+            });
+            
+            const msgId = chat.messageAddNew('Initial', 'User');
+            chat.messageAppendContent(msgId, '<script>alert("xss")</script>');
+            
+            const messageContent = document.querySelector('.quikchat-message-content').innerHTML;
+            expect(messageContent).toBe('Initial&lt;script&gt;alert("xss")&lt;/script&gt;');
+        });
+        
+        test('should sanitize replaced content', () => {
+            const chat = new quikchat('#chat-container', null, {
+                sanitizer: quikchat.sanitizers.escapeHTML
+            });
+            
+            const msgId = chat.messageAddNew('Initial', 'User');
+            chat.messageReplaceContent(msgId, '<b>Replaced</b>');
+            
+            const messageContent = document.querySelector('.quikchat-message-content').innerHTML;
+            expect(messageContent).toBe('&lt;b&gt;Replaced&lt;/b&gt;');
+        });
+        
+        test('should sanitize title area content', () => {
+            const chat = new quikchat('#chat-container', null, {
+                sanitizer: quikchat.sanitizers.escapeHTML
+            });
+            
+            chat.titleAreaSetContents('<script>alert("xss")</script>Title');
+            const titleContent = document.querySelector('.quikchat-title-area').innerHTML;
+            
+            expect(titleContent).toBe('&lt;script&gt;alert("xss")&lt;/script&gt;Title');
+        });
+        
+        test('should handle non-string content gracefully', () => {
+            const chat = new quikchat('#chat-container', null, {
+                sanitizer: quikchat.sanitizers.escapeHTML
+            });
+            
+            // escapeHTML should handle non-strings
+            expect(quikchat.sanitizers.escapeHTML(null)).toBe(null);
+            expect(quikchat.sanitizers.escapeHTML(undefined)).toBe(undefined);
+            expect(quikchat.sanitizers.escapeHTML(123)).toBe(123);
+            
+            // stripHTML should handle non-strings
+            expect(quikchat.sanitizers.stripHTML(null)).toBe(null);
+            expect(quikchat.sanitizers.stripHTML(undefined)).toBe(undefined);
+            expect(quikchat.sanitizers.stripHTML(123)).toBe(123);
+        });
+        
+        test('setSanitizer should reject invalid input', () => {
+            const chat = new quikchat('#chat-container');
+            const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+            
+            chat.setSanitizer('not a function');
+            expect(chat.getSanitizer()).toBe(null); // Should remain null
+            expect(consoleSpy).toHaveBeenCalledWith('Sanitizer must be a function or null');
+            
+            chat.setSanitizer(123);
+            expect(chat.getSanitizer()).toBe(null);
+            expect(consoleSpy).toHaveBeenCalledTimes(2);
+            
+            consoleSpy.mockRestore();
+        });
+        
+        test('should work with virtual scrolling', () => {
+            const chat = new quikchat('#chat-container', null, {
+                sanitizer: quikchat.sanitizers.escapeHTML,
+                virtualScrolling: true,
+                virtualScrollingThreshold: 3  // Low threshold for testing
+            });
+            
+            // Add messages to trigger virtual scrolling
+            for (let i = 0; i < 5; i++) {
+                chat.messageAddNew(`<script>alert("xss")</script>Message ${i}`, 'User');
+            }
+            
+            // Check that virtual scrolling is active
+            expect(chat.isVirtualScrollingEnabled()).toBe(true);
+            
+            // Check that content is sanitized in DOM
+            const messages = document.querySelectorAll('.quikchat-message-content');
+            messages.forEach(msg => {
+                if (msg.innerHTML.includes('<script>')) {
+                    throw new Error('Unsanitized script tag found in virtual scrolling!');
+                }
+                expect(msg.innerHTML).toContain('&lt;script&gt;');
+            });
         });
     });
     

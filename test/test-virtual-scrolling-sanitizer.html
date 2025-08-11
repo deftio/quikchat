@@ -107,8 +107,8 @@
             for (let i = 0; i < count; i++) {
                 // Create content with XSS attempt - avoiding template literals that break HTML
                 const content = '<b>Message #' + i + '</b> with <' + 'script>alert("xss")</' + 'script> content';
-                window.window.chat1.messageAddNew(content, 'User ' + (i % 3), i % 2 === 0 ? 'right' : 'left');
-                window.window.chat2.messageAddNew(content, 'User ' + (i % 3), i % 2 === 0 ? 'right' : 'left');
+                window.chat1.messageAddNew(content, 'User ' + (i % 3), i % 2 === 0 ? 'right' : 'left');
+                window.chat2.messageAddNew(content, 'User ' + (i % 3), i % 2 === 0 ? 'right' : 'left');
             }
             
             const endTime = performance.now();

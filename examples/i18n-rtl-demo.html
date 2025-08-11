@@ -350,13 +350,23 @@ chat.setDirection('rtl'); // or 'ltr'
             const lang = instance.getLanguage();
             const userName = getUserNameForLanguage(lang);
             
-            // Add user message
-            instance.messageAddNew(message, userName, 'right');
+            // Add user message with smart scrolling
+            instance.messageAddFull({
+                content: message,
+                userString: userName,
+                align: 'right',
+                scrollIntoView: 'smart'
+            });
             
             // Simulate response
             setTimeout(() => {
                 const response = getResponseForLanguage(lang);
-                instance.messageAddNew(response, 'Bot', 'left');
+                instance.messageAddFull({
+                    content: response,
+                    userString: 'Bot',
+                    align: 'left',
+                    scrollIntoView: 'smart'
+                });
             }, 500);
         }
 
@@ -431,13 +441,28 @@ chat.setDirection('rtl'); // or 'ltr'
             const messages = sampleMessages[lang] || sampleMessages['en'];
             const randomMessage = messages[Math.floor(Math.random() * messages.length)];
             
-            dynamicChat.messageAddNew(randomMessage, getUserNameForLanguage(lang), 'right');
+            dynamicChat.messageAddFull({
+                content: randomMessage,
+                userString: getUserNameForLanguage(lang),
+                align: 'right',
+                scrollIntoView: 'smart'
+            });
             
             // Also send to language-specific chats
             if (lang === 'ar') {
-                arabicChat.messageAddNew(randomMessage, getUserNameForLanguage('ar'), 'right');
+                arabicChat.messageAddFull({
+                    content: randomMessage,
+                    userString: getUserNameForLanguage('ar'),
+                    align: 'right',
+                    scrollIntoView: 'smart'
+                });
             } else if (lang === 'he') {
-                hebrewChat.messageAddNew(randomMessage, getUserNameForLanguage('he'), 'right');
+                hebrewChat.messageAddFull({
+                    content: randomMessage,
+                    userString: getUserNameForLanguage('he'),
+                    align: 'right',
+                    scrollIntoView: 'smart'
+                });
             }
         }
 
@@ -460,15 +485,30 @@ chat.setDirection('rtl'); // or 'ltr'
             
             conversation.forEach((msg, index) => {
                 setTimeout(() => {
-                    mixedChat.messageAddNew(msg.text, msg.user, msg.align);
+                    mixedChat.messageAddFull({
+                        content: msg.text,
+                        userString: msg.user,
+                        align: msg.align,
+                        scrollIntoView: index === conversation.length - 1 ? 'smart' : false
+                    });
                     
                     // Also add Arabic messages to Arabic chat
                     if (msg.lang === 'ar') {
-                        arabicChat.messageAddNew(msg.text, msg.user, msg.align);
+                        arabicChat.messageAddFull({
+                            content: msg.text,
+                            userString: msg.user,
+                            align: msg.align,
+                            scrollIntoView: false
+                        });
                     }
                     // Also add Hebrew messages to Hebrew chat
                     if (msg.lang === 'he') {
-                        hebrewChat.messageAddNew(msg.text, msg.user, msg.align);
+                        hebrewChat.messageAddFull({
+                            content: msg.text,
+                            userString: msg.user,
+                            align: msg.align,
+                            scrollIntoView: false
+                        });
                     }
                 }, index * 300);
             });
@@ -478,7 +518,12 @@ chat.setDirection('rtl'); // or 'ltr'
             const dynamicMessages = sampleMessages[currentLang] || sampleMessages['en'];
             dynamicMessages.forEach((msg, index) => {
                 setTimeout(() => {
-                    dynamicChat.messageAddNew(msg, getUserNameForLanguage(currentLang), index % 2 === 0 ? 'right' : 'left');
+                    dynamicChat.messageAddFull({
+                        content: msg,
+                        userString: getUserNameForLanguage(currentLang),
+                        align: index % 2 === 0 ? 'right' : 'left',
+                        scrollIntoView: index === dynamicMessages.length - 1 ? 'smart' : false
+                    });
                 }, index * 400);
             });
         }

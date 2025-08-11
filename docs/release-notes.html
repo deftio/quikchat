@@ -65,6 +65,46 @@
 <body>
     <article class="markdown-body">
         <h1>Release Notes</h1>
+<h2>1.1.16 (2025-08-10)</h2>
+<h3>Major Performance Enhancement: Virtual Scrolling</h3>
+<h4>Virtual Scrolling Implementation</h4>
+<ul>
+<li><strong>Zero-dependency virtual scrolling</strong> built directly into QuikChat core</li>
+<li>Automatically renders only visible messages in viewport plus buffer zone</li>
+<li>Dynamic height measurement and caching for variable-length messages (critical for LLM responses)</li>
+<li>Seamless activation based on configurable message count threshold</li>
+</ul>
+<h4>Performance Improvements</h4>
+<ul>
+<li><strong>10,000 messages</strong>: Renders in 38ms (vs 146,043ms without virtual scrolling)</li>
+<li><strong>1,000 messages</strong>: Renders in 12ms</li>
+<li><strong>DOM efficiency</strong>: Maintains ~36 DOM nodes regardless of total message count</li>
+<li><strong>Memory usage</strong>: ~2MB for 10,000 messages (vs ~187MB without)</li>
+</ul>
+<h4>Configuration</h4>
+<ul>
+<li>Enabled by default (<code>virtualScrolling: true</code>)</li>
+<li>Configurable threshold (default: 500 messages)</li>
+<li>Status checking via <code>isVirtualScrollingEnabled()</code> and <code>getVirtualScrollingConfig()</code></li>
+</ul>
+<h3>New Testing Infrastructure</h3>
+<ul>
+<li>Added comprehensive performance test page (<code>test/test-long-messages.html</code>)</li>
+<li>Real-time performance metrics display</li>
+<li>Batch message addition support (100, 1000 messages)</li>
+<li>Visual performance indicators with color coding</li>
+</ul>
+<h3>Bug Fixes</h3>
+<ul>
+<li>Fixed virtual scrolling height calculation for variable-length messages</li>
+<li>Resolved CORS issues in test files</li>
+</ul>
+<h3>Documentation</h3>
+<ul>
+<li>Created comprehensive virtual scrolling documentation (<code>docs/virtual_scrolling.md</code>)</li>
+<li>Updated all documentation to use factual performance metrics</li>
+<li>Removed marketing language in favor of technical specifications</li>
+</ul>
 <h2>1.1.15 (2025-08-10)</h2>
 <h3>New Features</h3>
 <h4>Smart Scroll Behavior</h4>

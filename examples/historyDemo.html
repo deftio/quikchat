@@ -71,6 +71,9 @@
 
 <body>
     <h2>Quikchatjs History Get / Restore example</h2>
+    <div id="versionInfo" style="color: #666; font-size: 0.9em; margin-bottom: 1rem;">
+        <!-- Version will be displayed here -->
+    </div>
     <p>This demo shows saving and restore of full message history</p>
     <div class="container">
         <div class="chatContainer">
@@ -140,6 +143,10 @@
 
         }
         // need to make sure timestamps are handled correctly
+        
+        // Display QuikChat version
+        const versionInfo = quikchat.version();
+        document.getElementById('versionInfo').innerHTML = `QuikChat Version: ${versionInfo.version}`;
 
     </script>
 

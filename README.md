@@ -16,7 +16,7 @@ QuikChat is a lightweight, highly customizable chat interface that integrates se
 - **🎨 Fully Customizable** - Complete CSS theming system with multi-instance support
 - **🤖 LLM Ready** - Built-in support for OpenAI, Anthropic, Ollama, and streaming responses
 - **📱 Responsive Design** - Adapts to any screen size and container dimensions
-- **⚡ High Performance** - Efficient message handling and memory management
+- **⚡ High Performance** - Virtual scrolling for large message volumes
 - **👁 Advanced Visibility** - Individual and group-based message control (v1.1.13+)
 - **🏷 Tagged Messages** - Powerful tagging system for message organization (v1.1.14+)
 - **💾 Full History Control** - Save, load, and restore complete chat sessions
@@ -95,7 +95,34 @@ Download the latest release from [GitHub Releases](https://github.com/deftio/qui
 
 
 
-## 🆕 What's New in v1.1.15 (In Development)
+## 🆕 What's New in v1.1.16
+
+### ⚡ Virtual Scrolling for High Performance
+QuikChat now includes built-in virtual scrolling that handles 10,000+ messages efficiently. Only visible messages are rendered in the DOM, providing massive performance improvements:
+
+- **10,000 messages**: Renders in 38ms (vs 146 seconds without)
+- **Memory efficient**: ~2MB for 10,000 messages (vs ~187MB without)
+- **Automatic activation**: Enables at 500+ messages by default
+- **Dynamic height support**: Handles variable-length LLM responses
+
+```javascript
+// Virtual scrolling is enabled by default
+const chat = new quikchat('#chat', handler);
+
+// Check if virtual scrolling is active
+if (chat.isVirtualScrollingEnabled()) {
+    console.log('Virtual scrolling is active');
+}
+
+// Get virtual scrolling configuration
+const config = chat.getVirtualScrollingConfig();
+console.log(`Enabled: ${config.enabled}, Threshold: ${config.threshold}`);
+
+// Disable if needed for specific use cases
+const customChat = new quikchat('#custom-chat', handler, {
+    virtualScrolling: false
+});
+```
 
 ### 🎯 Smart Scroll Behavior
 Improved user experience when reading chat history:
@@ -342,14 +369,14 @@ export default {
 
 ## 🚀 Performance
 
-QuikChat is built for production use with excellent performance characteristics:
+QuikChat is built for production use:
 
 - **Lightweight**: ~25KB minified + gzipped
 - **Fast**: Sub-millisecond message rendering
-- **Scalable**: Handles thousands of messages efficiently
-- **Memory Efficient**: Automatic cleanup and optimization
+- **Scalable**: Tested with 10,000 messages rendering in 38ms with virtual scrolling
+- **Memory Efficient**: Only renders visible messages in viewport
 
-**📊 [Performance Optimization Guide](docs/DEVELOPER-GUIDE.md#performance-optimization)**
+**📊 [Virtual Scrolling Technical Details](docs/virtual_scrolling.md) | [Performance Guide](docs/DEVELOPER-GUIDE.md#performance-optimization)**
 
 
 

@@ -49,6 +49,9 @@
 
 <body>
     <h2>Quikchatjs Simple Example (UMD)</h2>
+    <div id="versionInfo" style="color: #666; font-size: 0.9em; margin-bottom: 1rem;">
+        <!-- Version will be displayed here -->
+    </div>
     <p>This themeable chat widget with a title area, messages area, and input area.</p>
     <div class="chatContainer" id="chatContainerInstance"></div>
     <br>
@@ -79,6 +82,10 @@
             chatBox.messageAddNew('How can I help you today?', 'bot', 'left');
             chatBox.changeTheme("quikchat-theme-light");
             console.log("quikchat version: "+quikchat.version().version);
+            
+            // Display QuikChat version
+            const versionInfo = quikchat.version();
+            document.getElementById('versionInfo').innerHTML = `QuikChat Version: ${versionInfo.version}`;
 
         });
 

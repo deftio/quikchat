@@ -48,6 +48,9 @@
     <!-- example page explains how to use quikchat -->
     <div id="container">
         <h1>QuikChat Examples</h1>
+        <div id="versionInfo" style="color: #666; font-size: 0.9em; margin-bottom: 1rem;">
+            <!-- Version will be displayed here -->
+        </div>
         <p>These examples demonstrate how to use QuikChat in your projects. Included are basic themes for light, dark,
             and debugging.</p>
 
@@ -162,6 +165,13 @@
             <p style="margin: 0; color: #856404;"><strong>💡 Need Help?</strong> Check out the <a href="../DEVELOPER-GUIDE.md" style="color: #856404;">Developer Guide</a> for detailed tutorials and best practices, or the <a href="../API-REFERENCE.md" style="color: #856404;">API Reference</a> for complete method documentation.</p>
         </div>
     </div>
+    
+    <!-- Display QuikChat version -->
+    <script type="module">
+        import quikchat from '../dist/quikchat.esm.min.js';
+        const versionInfo = quikchat.version();
+        document.getElementById('versionInfo').innerHTML = `QuikChat Version: ${versionInfo.version}`;
+    </script>
 </body>
 
 </html>

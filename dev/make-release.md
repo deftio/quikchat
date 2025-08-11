@@ -1,6 +1,8 @@
-# QuikChat Release Process
+# QuikChat Release Process - Automation
 
-This document outlines the steps to create a new release for QuikChat, including creating a git tag, publishing to npm, and creating a GitHub release.
+This document describes the automated release script for QuikChat. For the complete development and release workflow, see [release-process.md](./release-process.md).
+
+This document outlines the automated steps to create a new release for QuikChat, including creating a git tag, publishing to npm, and creating a GitHub release.
 
 ## Automated Release Script
 

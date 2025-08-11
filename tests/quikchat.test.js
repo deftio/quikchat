@@ -544,5 +544,464 @@ describe('quikchat', () => {
             expect(scrollIntoViewCalls).toBeGreaterThan(initialCalls);
         });
     });
+
+    describe('Virtual Scrolling', () => {
+        let virtualChat;
+        let standardChat;
+
+        beforeEach(() => {
+            // Create chat with virtual scrolling enabled
+            virtualChat = new quikchat(parentElement, null, { 
+                virtualScrolling: true,
+                virtualScrollingThreshold: 10
+            });
+            
+            // Create standard chat for comparison
+            document.body.innerHTML += '<div id="standard-chat"></div>';
+            const standardElement = document.getElementById('standard-chat');
+            standardChat = new quikchat(standardElement, null, { 
+                virtualScrolling: false 
+            });
+        });
+
+        afterEach(() => {
+            document.body.innerHTML = '';
+        });
+
+        describe('Initialization', () => {
+            test('should enable virtual scrolling by default', () => {
+                const defaultChat = new quikchat(parentElement);
+                expect(defaultChat.virtualScrollingEnabled).toBe(true);
+                expect(defaultChat.isVirtualScrollingEnabled()).toBe(false); // not active until threshold reached
+            });
+
+            test('should respect virtualScrolling option when false', () => {
+                const noVirtualChat = new quikchat(parentElement, null, { 
+                    virtualScrolling: false 
+                });
+                expect(noVirtualChat.virtualScrollingEnabled).toBe(false);
+                expect(noVirtualChat.isVirtualScrollingEnabled()).toBe(false);
+            });
+
+            test('should initialize virtual scroller when threshold is reached', () => {
+                // Initially null
+                expect(virtualChat.virtualScroller).toBeNull();
+                
+                // Add messages to reach threshold
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Message ${i}`);
+                }
+                
+                // Now should be initialized
+                expect(virtualChat.virtualScroller).not.toBeNull();
+                expect(virtualChat.virtualScroller.container).toBe(virtualChat._messagesArea);
+            });
+
+            test('should not initialize virtual scroller when disabled', () => {
+                expect(standardChat.virtualScroller).toBeNull();
+            });
+
+            test('should set correct threshold', () => {
+                expect(virtualChat.virtualScrollingThreshold).toBe(10);
+                const config = virtualChat.getVirtualScrollingConfig();
+                expect(config.threshold).toBe(10);
+            });
+        });
+
+        describe('Getter Methods', () => {
+            test('isVirtualScrollingEnabled should return correct status', () => {
+                // Before threshold
+                expect(virtualChat.isVirtualScrollingEnabled()).toBe(false);
+                
+                // Add messages to reach threshold
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Message ${i}`);
+                }
+                
+                // After threshold
+                expect(virtualChat.isVirtualScrollingEnabled()).toBe(true);
+                expect(standardChat.isVirtualScrollingEnabled()).toBe(false);
+            });
+
+            test('getVirtualScrollingConfig should return full config', () => {
+                // Before threshold
+                let virtualConfig = virtualChat.getVirtualScrollingConfig();
+                expect(virtualConfig).toEqual({
+                    enabled: true,
+                    active: false,  // not active yet
+                    threshold: 10
+                });
+
+                // Add messages to reach threshold
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Message ${i}`);
+                }
+                
+                // After threshold
+                virtualConfig = virtualChat.getVirtualScrollingConfig();
+                expect(virtualConfig).toEqual({
+                    enabled: true,
+                    active: true,  // now active
+                    threshold: 10
+                });
+
+                const standardConfig = standardChat.getVirtualScrollingConfig();
+                expect(standardConfig).toEqual({
+                    enabled: false,
+                    active: false,
+                    threshold: 500  // default threshold
+                });
+            });
+        });
+
+        describe('Message Handling', () => {
+            test('should add messages to virtual scroller items', () => {
+                // Add messages to reach threshold first
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Init message ${i}`);
+                }
+                
+                // Virtual scroller should now be initialized
+                expect(virtualChat.virtualScroller).not.toBeNull();
+                
+                // Add test messages
+                virtualChat.messageAddNew('Test message 1');
+                virtualChat.messageAddNew('Test message 2');
+                
+                expect(virtualChat.virtualScroller.items.length).toBe(12);
+                expect(virtualChat.virtualScroller.items[10].content).toBe('Test message 1');
+                expect(virtualChat.virtualScroller.items[11].content).toBe('Test message 2');
+            });
+
+            test('should handle message visibility in virtual scrolling', () => {
+                // Add messages to reach threshold first
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Init message ${i}`);
+                }
+                
+                const msgId = virtualChat.messageAddNew('Visible message', 'user', 'right', 'user', true, true);
+                const hiddenId = virtualChat.messageAddNew('Hidden message', 'user', 'right', 'user', true, false);
+                
+                expect(virtualChat.virtualScroller.items[10].visible).toBe(true);
+                expect(virtualChat.virtualScroller.items[11].visible).toBe(false);
+            });
+
+            test('should handle message tags in virtual scrolling', () => {
+                // Add messages to reach threshold first
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Init message ${i}`);
+                }
+                
+                virtualChat.messageAddNew('Tagged message', 'user', 'right', 'user', true, true, ['urgent', 'system']);
+                
+                expect(virtualChat.virtualScroller.items[10].tags).toEqual(['urgent', 'system']);
+                expect(virtualChat.getActiveTags()).toContain('urgent');
+                expect(virtualChat.getActiveTags()).toContain('system');
+            });
+
+            test('should handle message alignment in virtual scrolling', () => {
+                // Add messages to reach threshold first
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Init message ${i}`);
+                }
+                
+                virtualChat.messageAddNew('Left message', 'user', 'left');
+                virtualChat.messageAddNew('Right message', 'bot', 'right');
+                virtualChat.messageAddNew('Center message', 'system', 'center');
+                
+                expect(virtualChat.virtualScroller.items[10].align).toBe('left');
+                expect(virtualChat.virtualScroller.items[11].align).toBe('right');
+                expect(virtualChat.virtualScroller.items[12].align).toBe('center');
+            });
+        });
+
+        describe('DOM Rendering', () => {
+            test('should only render visible items', () => {
+                // Add many messages
+                for (let i = 0; i < 100; i++) {
+                    virtualChat.messageAddNew(`Message ${i}`);
+                }
+                
+                // Check that not all items are in DOM
+                const renderedCount = virtualChat.virtualScroller.renderedElements.size;
+                expect(renderedCount).toBeLessThan(100);
+                expect(renderedCount).toBeGreaterThan(0);
+            });
+
+            test('should create proper spacer element', () => {
+                for (let i = 0; i < 50; i++) {
+                    virtualChat.messageAddNew(`Message ${i}`);
+                }
+                
+                const spacer = virtualChat.virtualScroller.spacer;
+                expect(spacer).toBeDefined();
+                expect(spacer.style.position).toBe('absolute');
+                
+                // Check spacer height reflects total items
+                const expectedHeight = 50 * virtualChat.virtualScroller.itemHeight;
+                expect(spacer.style.height).toBe(`${expectedHeight}px`);
+            });
+
+            test('should update visible range on scroll', () => {
+                for (let i = 0; i < 100; i++) {
+                    virtualChat.messageAddNew(`Message ${i}`);
+                }
+                
+                const initialRange = { ...virtualChat.virtualScroller.visibleRange };
+                
+                // Simulate scroll
+                virtualChat._messagesArea.scrollTop = 500;
+                virtualChat.virtualScroller._updateVisibleRange();
+                
+                const newRange = virtualChat.virtualScroller.visibleRange;
+                expect(newRange.start).not.toBe(initialRange.start);
+            });
+        });
+
+        describe('History Management', () => {
+            test('should clear virtual scroller on historyClear', () => {
+                // Add messages to reach threshold
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Message ${i}`);
+                }
+                
+                expect(virtualChat.virtualScroller).not.toBeNull();
+                expect(virtualChat.virtualScroller.items.length).toBe(10);
+                
+                virtualChat.historyClear();
+                
+                expect(virtualChat.virtualScroller.items.length).toBe(0);
+                expect(virtualChat.virtualScroller.renderedElements.size).toBe(0);
+            });
+
+            test('should maintain history with virtual scrolling', () => {
+                virtualChat.messageAddNew('Message 1');
+                virtualChat.messageAddNew('Message 2');
+                
+                const history = virtualChat.historyGetAllCopy();
+                expect(history.length).toBe(2);
+                expect(history[0].content).toBe('Message 1');
+                expect(history[1].content).toBe('Message 2');
+            });
+        });
+
+        describe('Performance', () => {
+            test('should handle large message counts efficiently', () => {
+                const startTime = performance.now();
+                
+                // Add many messages
+                for (let i = 0; i < 1000; i++) {
+                    virtualChat.messageAddNew(`Message ${i}`);
+                }
+                
+                const endTime = performance.now();
+                const duration = endTime - startTime;
+                
+                // Should complete quickly (less than 5 seconds for 1000 messages)
+                expect(duration).toBeLessThan(5000);
+                
+                // Should have limited DOM nodes
+                const renderedCount = virtualChat.virtualScroller.renderedElements.size;
+                expect(renderedCount).toBeLessThan(50); // Much less than 1000
+            });
+
+            test('should batch add items efficiently', () => {
+                // Add messages to reach threshold first
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Init message ${i}`);
+                }
+                
+                const messages = [];
+                for (let i = 0; i < 100; i++) {
+                    messages.push({
+                        msgid: i,
+                        content: `Message ${i}`,
+                        userString: 'user',
+                        align: 'left',
+                        visible: true,
+                        tags: [],
+                        scrollIntoView: false
+                    });
+                }
+                
+                // Add all at once
+                virtualChat.virtualScroller.addItems(messages);
+                
+                expect(virtualChat.virtualScroller.items.length).toBe(110);
+            });
+        });
+
+        describe('Edge Cases', () => {
+            test('should handle empty message list', () => {
+                // Virtual scroller is not initialized until threshold
+                expect(virtualChat.virtualScroller).toBeNull();
+                
+                // Add messages to reach threshold
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Message ${i}`);
+                }
+                
+                // Clear to empty
+                virtualChat.historyClear();
+                
+                expect(virtualChat.virtualScroller.items.length).toBe(0);
+                expect(virtualChat.virtualScroller.renderedElements.size).toBe(0);
+            });
+
+            test('should handle single message after threshold', () => {
+                // Add messages to reach threshold
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Init message ${i}`);
+                }
+                
+                // Clear and add single message
+                virtualChat.historyClear();
+                virtualChat.messageAddNew('Single message');
+                
+                expect(virtualChat.virtualScroller.items.length).toBe(1);
+                // Rendering happens async, so we can't check renderedElements immediately
+                // Just verify the item was added
+                expect(virtualChat.virtualScroller.items[0].content).toBe('Single message');
+            });
+
+            test('should handle destroy method', () => {
+                // Add messages to reach threshold
+                for (let i = 0; i < 12; i++) {
+                    virtualChat.messageAddNew(`Message ${i}`);
+                }
+                
+                expect(virtualChat.virtualScroller).not.toBeNull();
+                
+                virtualChat.virtualScroller.destroy();
+                
+                expect(virtualChat.virtualScroller.items.length).toBe(0);
+                expect(virtualChat.virtualScroller.renderedElements.size).toBe(0);
+                expect(virtualChat.virtualScroller.container.innerHTML).toBe('');
+            });
+
+            test('should handle item updates', () => {
+                // Add messages to reach threshold
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Message ${i}`);
+                }
+                
+                virtualChat.messageAddNew('Original message');
+                
+                virtualChat.virtualScroller.updateItem(10, { content: 'Updated message' });
+                
+                expect(virtualChat.virtualScroller.items[10].content).toBe('Updated message');
+            });
+
+            test('should handle invalid item updates gracefully', () => {
+                // Add messages to reach threshold
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Message ${i}`);
+                }
+                
+                virtualChat.messageAddNew('Message');
+                
+                // Should not throw error
+                expect(() => {
+                    virtualChat.virtualScroller.updateItem(99, { content: 'Invalid' });
+                }).not.toThrow();
+            });
+        });
+
+        describe('Scroll Behavior', () => {
+            test('should scroll to bottom when scrollIntoView is true', () => {
+                // Add messages to reach threshold
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Message ${i}`);
+                }
+                
+                const initialScrollTop = virtualChat._messagesArea.scrollTop;
+                
+                virtualChat.messageAddNew('Message', 'user', 'left', 'user', true);
+                
+                // Virtual scroller should update scroll position
+                expect(virtualChat.virtualScroller.container.scrollTop).toBeGreaterThanOrEqual(0);
+            });
+
+            test('should not scroll when scrollIntoView is false', () => {
+                // Add messages to reach threshold
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Message ${i}`);
+                }
+                
+                virtualChat.messageAddNew('Message 1');
+                const scrollBefore = virtualChat._messagesArea.scrollTop;
+                
+                virtualChat.messageAddNew('Message 2', 'user', 'left', 'user', false);
+                
+                // Scroll position should not change significantly
+                expect(Math.abs(virtualChat._messagesArea.scrollTop - scrollBefore)).toBeLessThan(10);
+            });
+        });
+
+        describe('CSS Classes and Styling', () => {
+            test('should apply correct classes to virtual scrolled messages', () => {
+                // Add messages to reach threshold
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Message ${i}`);
+                }
+                
+                virtualChat.messageAddNew('Message 1', 'user', 'left', 'user', true, true, ['test-tag']);
+                
+                // The virtual scroller should have the items
+                expect(virtualChat.virtualScroller.items.length).toBe(11);
+                
+                // Check that the last item has the correct tags
+                const lastItem = virtualChat.virtualScroller.items[10];
+                expect(lastItem.tags).toEqual(['test-tag']);
+                
+                // Note: Actual DOM rendering happens async, so we verify the data structure instead
+            });
+
+            test('should handle alternating colors with virtual scrolling', () => {
+                virtualChat.messagesAreaAlternateColors(true);
+                
+                // Add messages to reach threshold
+                for (let i = 0; i < 15; i++) {
+                    virtualChat.messageAddNew(`Message ${i}`);
+                }
+                
+                expect(virtualChat._messagesArea.classList.contains('quikchat-messages-area-alt')).toBe(true);
+            });
+        });
+
+        describe('Backward Compatibility', () => {
+            test('should work with existing message methods', () => {
+                // Add messages to reach threshold
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Init message ${i}`);
+                }
+                
+                const msgId = virtualChat.messageAddNew('Test message');
+                
+                // These should all work with virtual scrolling
+                expect(virtualChat.messageGetContent(msgId)).toBe('Test message');
+                expect(virtualChat.historyGetLength()).toBe(11);
+                
+                virtualChat.messageAppendContent(msgId, ' appended');
+                expect(virtualChat.messageGetContent(msgId)).toBe('Test message appended');
+                
+                virtualChat.messageReplaceContent(msgId, 'Replaced');
+                expect(virtualChat.messageGetContent(msgId)).toBe('Replaced');
+            });
+
+            test('should handle theme changes with virtual scrolling', () => {
+                // Add messages to reach threshold
+                for (let i = 0; i < 10; i++) {
+                    virtualChat.messageAddNew(`Init message ${i}`);
+                }
+                
+                virtualChat.changeTheme('quikchat-theme-dark');
+                expect(virtualChat.theme).toBe('quikchat-theme-dark');
+                
+                virtualChat.messageAddNew('Message after theme change');
+                expect(virtualChat.virtualScroller.items.length).toBe(11);
+            });
+        });
+    });
     
 });

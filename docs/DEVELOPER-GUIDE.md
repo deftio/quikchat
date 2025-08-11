@@ -1,44 +1,58 @@
 # QuikChat Developer Guide
 
-Practical recipes and patterns for building chat applications with QuikChat.
+Build powerful chat applications with QuikChat - a lightweight, flexible chat UI library for web applications.
 
 ## Table of Contents
 
-1. [Getting Started](#getting-started)
-2. [Theming Guide](#theming-guide)
-3. [Frontend Framework Integration](#frontend-framework-integration)
-4. [LLM Integration Best Practices](#llm-integration-best-practices)
-5. [Advanced History Management](#advanced-history-management)
-6. [Mastering Visibility Controls](#mastering-visibility-controls)
-7. [Performance Optimization](#performance-optimization)
+1. [Quick Start](#quick-start)
+2. [Core Concepts](#core-concepts)
+3. [Theming Guide](#theming-guide)
+4. [Frontend Framework Integration](#frontend-framework-integration)
+5. [LLM Integration Best Practices](#llm-integration-best-practices)
+6. [Advanced History Management](#advanced-history-management)
+7. [Mastering Visibility Controls](#mastering-visibility-controls)
+8. [Performance Optimization](#performance-optimization)
 
 ---
 
-## Getting Started
+## Quick Start
 
-### Basic Setup
+Get a chat interface running in under 5 minutes!
 
-QuikChat works in any environment that supports modern JavaScript. Here are common setup patterns:
+### 1. Simple Chat Application
 
-#### Vanilla HTML
+Create a basic chat interface with just a few lines of code:
+
 ```html
 <!DOCTYPE html>
 <html>
 <head>
     <link rel="stylesheet" href="https://unpkg.com/quikchat/dist/quikchat.css">
+    <style>
+        #chat { 
+            width: 400px; 
+            height: 600px; 
+            margin: 20px auto;
+        }
+    </style>
 </head>
 <body>
-    <div id="chat" style="width: 100%; height: 400px;"></div>
+    <div id="chat"></div>
     
     <script src="https://unpkg.com/quikchat"></script>
     <script>
+        // Create a chat instance
         const chat = new quikchat('#chat', (instance, message) => {
-            // Echo user message
+            // Display the user's message
             instance.messageAddNew(message, 'You', 'right');
             
-            // Simple bot response
+            // Simulate a response after 1 second
             setTimeout(() => {
-                instance.messageAddNew('I received: ' + message, 'Bot', 'left');
+                instance.messageAddNew(
+                    `Echo: ${message}`, 
+                    'Bot', 
+                    'left'
+                );
             }, 1000);
         });
     </script>
@@ -46,62 +60,176 @@ QuikChat works in any environment that supports modern JavaScript. Here are comm
 </html>
 ```
 
-#### ES6 Modules
+### 2. Installation Options
+
+#### CDN (Quickest)
+
+```html
+<!-- CSS -->
+<link rel="stylesheet" href="https://unpkg.com/quikchat/dist/quikchat.css">
+
+<!-- JavaScript -->
+<script src="https://unpkg.com/quikchat"></script>
+```
+
+#### NPM (Recommended for Projects)
+
+```bash
+npm install quikchat
+```
+
+Then import in your JavaScript:
+
 ```javascript
+// ES6 Modules
 import quikchat from 'quikchat';
 import 'quikchat/dist/quikchat.css';
 
-const chat = new quikchat('#chat-container', handleMessage);
-
-function handleMessage(instance, message) {
-    instance.messageAddNew(message, 'User', 'right');
-    // Your logic here
-}
-```
-
-#### CommonJS (Node.js/Webpack)
-```javascript
+// CommonJS
 const quikchat = require('quikchat');
 require('quikchat/dist/quikchat.css');
-
-const chat = new quikchat('#chat-container', handleMessage);
 ```
 
-### Common Pitfalls & Solutions
+### 3. Basic Usage Pattern
 
-#### Container Sizing Issue
-```css
-/* ❌ Problem: Chat doesn't appear */
-#chat-container {
-    /* No explicit dimensions */
-}
-
-/* ✅ Solution: Always set container dimensions */
-#chat-container {
-    width: 100%;
-    height: 400px; /* or use vh units for viewport height */
-}
-```
-
-#### Event Handler Memory Leaks
 ```javascript
-// ❌ Problem: Creating new handlers on each render
-function BadComponent() {
-    const chat = new quikchat('#chat', (instance, msg) => {
-        // This creates a new closure each time
-        someFunction(msg);
+// Initialize QuikChat
+const chat = new quikchat(container, onSendCallback, options);
+
+// Add messages programmatically
+chat.messageAddNew('Hello!', 'Assistant', 'left');
+chat.messageAddNew('Hi there!', 'User', 'right');
+
+// Handle user input
+function onSendCallback(instance, message) {
+    // The user typed 'message' and pressed send
+    // Add your logic here
+    
+    // Example: Echo the message
+    instance.messageAddNew(message, 'You', 'right');
+    
+    // Example: Process with an API
+    fetch('/api/chat', {
+        method: 'POST',
+        body: JSON.stringify({ message }),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        instance.messageAddNew(data.reply, 'Bot', 'left');
     });
 }
+```
 
-// ✅ Solution: Define handler once
-function GoodComponent() {
-    const handleMessage = useCallback((instance, msg) => {
-        someFunction(msg);
-    }, []);
-    
-    const chat = new quikchat('#chat', handleMessage);
+## Core Concepts
+
+### Message Structure
+
+Every message in QuikChat has these key properties:
+
+```javascript
+chat.messageAddFull({
+    content: 'Hello, world!',     // The message text
+    userString: 'Assistant',       // Who sent it
+    align: 'left',                 // 'left', 'right', or 'center'
+    role: 'assistant',             // 'user', 'assistant', or 'system'
+    scrollIntoView: true,          // Auto-scroll to this message
+    visible: true,                 // Show/hide the message
+    tags: ['important']            // Custom tags for filtering
+});
+```
+
+### Container Requirements
+
+QuikChat needs a container with defined dimensions:
+
+```css
+/* Good - Explicit dimensions */
+#chat-container {
+    width: 100%;
+    height: 500px;  /* Fixed height */
+}
+
+/* Also good - Viewport units */
+#chat-container {
+    width: 100vw;
+    height: 80vh;
+}
+
+/* Also good - Flexbox child */
+.parent {
+    display: flex;
+    height: 100vh;
+}
+#chat-container {
+    flex: 1;  /* Takes available space */
 }
 ```
+
+### Common Patterns
+
+#### Loading States
+
+```javascript
+// Show typing indicator
+const typingId = chat.messageAddNew('...', 'Bot', 'left');
+
+// Replace with actual response
+fetch('/api/chat')
+    .then(response => response.text())
+    .then(text => {
+        chat.messageReplaceContent(typingId, text);
+    });
+```
+
+#### Streaming Responses
+
+```javascript
+// Add empty message
+const msgId = chat.messageAddNew('', 'Bot', 'left');
+
+// Stream chunks
+eventSource.onmessage = (event) => {
+    chat.messageAppendContent(msgId, event.data);
+};
+```
+
+#### Error Handling
+
+```javascript
+function handleMessage(instance, message) {
+    instance.messageAddNew(message, 'You', 'right');
+    
+    fetch('/api/chat', { 
+        method: 'POST',
+        body: JSON.stringify({ message })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network error');
+        return response.json();
+    })
+    .then(data => {
+        instance.messageAddNew(data.reply, 'Bot', 'left');
+    })
+    .catch(error => {
+        instance.messageAddNew(
+            '⚠️ Sorry, something went wrong. Please try again.',
+            'System',
+            'center'
+        );
+    });
+}
+```
+
+### Tips for Success
+
+1. **Always set container dimensions** - QuikChat needs explicit width/height
+2. **Use message IDs** - Store the return value of `messageAddNew()` for updates
+3. **Handle errors gracefully** - Show user-friendly error messages
+4. **Test on mobile** - Ensure your container is responsive
+5. **Use themes** - Built-in themes save development time
+
+### Troubleshooting
 
 #### Multiple Initialization
 ```javascript
@@ -1739,7 +1867,41 @@ const customerChat = new quikchat('#customer-chat', handleCustomer, {
 
 ## Performance Optimization
 
+### Virtual Scrolling (v1.1.16+)
+
+QuikChat includes built-in virtual scrolling that automatically activates for large message volumes. Virtual scrolling ensures smooth performance by only rendering messages that are visible in the viewport.
+
+```javascript
+// Virtual scrolling is enabled by default
+const chat = new quikchat('#chat', handler);
+
+// Check if virtual scrolling is active
+if (chat.isVirtualScrollingEnabled()) {
+    console.log('Virtual scrolling is handling rendering');
+}
+
+// Get virtual scrolling configuration
+const config = chat.getVirtualScrollingConfig();
+console.log(`Threshold: ${config.threshold} messages`);
+
+// Customize virtual scrolling settings
+const customChat = new quikchat('#chat', handler, {
+    virtualScrolling: true,           // Enable/disable virtual scrolling
+    virtualScrollingThreshold: 1000   // Messages before activation (default: 500)
+});
+```
+
+**How it works:**
+- Only renders messages visible in the viewport
+- Automatically activates at 500+ messages (configurable)
+- Uses absolute positioning for efficient scrolling
+- Maintains scroll position during updates
+
+**[Technical details and performance metrics](virtual_scrolling.md)**
+
 ### Managing Large Conversation Histories
+
+For applications that need to manage extensive chat histories beyond what's currently visible:
 
 ```javascript
 class OptimizedChat {
@@ -1747,8 +1909,8 @@ class OptimizedChat {
         this.maxVisibleMessages = maxVisibleMessages;
         this.allMessages = [];
         
+        // Virtual scrolling handles rendering performance automatically
         this.chat = new quikchat(chatContainer, this.handleMessage.bind(this));
-        this.setupVirtualScrolling();
     }
     
     handleMessage(instance, message) {

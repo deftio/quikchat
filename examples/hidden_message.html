@@ -180,6 +180,9 @@
 
     <div class="header">
         <h1>Quikchat Message Visibility and Hidden Messages Demo</h1>
+        <div id="versionInfo" style="color: #666; font-size: 0.9em; margin-bottom: 1rem;">
+            <!-- Version will be displayed here -->
+        </div>
         <p>
             By default all messages are visible.  However, QuikChat supports two message visibility systems for hiding/showing mesesages at runtime.<br><br> <strong>Individual Visibility</strong> allows you to show or hide a single message by its ID using JavaScript. <br><strong>Tagged Visibility</strong> allows you to assign tags to messages and then show or hide entire groups of messages with a single command powered by CSS classes. This demo lets you experiment with both.
         </p>
@@ -277,6 +280,10 @@
 
         chat.messagesAreaAlternateColors(false); // Turn off alternating colors
         updateStatus(); // Initial status
+        
+        // Display QuikChat version
+        const versionInfo = quikchat.version();
+        document.getElementById('versionInfo').innerHTML = `QuikChat Version: ${versionInfo.version}`;
 
         // --- Event Listeners for Control Panel ---
 

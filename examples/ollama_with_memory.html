@@ -32,6 +32,9 @@
         <div class="col-10">
             <br>
             <h2 class="">Ollama + Quikchat Demo with Conversational Memory</h2>
+            <div id="versionInfo" style="color: #666; font-size: 0.9em; margin-bottom: 1rem;">
+                <!-- Version will be displayed here -->
+            </div>
             <p>This example demonstrates how to use quikchat with a local LLM using Ollama where quikchat provides the
                 chat history to Ollama provides the llm model. This allows the chat to "remember" what is being
                 discussed. <br>This example assumes <a href='https://ollama.com/'>ollama</a> is installed and running on port 11434 locally.  Also it assume the llama3.1 model is available.  This example will not work on the github pages demo website you must run this locally.</p>
@@ -99,6 +102,11 @@
                 console.error('Fetch error:', error);
             });
         }
+    </script>
+    <script>
+        // Display QuikChat version
+        const versionInfo = quikchat.version();
+        document.getElementById('versionInfo').innerHTML = `QuikChat Version: ${versionInfo.version}`;
     </script>
 </body>
 

@@ -1,6 +1,6 @@
 {
   "name": "quikchat",
-  "version": "1.1.15",
+  "version": "1.1.16",
   "description": "quikchat is a simple vanilla (no dependancies) JavaScript chat control for browsers ",
   "author": "deftio (https://github.com/deftio",
   "license": "BSD-2-Clause",
@@ -47,7 +47,19 @@
       "html",
       "text",
       "lcov"
-    ]
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/src/modules/messages/virtual-scroller.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "lines": 80,
+        "functions": 79,
+        "branches": 60,
+        "statements": 79
+      }
+    }
   },
   "keywords": [
     "chat",

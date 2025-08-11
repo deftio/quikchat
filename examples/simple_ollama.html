@@ -36,6 +36,9 @@
         <div class="row">
             <div class="col-11">
                 <h2 class="">Ollama QuikChat Demo</h2>
+                <div id="versionInfo" style="color: #666; font-size: 0.9em; margin-bottom: 1rem;">
+                    <!-- Version will be displayed here -->
+                </div>
                 <p>This is a demo of two chat widgets connected to the local LLM via Ollama. One chat widget is connected
                     to the Ollama completion API, and the other is connected to the Ollama streaming API.</p>
                 Neither chat has conversational memory, so each respose is independent of the previous chat message.
@@ -68,7 +71,11 @@
                 theme: 'quikchat-theme-light',
                 titleArea: { title: "Streaming Chat", "show": true, "align": "left" },
             });
-        streamingChat.messageAddNew("How can I help? ", "bot", "left"); 
+        streamingChat.messageAddNew("How can I help? ", "bot", "left");
+        
+        // Display QuikChat version
+        const versionInfo = quikchat.version();
+        document.getElementById('versionInfo').innerHTML = `QuikChat Version: ${versionInfo.version}`; 
     </script>
 </body>
 

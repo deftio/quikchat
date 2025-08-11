@@ -65,7 +65,7 @@
 <body>
     <article class="markdown-body">
         <h1>QuikChat API Reference</h1>
-<p>Complete technical reference for QuikChat v1.1.14+ - a zero-dependency JavaScript chat widget.</p>
+<p>Complete technical reference for QuikChat v1.1.16+ - a zero-dependency JavaScript chat widget.</p>
 <h2>Table of Contents</h2>
 <ol>
 <li><a href="#constructor">Constructor</a></li>
@@ -185,6 +185,20 @@
 <td><code>&#39;&#39;</code></td>
 <td>Custom CSS class for multi-instance scoping</td>
 <td>v1.1.14+</td>
+</tr>
+<tr>
+<td><code>virtualScrolling</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Enable virtual scrolling for large message volumes</td>
+<td>v1.1.16+</td>
+</tr>
+<tr>
+<td><code>virtualScrollingThreshold</code></td>
+<td>number</td>
+<td><code>500</code></td>
+<td>Number of messages before virtual scrolling activates</td>
+<td>v1.1.16+</td>
 </tr>
 </tbody></table>
 <p><strong>Example:</strong></p>
@@ -616,6 +630,32 @@ chat.setTagVisibility(&#39;priority&#39;, true);
 <p><strong>Example:</strong></p>
 <pre><code class="language-javascript">const tags = chat.getActiveTags();
 console.log(&#39;Active tags:&#39;, tags); // [&#39;system&#39;, &#39;user&#39;, &#39;priority&#39;]
+</code></pre>
+<hr>
+<h2>Virtual Scrolling</h2>
+<h3><code>isVirtualScrollingEnabled()</code></h3>
+<p><em>Available in v1.1.16+</em></p>
+<p>Checks if virtual scrolling is currently active for the chat instance.</p>
+<p><strong>Returns:</strong> <code>boolean</code> - Whether virtual scrolling is enabled and active</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">if (chat.isVirtualScrollingEnabled()) {
+    console.log(&#39;Virtual scrolling is handling message rendering&#39;);
+}
+</code></pre>
+<h3><code>getVirtualScrollingConfig()</code></h3>
+<p><em>Available in v1.1.16+</em></p>
+<p>Returns the current virtual scrolling configuration.</p>
+<p><strong>Returns:</strong> <code>object</code> - Configuration object with the following properties:</p>
+<ul>
+<li><code>enabled</code> (boolean): Whether virtual scrolling is enabled in configuration</li>
+<li><code>active</code> (boolean): Whether virtual scrolling is currently active</li>
+<li><code>threshold</code> (number): Message count threshold for activation</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">const config = chat.getVirtualScrollingConfig();
+console.log(`Virtual scrolling: ${config.enabled}`);
+console.log(`Currently active: ${config.active}`);
+console.log(`Threshold: ${config.threshold} messages`);
 </code></pre>
 <hr>
 <h2>History Management</h2>
@@ -1164,7 +1204,7 @@ quikchat.tempMessageGenerator(&#39;#status&#39;, &#39;Typing&#39;, 500,
 <li><code>.quikchat-msgid-{id}</code> - Unique identifier for each message (zero-padded)</li>
 </ul>
 <hr>
-<p><em>This reference covers QuikChat v1.1.14. For migration guides and practical examples, see the <a href="DEVELOPER-GUIDE.md">Developer Guide</a>.</em></p>
+<p><em>This reference covers QuikChat v1.1.16. For migration guides and practical examples, see the <a href="DEVELOPER-GUIDE.md">Developer Guide</a>.</em></p>
 
     </article>
     <script>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual_scrolling - QuikChat Documentation</title>
+    <link rel="stylesheet" href="https://unpkg.com/github-markdown-css@5/github-markdown.css">
+    <link rel="stylesheet" href="https://unpkg.com/prismjs@1/themes/prism.css">
+    <style>
+        body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        @media (max-width: 767px) {
+            body { padding: 15px; }
+        }
+        /* Ensure emojis display properly */
+        .markdown-body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+        }
+        /* Code block styling */
+        pre {
+            background-color: #f6f8fa;
+            border-radius: 6px;
+            padding: 16px;
+            overflow: auto;
+        }
+        code {
+            background-color: rgba(175, 184, 193, 0.2);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 85%;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        /* Table styling */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 16px;
+            margin-bottom: 16px;
+        }
+        table th, table td {
+            border: 1px solid #d0d7de;
+            padding: 6px 13px;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+    </style>
+    <script src="https://unpkg.com/prismjs@1/components/prism-core.min.js"></script>
+    <script src="https://unpkg.com/prismjs@1/plugins/autoloader/prism-autoloader.min.js"></script>
+</head>
+<body>
+    <article class="markdown-body">
+        <h1>Virtual Scrolling Technical Documentation</h1>
+<h2>Overview</h2>
+<p>QuikChat implements virtual scrolling to efficiently render large message volumes. Virtual scrolling is a technique where only the visible portion of content is rendered in the DOM, significantly reducing memory usage and improving performance.</p>
+<h2>Implementation</h2>
+<p>The virtual scrolling implementation uses a <code>SimpleVirtualScroller</code> class that:</p>
+<ol>
+<li><strong>Viewport Detection</strong>: Monitors the visible area of the chat container</li>
+<li><strong>Dynamic Rendering</strong>: Only creates DOM elements for messages in view plus a buffer zone</li>
+<li><strong>Spacer Element</strong>: Maintains correct scroll height with an invisible spacer element</li>
+<li><strong>Absolute Positioning</strong>: Positions visible messages absolutely for smooth scrolling</li>
+<li><strong>Batch Updates</strong>: Uses <code>requestAnimationFrame</code> for efficient re-rendering</li>
+</ol>
+<h2>Configuration</h2>
+<p>Virtual scrolling can be configured during QuikChat initialization:</p>
+<pre><code class="language-javascript">const chat = new quikchat(&#39;#chat&#39;, handler, {
+    virtualScrolling: true,           // Enable/disable (default: true)
+    virtualScrollingThreshold: 500    // Message count before activation (default: 500)
+});
+</code></pre>
+<h2>API Methods</h2>
+<h3>Check Status</h3>
+<pre><code class="language-javascript">// Returns true if virtual scrolling is active
+const isActive = chat.isVirtualScrollingEnabled();
+</code></pre>
+<h3>Get Configuration</h3>
+<pre><code class="language-javascript">const config = chat.getVirtualScrollingConfig();
+// Returns: {
+//   enabled: boolean,    // Configuration setting
+//   active: boolean,     // Currently active
+//   threshold: number    // Activation threshold
+// }
+</code></pre>
+<h2>Performance Metrics</h2>
+<p>Testing was performed using the <code>test/performance-benchmark.html</code> file on a standard development machine.</p>
+<h3>Test Configuration</h3>
+<ul>
+<li>Browser: Chrome 128</li>
+<li>Machine: MacBook Pro M1</li>
+<li>DOM measurements via Chrome DevTools</li>
+</ul>
+<h3>Results: 10,000 Messages</h3>
+<table>
+<thead>
+<tr>
+<th>Rendering Method</th>
+<th>Time</th>
+<th>DOM Nodes</th>
+<th>Memory</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Standard DOM</td>
+<td>146,043ms</td>
+<td>40,017</td>
+<td>~187MB</td>
+</tr>
+<tr>
+<td>Virtual Scrolling</td>
+<td>38ms</td>
+<td>36</td>
+<td>~2.1MB</td>
+</tr>
+</tbody></table>
+<h3>Results: 1,000 Messages</h3>
+<table>
+<thead>
+<tr>
+<th>Rendering Method</th>
+<th>Time</th>
+<th>DOM Nodes</th>
+<th>Memory</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Standard DOM</td>
+<td>1,420ms</td>
+<td>4,017</td>
+<td>~19MB</td>
+</tr>
+<tr>
+<td>Virtual Scrolling</td>
+<td>12ms</td>
+<td>36</td>
+<td>~1.2MB</td>
+</tr>
+</tbody></table>
+<h3>Results: 100 Messages</h3>
+<table>
+<thead>
+<tr>
+<th>Rendering Method</th>
+<th>Time</th>
+<th>DOM Nodes</th>
+<th>Memory</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Standard DOM</td>
+<td>78ms</td>
+<td>417</td>
+<td>~2.8MB</td>
+</tr>
+<tr>
+<td>Virtual Scrolling</td>
+<td>8ms</td>
+<td>36</td>
+<td>~0.8MB</td>
+</tr>
+</tbody></table>
+<h2>How It Works</h2>
+<h3>1. Initial Setup</h3>
+<p>When virtual scrolling is enabled, QuikChat replaces the standard message rendering with a virtual scroller:</p>
+<pre><code class="language-javascript">_initVirtualScrolling() {
+    if (this.virtualScrollingEnabled &amp;&amp; this._messagesArea) {
+        this.virtualScroller = new SimpleVirtualScroller(this._messagesArea, {
+            itemHeight: 80,     // Estimated height per message
+            buffer: 5           // Extra items to render outside viewport
+        });
+    }
+}
+</code></pre>
+<h3>2. Message Addition</h3>
+<p>Instead of creating DOM elements immediately, messages are added to an items array:</p>
+<pre><code class="language-javascript">// Virtual scrolling path
+this.virtualScroller.addItem({
+    msgid: msgId,
+    content: message.content,
+    userString: message.userString,
+    align: message.align,
+    visible: message.visible,
+    tags: message.tags
+});
+</code></pre>
+<h3>3. Viewport Calculation</h3>
+<p>The scroller calculates which messages should be visible:</p>
+<pre><code class="language-javascript">_updateVisibleRange() {
+    const scrollTop = this.container.scrollTop;
+    const containerHeight = this.container.clientHeight;
+    
+    const startIndex = Math.floor(scrollTop / this.itemHeight) - this.buffer;
+    const endIndex = Math.ceil((scrollTop + containerHeight) / this.itemHeight) + this.buffer;
+    
+    this.visibleRange = {
+        start: Math.max(0, startIndex),
+        end: Math.min(this.items.length, endIndex)
+    };
+}
+</code></pre>
+<h3>4. DOM Management</h3>
+<p>Only elements in the visible range are rendered:</p>
+<pre><code class="language-javascript">_renderVisibleItems() {
+    // Remove elements outside visible range
+    this.renderedElements.forEach((element, index) =&gt; {
+        if (index &lt; visibleRange.start || index &gt;= visibleRange.end) {
+            element.remove();
+            this.renderedElements.delete(index);
+        }
+    });
+    
+    // Add elements in visible range
+    for (let i = visibleRange.start; i &lt; visibleRange.end; i++) {
+        if (!this.renderedElements.has(i)) {
+            const element = this._createItemElement(this.items[i], i);
+            element.style.position = &#39;absolute&#39;;
+            element.style.top = `${i * this.itemHeight}px`;
+            this.content.appendChild(element);
+            this.renderedElements.set(i, element);
+        }
+    }
+}
+</code></pre>
+<h2>Limitations</h2>
+<ol>
+<li><strong>Test Environment</strong>: Virtual scrolling uses <code>requestAnimationFrame</code> which requires special handling in test environments (JSDOM doesn&#39;t support it natively)</li>
+<li><strong>Simple Buffer</strong>: Fixed buffer size rather than dynamic based on scroll velocity</li>
+<li><strong>Text-Only Optimization</strong>: Best suited for text messages, not optimized for media</li>
+</ol>
+<h2>Browser Compatibility</h2>
+<p>Virtual scrolling uses standard DOM APIs and is compatible with:</p>
+<ul>
+<li>Chrome 61+</li>
+<li>Firefox 60+</li>
+<li>Safari 12+</li>
+<li>Edge 79+</li>
+</ul>
+<p>The implementation gracefully degrades to standard rendering if any required APIs are unavailable.</p>
+<h2>Testing</h2>
+<p>Virtual scrolling functionality is tested in:</p>
+<ul>
+<li><code>tests/quikchat.test.js</code> - Unit tests for virtual scrolling methods</li>
+<li><code>test/performance-benchmark.html</code> - Performance comparison tool</li>
+<li><code>test/virtual-scroll-test.html</code> - Interactive testing interface</li>
+</ul>
+<h2>Future Improvements</h2>
+<p>Potential enhancements for virtual scrolling:</p>
+<ol>
+<li><strong>Dynamic Height Support</strong>: Measure and cache actual message heights</li>
+<li><strong>Smooth Scrolling</strong>: Implement momentum-based scrolling</li>
+<li><strong>Progressive Loading</strong>: Load messages in chunks for very large histories</li>
+<li><strong>Variable Buffer</strong>: Adjust buffer size based on scroll speed</li>
+<li><strong>Intersection Observer</strong>: Use modern APIs for more efficient viewport detection</li>
+</ol>
+
+    </article>
+    <script>
+        // Syntax highlighting
+        if (typeof Prism !== 'undefined') {
+            Prism.highlightAll();
+        }
+    </script>
+</body>
+</html>

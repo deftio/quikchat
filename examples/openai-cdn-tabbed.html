@@ -102,6 +102,9 @@
         <div class="row">
             <div class="col-12">
                 <h2>Use QuikChat with OpenAI (Tabbed Interface)</h2>
+                <div id="versionInfo" style="color: #666; font-size: 0.9em; margin-bottom: 1rem;">
+                    <!-- Version will be displayed here -->
+                </div>
                 <p>This example demonstrates how to use QuikChat loaded from NPM CDN with OpenAI's GPT-4o model. You can use this example
                     with any API that supports token streaming.</p>
             </div>
@@ -343,6 +346,10 @@
             link.click();
             document.body.removeChild(link);
         });
+        
+        // Display QuikChat version
+        const versionInfo = quikchat.version();
+        document.getElementById('versionInfo').innerHTML = `QuikChat Version: ${versionInfo.version}`;
 
     </script>
 </body>

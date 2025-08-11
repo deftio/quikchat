@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Long Message Virtual Scrolling Test</title>
+    <link rel="stylesheet" href="../dist/quikchat.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            margin: 10px 0;
+            font-size: 24px;
+        }
+        .chat-wrapper {
+            display: flex;
+            gap: 20px;
+            height: calc(100vh - 280px);
+            min-height: 400px;
+        }
+        .chat-container {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .controls {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+        }
+        .button-group {
+            display: inline-block;
+            margin-right: 15px;
+            padding-right: 15px;
+            border-right: 1px solid #ddd;
+        }
+        .button-group:last-child {
+            border-right: none;
+        }
+        button {
+            margin: 3px;
+            padding: 6px 12px;
+            border: none;
+            background: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button.danger {
+            background: #dc3545;
+        }
+        button.danger:hover {
+            background: #c82333;
+        }
+        button.success {
+            background: #28a745;
+        }
+        button.success:hover {
+            background: #218838;
+        }
+        .stats {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-family: monospace;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+        }
+        .stat-label {
+            font-weight: bold;
+            color: #555;
+        }
+        .stat-value {
+            color: #000;
+        }
+        .performance-good {
+            color: #28a745;
+        }
+        .performance-warning {
+            color: #ffc107;
+        }
+        .performance-bad {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Virtual Scrolling Performance Test</h1>
+        
+        <div class="controls">
+            <div class="button-group">
+                <button onclick="addShortMessage()">Add 1 Short</button>
+                <button onclick="addLongMessage()">Add 1 Long</button>
+                <button onclick="addVeryLongMessage()">Add 1 Very Long</button>
+            </div>
+            <div class="button-group">
+                <button onclick="addMixedMessages(10)" class="success">Add 10 Mixed</button>
+                <button onclick="addMixedMessages(100)" class="success">Add 100 Mixed</button>
+                <button onclick="addMixedMessages(1000)" class="success">Add 1000 Mixed</button>
+            </div>
+            <div class="button-group">
+                <button onclick="scrollToTop()">Scroll Top</button>
+                <button onclick="scrollToBottom()">Scroll Bottom</button>
+            </div>
+            <div class="button-group">
+                <button onclick="clearMessages()" class="danger">Clear All</button>
+            </div>
+            
+            <div id="stats" class="stats">
+                <div class="stat-item">
+                    <span class="stat-label">Messages:</span>
+                    <span class="stat-value" id="messageCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">DOM Nodes:</span>
+                    <span class="stat-value" id="domNodes">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Virtual Scrolling:</span>
+                    <span class="stat-value" id="vsStatus">checking...</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Visible Range:</span>
+                    <span class="stat-value" id="visibleRange">0-0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Render Time:</span>
+                    <span class="stat-value" id="renderTime">0ms</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Memory (est):</span>
+                    <span class="stat-value" id="memoryUsage">0 KB</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-wrapper">
+            <div id="chat1" class="chat-container"></div>
+        </div>
+    </div>
+    
+    <script src="../dist/quikchat.umd.js"></script>
+    <script>
+        
+        // Initialize chat with virtual scrolling
+        const chat = new quikchat('#chat1', (instance, message) => {
+            instance.messageAddNew(message, 'You', 'right');
+        }, {
+            theme: 'quikchat-theme-light',
+            titleArea: { title: 'Virtual Scrolling Performance Test', show: true },
+            virtualScrolling: true,
+            virtualScrollingThreshold: 50  // Activate VS after 50 messages
+        });
+        
+        // Make functions available globally
+        window.chat = chat;
+        let lastRenderTime = 0;
+        
+        window.addShortMessage = function() {
+            const startTime = performance.now();
+            const msg = quikchat.loremIpsum(50); // Short message
+            chat.messageAddNew(msg, 'User', Math.random() > 0.5 ? 'left' : 'right', 'user');
+            lastRenderTime = performance.now() - startTime;
+            updateStats();
+        };
+        
+        window.addLongMessage = function() {
+            const startTime = performance.now();
+            const msg = quikchat.loremIpsum(2500); // ~500 words
+            chat.messageAddNew(msg, 'Assistant', 'left', 'assistant');
+            lastRenderTime = performance.now() - startTime;
+            updateStats();
+        };
+        
+        window.addVeryLongMessage = function() {
+            const startTime = performance.now();
+            const msg = quikchat.loremIpsum(10000); // ~2000 words
+            chat.messageAddNew(msg, 'System', 'left', 'system');
+            lastRenderTime = performance.now() - startTime;
+            updateStats();
+        };
+        
+        window.addMixedMessages = function(count = 10) {
+            const startTime = performance.now();
+            const batchSize = 50; // Add messages in batches to avoid UI freezing
+            let added = 0;
+            
+            function addBatch() {
+                const currentBatch = Math.min(batchSize, count - added);
+                for (let i = 0; i < currentBatch; i++) {
+                    const rand = Math.random();
+                    let msg;
+                    let sender;
+                    let align;
+                    
+                    if (rand < 0.3) {
+                        // Short message (30%)
+                        msg = quikchat.loremIpsum(Math.floor(Math.random() * 100) + 20);
+                        sender = 'User';
+                        align = 'right';
+                    } else if (rand < 0.8) {
+                        // Medium message (50%)
+                        msg = quikchat.loremIpsum(Math.floor(Math.random() * 500) + 200);
+                        sender = 'Bot';
+                        align = 'left';
+                    } else {
+                        // Long message (20%)
+                        msg = quikchat.loremIpsum(Math.floor(Math.random() * 2000) + 1000);
+                        sender = 'Assistant';
+                        align = 'left';
+                    }
+                    
+                    chat.messageAddNew(msg, sender, align);
+                }
+                
+                added += currentBatch;
+                
+                if (added < count) {
+                    // Continue adding in next frame
+                    requestAnimationFrame(addBatch);
+                } else {
+                    lastRenderTime = performance.now() - startTime;
+                    updateStats();
+                    console.log(`Added ${count} messages in ${lastRenderTime.toFixed(2)}ms`);
+                }
+            }
+            
+            addBatch();
+        };
+        
+        window.clearMessages = function() {
+            const startTime = performance.now();
+            chat.historyClear();
+            lastRenderTime = performance.now() - startTime;
+            updateStats();
+        };
+        
+        window.scrollToTop = function() {
+            const messagesArea = document.querySelector('#chat1 .quikchat-messages-area');
+            if (messagesArea) {
+                messagesArea.scrollTop = 0;
+            }
+        };
+        
+        window.scrollToBottom = function() {
+            const messagesArea = document.querySelector('#chat1 .quikchat-messages-area');
+            if (messagesArea) {
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+            }
+        };
+        
+        window.updateStats = function() {
+            const messageCount = chat.historyGetLength();
+            document.getElementById('messageCount').textContent = messageCount;
+            
+            // Count DOM nodes in messages area
+            const messagesArea = document.querySelector('#chat1 .quikchat-messages-area');
+            const domNodes = messagesArea ? messagesArea.querySelectorAll('.quikchat-message').length : 0;
+            const domNodesEl = document.getElementById('domNodes');
+            domNodesEl.textContent = domNodes;
+            
+            // Color code DOM nodes based on performance
+            domNodesEl.className = 'stat-value';
+            if (messageCount > 100) {
+                if (domNodes < 50) {
+                    domNodesEl.classList.add('performance-good');
+                } else if (domNodes < 200) {
+                    domNodesEl.classList.add('performance-warning');
+                } else {
+                    domNodesEl.classList.add('performance-bad');
+                }
+            }
+            
+            // Check virtual scrolling status
+            const vsConfig = chat.getVirtualScrollingConfig();
+            const vsStatusEl = document.getElementById('vsStatus');
+            vsStatusEl.textContent = vsConfig.active ? 'Active' : 
+                                    vsConfig.enabled ? `Enabled (waiting for ${vsConfig.threshold} msgs)` : 
+                                    'Disabled';
+            vsStatusEl.className = 'stat-value';
+            if (vsConfig.active) {
+                vsStatusEl.classList.add('performance-good');
+            }
+            
+            // Get visible range if virtual scrolling is active
+            if (chat.virtualScroller) {
+                const range = chat.virtualScroller.visibleRange;
+                document.getElementById('visibleRange').textContent = 
+                    `${range.start}-${range.end} of ${chat.virtualScroller.items.length}`;
+            } else {
+                document.getElementById('visibleRange').textContent = 'All visible';
+            }
+            
+            // Show render time
+            const renderTimeEl = document.getElementById('renderTime');
+            renderTimeEl.textContent = `${lastRenderTime.toFixed(2)}ms`;
+            renderTimeEl.className = 'stat-value';
+            if (lastRenderTime < 50) {
+                renderTimeEl.classList.add('performance-good');
+            } else if (lastRenderTime < 200) {
+                renderTimeEl.classList.add('performance-warning');
+            } else {
+                renderTimeEl.classList.add('performance-bad');
+            }
+            
+            // Estimate memory usage
+            const historyInfo = chat.historyGetInfo();
+            const memoryKB = (historyInfo.memoryUsage.estimatedSize / 1024).toFixed(1);
+            document.getElementById('memoryUsage').textContent = `${memoryKB} KB`;
+        };
+        
+        // Initial stats
+        updateStats();
+        
+        // Update stats on scroll
+        const chatContainer = document.querySelector('#chat1');
+        chatContainer.addEventListener('scroll', () => {
+            requestAnimationFrame(updateStats);
+        });
+        
+        // Also update visible range when messages area scrolls (for virtual scrolling)
+        setTimeout(() => {
+            const messagesArea = document.querySelector('#chat1 .quikchat-messages-area');
+            if (messagesArea) {
+                messagesArea.addEventListener('scroll', () => {
+                    requestAnimationFrame(updateStats);
+                });
+            }
+        }, 100);
+        
+        // Add a few initial messages to demonstrate
+        console.log('QuikChat Virtual Scrolling Test Ready');
+        console.log('=================================');
+        console.log('The loremIpsum generator is very useful for testing!');
+        console.log('It accepts a character count and generates deterministic text.');
+        console.log('');
+        console.log('Try adding 100 or 1000 messages to see virtual scrolling in action.');
+        
+        // Add 5 sample messages
+        addShortMessage();
+        addLongMessage();
+        addShortMessage();
+        addMixedMessages(2);
+    </script>
+</body>
+</html>

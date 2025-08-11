@@ -1,9 +1,300 @@
 import { quikchatVersion } from './quikchat_version.js';
 
 /**
+ * Simplified virtual scrolling implementation for QuikChat
+ * @private
+ */
+class SimpleVirtualScroller {
+    constructor(container, options = {}) {
+        this.container = container;
+        this.items = [];
+        this.itemHeight = options.itemHeight || 80;  // Default/estimate height
+        this.buffer = options.buffer || 5;
+        this.visibleRange = { start: 0, end: 0 };
+        this.renderedElements = new Map();
+        this.itemHeights = new Map();  // Cache actual heights
+        this.itemPositions = new Map();  // Cache positions
+        this.totalHeight = 0;
+        this.onRenderItem = options.onRenderItem || (() => {});
+        
+        this._initStructure();
+        this._attachScrollListener();
+    }
+    
+    _initStructure() {
+        const existingClasses = this.container.className;
+        this.container.innerHTML = '';
+        this.container.className = existingClasses;
+        this.container.style.position = 'relative';
+        this.container.style.overflow = 'auto';
+        
+        // Ensure container has height
+        if (!this.container.style.height && this.container.offsetHeight === 0) {
+            this.container.style.height = '100%';
+        }
+        
+        this.spacer = document.createElement('div');
+        this.spacer.style.cssText = 'position: absolute; top: 0; left: 0; width: 1px; pointer-events: none; z-index: -1;';
+        
+        this.content = document.createElement('div');
+        this.content.style.cssText = 'position: relative; width: 100%;';
+        
+        this.container.appendChild(this.spacer);
+        this.container.appendChild(this.content);
+        
+        // Initial render after structure is set up
+        setTimeout(() => {
+            this._updateVisibleRange();
+            this._renderVisibleItems();
+        }, 0);
+    }
+    
+    _attachScrollListener() {
+        let ticking = false;
+        this.container.addEventListener('scroll', () => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    this._updateVisibleRange();
+                    this._renderVisibleItems();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+    }
+    
+    _getItemHeight(index) {
+        // Return cached height or estimate
+        return this.itemHeights.get(index) || this.itemHeight;
+    }
+    
+    _getItemPosition(index) {
+        // Return cached position or calculate
+        if (this.itemPositions.has(index)) {
+            return this.itemPositions.get(index);
+        }
+        
+        // Calculate position based on previous items
+        let position = 0;
+        for (let i = 0; i < index; i++) {
+            position += this._getItemHeight(i);
+        }
+        
+        this.itemPositions.set(index, position);
+        return position;
+    }
+    
+    _recalculatePositions(fromIndex) {
+        // Recalculate positions from a specific index onwards
+        let position = fromIndex > 0 ? this._getItemPosition(fromIndex) : 0;
+        
+        for (let i = fromIndex; i < this.items.length; i++) {
+            this.itemPositions.set(i, position);
+            position += this._getItemHeight(i);
+            
+            // Update position of rendered elements
+            const element = this.renderedElements.get(i);
+            if (element) {
+                element.style.top = `${this.itemPositions.get(i)}px`;
+            }
+        }
+        
+        // Update total height
+        this.totalHeight = position;
+        this.spacer.style.height = `${this.totalHeight}px`;
+    }
+    
+    _updateVisibleRange() {
+        const scrollTop = this.container.scrollTop;
+        const viewportHeight = this.container.clientHeight;
+        
+        // Find first visible item based on positions
+        let startIndex = 0;
+        let endIndex = this.items.length;
+        
+        // Use cached positions when available
+        if (this.itemPositions.size > 0) {
+            // Find start index
+            for (let i = 0; i < this.items.length; i++) {
+                const pos = this._getItemPosition(i);
+                if (pos + this._getItemHeight(i) > scrollTop) {
+                    startIndex = Math.max(0, i - this.buffer);
+                    break;
+                }
+            }
+            
+            // Find end index
+            for (let i = startIndex; i < this.items.length; i++) {
+                const pos = this._getItemPosition(i);
+                if (pos > scrollTop + viewportHeight) {
+                    endIndex = Math.min(this.items.length, i + this.buffer);
+                    break;
+                }
+            }
+        } else {
+            // Fallback to estimate if no positions cached yet
+            startIndex = Math.max(0, Math.floor(scrollTop / this.itemHeight) - this.buffer);
+            endIndex = Math.min(this.items.length, Math.ceil((scrollTop + viewportHeight) / this.itemHeight) + this.buffer);
+        }
+        
+        this.visibleRange = { start: startIndex, end: endIndex };
+    }
+    
+    _renderVisibleItems() {
+        const { start, end } = this.visibleRange;
+        
+        // Remove elements outside range
+        this.renderedElements.forEach((element, index) => {
+            if (index < start || index >= end) {
+                element.remove();
+                this.renderedElements.delete(index);
+                // Don't clear height cache - we might need it again
+            }
+        });
+        
+        // Add new visible elements
+        for (let i = start; i < end; i++) {
+            const item = this.items[i];
+            if (!item || this.renderedElements.has(i)) continue;
+            
+            const element = this._createItemElement(item, i);
+            element.style.position = 'absolute';
+            element.style.top = `${this._getItemPosition(i)}px`;
+            element.style.left = '0';
+            element.style.right = '0';
+            
+            this.renderedElements.set(i, element);
+            this.content.appendChild(element);
+            
+            // Measure actual height after rendering
+            requestAnimationFrame(() => {
+                if (this.renderedElements.has(i)) {
+                    const actualHeight = element.offsetHeight;
+                    if (actualHeight && actualHeight !== this._getItemHeight(i)) {
+                        this.itemHeights.set(i, actualHeight);
+                        this._recalculatePositions(i);
+                    }
+                }
+            });
+        }
+        
+        this.onRenderItem(this.content);
+    }
+    
+    _createItemElement(item, index) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `quikchat-message quikchat-message-${item.align || 'left'} quikchat-msgid-${String(item.msgid).padStart(10, '0')}`;
+        messageDiv.setAttribute('data-index', index);
+        messageDiv.setAttribute('data-msgid', item.msgid);
+        
+        if (item.tags && item.tags.length > 0) {
+            item.tags.forEach(tag => messageDiv.classList.add(`quikchat-tag-${tag}`));
+        }
+        
+        const userDiv = document.createElement('div');
+        userDiv.className = 'quikchat-message-user';
+        userDiv.innerHTML = item.userString || '';
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'quikchat-message-content';
+        contentDiv.innerHTML = item.content || '';
+        
+        messageDiv.appendChild(userDiv);
+        messageDiv.appendChild(contentDiv);
+        
+        if (!item.visible) {
+            messageDiv.style.display = 'none';
+        }
+        
+        return messageDiv;
+    }
+    
+    addItem(item) {
+        this.items.push(item);
+        const index = this.items.length - 1;
+        
+        // Calculate position for new item
+        const position = index > 0 ? 
+            this._getItemPosition(index - 1) + this._getItemHeight(index - 1) : 0;
+        this.itemPositions.set(index, position);
+        
+        // Update total height (using estimate for new item)
+        this.totalHeight = position + this.itemHeight;
+        this.spacer.style.height = `${this.totalHeight}px`;
+        
+        if (index >= this.visibleRange.start && index < this.visibleRange.end) {
+            this._renderVisibleItems();
+        }
+        
+        if (item.scrollIntoView) {
+            this.container.scrollTop = this.container.scrollHeight;
+        }
+        
+        return index;
+    }
+    
+    addItems(items) {
+        // Batch add items for better performance
+        const startLength = this.items.length;
+        this.items.push(...items);
+        
+        // Calculate positions for new items
+        let position = startLength > 0 ? 
+            this._getItemPosition(startLength - 1) + this._getItemHeight(startLength - 1) : 0;
+        
+        for (let i = startLength; i < this.items.length; i++) {
+            this.itemPositions.set(i, position);
+            position += this.itemHeight;  // Use estimate for new items
+        }
+        
+        this.totalHeight = position;
+        this.spacer.style.height = `${this.totalHeight}px`;
+        
+        // Update visible range and render
+        this._updateVisibleRange();
+        this._renderVisibleItems();
+        
+        // Handle scrollIntoView for last item if needed
+        if (items.length > 0 && items[items.length - 1].scrollIntoView) {
+            this.container.scrollTop = this.container.scrollHeight;
+        }
+    }
+    
+    clear() {
+        this.items = [];
+        this.renderedElements.clear();
+        this.itemHeights.clear();
+        this.itemPositions.clear();
+        this.totalHeight = 0;
+        this.content.innerHTML = '';
+        this.spacer.style.height = '0px';
+        this.visibleRange = { start: 0, end: 0 };
+        
+        // Force update after clear
+        this._updateVisibleRange();
+        this._renderVisibleItems();
+    }
+    
+    updateItem(index, updates) {
+        if (index >= 0 && index < this.items.length) {
+            this.items[index] = { ...this.items[index], ...updates };
+            if (this.renderedElements.has(index)) {
+                this._renderVisibleItems();
+            }
+        }
+    }
+    
+    destroy() {
+        this.container.innerHTML = '';
+        this.items = [];
+        this.renderedElements.clear();
+    }
+}
+
+/**
  * QuikChat - A zero-dependency JavaScript chat widget for modern web applications
  * @class quikchat
- * @version 1.1.15
+ * @version 1.1.16-dev1
  */
 class quikchat {
     /**
@@ -49,7 +340,9 @@ class quikchat {
             inputArea: { show: true },
             sendOnEnter: true,
             sendOnShiftEnter: false,
-            instanceClass: ''
+            instanceClass: '',
+            virtualScrolling: true,  // Default to true for better performance
+            virtualScrollingThreshold: 500  // Lower threshold since it performs so well
         };
         const meta = { ...defaultOpts, ...options }; // merge options with defaults
 
@@ -97,6 +390,64 @@ class quikchat {
         // send on enter / shift enter
         this.sendOnEnter = meta.sendOnEnter;
         this.sendOnShiftEnter = meta.sendOnShiftEnter;
+        
+        // Virtual scrolling setup
+        this.virtualScrollingEnabled = meta.virtualScrolling;
+        this.virtualScrollingThreshold = meta.virtualScrollingThreshold;
+        this.virtualScroller = null;
+        
+        // Don't initialize virtual scrolling immediately - wait for threshold
+        // Virtual scrolling will be initialized when message count exceeds threshold
+    }
+    
+    /**
+     * Initialize virtual scrolling
+     * @private
+     */
+    _initVirtualScrolling() {
+        if (this.virtualScrollingEnabled && this._messagesArea && !this.virtualScroller) {
+            // Check if we've hit the threshold (or about to with the next message)
+            if (this._history.length >= this.virtualScrollingThreshold - 1) {
+                this.virtualScroller = new SimpleVirtualScroller(this._messagesArea, {
+                    itemHeight: 80,
+                    buffer: 5,
+                    onRenderItem: (content) => {
+                        // Apply alternating colors if enabled
+                        if (this._messagesArea.classList.contains('quikchat-messages-area-alt')) {
+                            this._updateMessageStyles();
+                        }
+                    }
+                });
+                
+                // Migrate existing messages to virtual scroller
+                this._migrateToVirtualScrolling();
+            }
+        }
+    }
+    
+    /**
+     * Migrate existing messages to virtual scrolling
+     * @private
+     */
+    _migrateToVirtualScrolling() {
+        if (!this.virtualScroller) return;
+        
+        // Clear DOM but keep history
+        this._messagesArea.innerHTML = '';
+        
+        // Add all messages to virtual scroller
+        const items = this._history.map(msg => ({
+            msgid: msg.msgid,
+            content: msg.content,
+            userString: msg.userString,
+            align: msg.align,
+            role: msg.role,
+            visible: msg.visible,
+            tags: msg.tags || [],
+            scrollIntoView: false
+        }));
+        
+        this.virtualScroller.addItems(items);
     }
 
     _createWidget() {
@@ -335,73 +686,110 @@ class quikchat {
      */
     messageAddFull(input = { content: "", userString: "user", align: "right", role: "user", userID: -1, timestamp: false, updatedtime: false, scrollIntoView: true, visible: true, tags: [] }) {
         const msgid = this.msgid;
-        const messageDiv = document.createElement('div');
-        const msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
-        const userIdClass = 'quikchat-userid-' + String(input.userString).padStart(10, '0'); // hash this..
-        messageDiv.classList.add('quikchat-message', msgidClass, 'quikchat-structure');
-
-        if (Array.isArray(input.tags)) {
-            input.tags.forEach(tag => {
-                if (typeof tag === 'string' && /^[a-zA-Z0-9-]+$/.test(tag)) {
-                    messageDiv.classList.add(`quikchat-tag-${tag}`);
-                    this._activeTags.add(tag);
-                }
-            });
-        }
-
         this.msgid++;
-
-        const userDiv = document.createElement('div');
-        userDiv.innerHTML = input.userString;
-        userDiv.classList.add('quikchat-user-label');
-        userDiv.style.textAlign = input.align;
-    
-        const contentDiv = document.createElement('div');
-        contentDiv.classList.add('quikchat-message-content');
-    
-        // Determine text alignment for right-aligned messages
-        if (input.align === "right") {
-            const isMultiLine = input.content.includes("\n");
-            const isLong = input.content.length > 50; // Adjust length threshold
-    
-            if (isMultiLine || isLong) {
-                contentDiv.classList.add("quikchat-right-multiline");
-            } else {
-                contentDiv.classList.add("quikchat-right-singleline");
-            }
-        }
-    
-        contentDiv.innerHTML = input.content;
-    
-        messageDiv.appendChild(userDiv);
-        messageDiv.appendChild(contentDiv);
-        this._messagesArea.appendChild(messageDiv);
+        let messageDiv = null; // Initialize messageDiv to null
         
-        const visible = input.visible === undefined ? true : input.visible;
-        if (!visible) {
-            messageDiv.style.display = 'none';
+        // Check if we should initialize virtual scrolling
+        if (this.virtualScrollingEnabled && !this.virtualScroller && this._history.length >= this.virtualScrollingThreshold - 1) {
+            this._initVirtualScrolling();
         }
-    
-        // Handle scroll behavior based on scrollIntoView parameter
-        // 'smart' = only scroll if near bottom, true = always scroll, false = never scroll
-        if (input.scrollIntoView === true) {
-            this.messageScrollToBottom();
-        } else if (input.scrollIntoView === 'smart' && !this.userScrolledUp) {
-            this.messageScrollToBottom();
+        
+        // If virtual scrolling is enabled, use the virtual scroller
+        if (this.virtualScroller) {
+            const messageData = {
+                msgid: msgid,
+                content: input.content,
+                userString: input.userString,
+                align: input.align,
+                role: input.role,
+                visible: input.visible !== undefined ? input.visible : true,
+                tags: input.tags || [],
+                scrollIntoView: input.scrollIntoView
+            };
+            
+            // Add tags to active tags set
+            if (Array.isArray(input.tags)) {
+                input.tags.forEach(tag => {
+                    if (typeof tag === 'string' && /^[a-zA-Z0-9-]+$/.test(tag)) {
+                        this._activeTags.add(tag);
+                    }
+                });
+            }
+            
+            // Add to virtual scroller
+            this.virtualScroller.addItem(messageData);
+            
+            // Clear text entry
+            this._textEntry.value = '';
+            this._adjustMessagesAreaHeight();
+        } else {
+            // Original DOM-based implementation
+            messageDiv = document.createElement('div');
+            const msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
+            const userIdClass = 'quikchat-userid-' + String(input.userString).padStart(10, '0'); // hash this..
+            messageDiv.classList.add('quikchat-message', msgidClass, 'quikchat-structure');
+
+            if (Array.isArray(input.tags)) {
+                input.tags.forEach(tag => {
+                    if (typeof tag === 'string' && /^[a-zA-Z0-9-]+$/.test(tag)) {
+                        messageDiv.classList.add(`quikchat-tag-${tag}`);
+                        this._activeTags.add(tag);
+                    }
+                });
+            }
+
+            const userDiv = document.createElement('div');
+            userDiv.innerHTML = input.userString;
+            userDiv.classList.add('quikchat-user-label');
+            userDiv.style.textAlign = input.align;
+        
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('quikchat-message-content');
+        
+            // Determine text alignment for right-aligned messages
+            if (input.align === "right") {
+                const isMultiLine = input.content.includes("\n");
+                const isLong = input.content.length > 50; // Adjust length threshold
+        
+                if (isMultiLine || isLong) {
+                    contentDiv.classList.add("quikchat-right-multiline");
+                } else {
+                    contentDiv.classList.add("quikchat-right-singleline");
+                }
+            }
+        
+            contentDiv.innerHTML = input.content;
+        
+            messageDiv.appendChild(userDiv);
+            messageDiv.appendChild(contentDiv);
+            this._messagesArea.appendChild(messageDiv);
+            
+            if (input.visible === false) {
+                messageDiv.style.display = 'none';
+            }
+        
+            // Handle scroll behavior based on scrollIntoView parameter
+            // 'smart' = only scroll if near bottom, true = always scroll, false = never scroll
+            if (input.scrollIntoView === true) {
+                this.messageScrollToBottom();
+            } else if (input.scrollIntoView === 'smart' && !this.userScrolledUp) {
+                this.messageScrollToBottom();
+            }
+            // If scrollIntoView is false, don't scroll at all
+        
+            this._textEntry.value = '';
+            this._adjustMessagesAreaHeight();
+            this._handleShortLongMessageCSS(messageDiv, input.align); // Handle CSS for short/long messages
+            this._updateMessageStyles();
         }
-        // If scrollIntoView is false, don't scroll at all
-    
-        this._textEntry.value = '';
-        this._adjustMessagesAreaHeight();
-        this._handleShortLongMessageCSS(messageDiv, input.align); // Handle CSS for short/long messages
-        this._updateMessageStyles();
     
         // Add timestamp now, unless it is passed in 
         const timestamp = input.timestamp ? input.timestamp : new Date().toISOString();
         const updatedtime = input.updatedtime ? input.updatedtime : timestamp;
+        const visible = input.visible !== undefined ? input.visible : true;
     
         if (this.trackHistory) {
-            this._history.push({ msgid, ...input, visible, timestamp, updatedtime, messageDiv });
+            this._history.push({ msgid, ...input, visible, timestamp, updatedtime, messageDiv: messageDiv || null });
             if (this._history.length > this._historyLimit) {
                 this._history.shift();
             }
@@ -532,11 +920,25 @@ class quikchat {
     messageAppendContent(n, content) {
         let success = false;
         try {
-            this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML += content;
-            // update history
+            // Update history first
             let item = this._history.filter((item) => item.msgid === n)[0];
             item.content += content;
             item.updatedtime = new Date().toISOString();
+            
+            // If virtual scrolling is active, update the virtual scroller
+            if (this.virtualScroller) {
+                // Find the item index in virtual scroller
+                const index = this.virtualScroller.items.findIndex(item => item.msgid === n);
+                if (index >= 0) {
+                    this.virtualScroller.items[index].content += content;
+                    // Re-render if the item is currently visible
+                    this.virtualScroller.updateItem(index, { content: this.virtualScroller.items[index].content });
+                }
+            } else {
+                // Regular DOM manipulation
+                this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML += content;
+            }
+            
             success = true;
             
             // Call the onMessageAppend callback if it exists
@@ -557,11 +959,25 @@ class quikchat {
     messageReplaceContent(n, content) {
         let success = false;
         try {
-            this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML = content;
-            // update history
+            // Update history first
             let item = this._history.filter((item) => item.msgid === n)[0];
             item.content = content;
             item.updatedtime = new Date().toISOString();
+            
+            // If virtual scrolling is active, update the virtual scroller
+            if (this.virtualScroller) {
+                // Find the item index in virtual scroller
+                const index = this.virtualScroller.items.findIndex(item => item.msgid === n);
+                if (index >= 0) {
+                    this.virtualScroller.items[index].content = content;
+                    // Re-render if the item is currently visible
+                    this.virtualScroller.updateItem(index, { content: content });
+                }
+            } else {
+                // Regular DOM manipulation
+                this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML = content;
+            }
+            
             success = true;
             
             // Call the onMessageReplace callback if it exists
@@ -910,7 +1326,14 @@ class quikchat {
      */
     historyClear() {
         this.msgid = 0;
-        this._messagesArea.innerHTML = "";
+        
+        // Handle virtual scroller
+        if (this.virtualScroller) {
+            this.virtualScroller.clear();
+        } else {
+            this._messagesArea.innerHTML = "";
+        }
+        
         this._history = [];
         this._activeTags.clear();
     }
@@ -1223,6 +1646,35 @@ class quikchat {
      */
     getActiveTags() {
         return Array.from(this._activeTags);
+    }
+
+    /**
+     * Checks if virtual scrolling is currently enabled
+     * @returns {boolean} True if virtual scrolling is enabled, false otherwise
+     * @since 1.1.16
+     * @example
+     * if (chat.isVirtualScrollingEnabled()) {
+     *     console.log('Virtual scrolling is active');
+     * }
+     */
+    isVirtualScrollingEnabled() {
+        return this.virtualScrollingEnabled && this.virtualScroller !== null;
+    }
+
+    /**
+     * Gets the virtual scrolling configuration
+     * @returns {Object} Virtual scrolling configuration with enabled status and threshold
+     * @since 1.1.16
+     * @example
+     * const config = chat.getVirtualScrollingConfig();
+     * console.log(`Virtual scrolling: ${config.enabled}, threshold: ${config.threshold}`);
+     */
+    getVirtualScrollingConfig() {
+        return {
+            enabled: this.virtualScrollingEnabled,
+            active: this.virtualScroller !== null,
+            threshold: this.virtualScrollingThreshold
+        };
     }
 }
 

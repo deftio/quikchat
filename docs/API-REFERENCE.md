@@ -1,6 +1,6 @@
 # QuikChat API Reference
 
-Complete technical reference for QuikChat v1.1.14+ - a zero-dependency JavaScript chat widget.
+Complete technical reference for QuikChat v1.1.16+ - a zero-dependency JavaScript chat widget.
 
 ## Table of Contents
 
@@ -42,6 +42,8 @@ Creates a new QuikChat instance.
 | `sendOnEnter` | boolean | `true` | Send message on Enter key | v1.0+ |
 | `sendOnShiftEnter` | boolean | `false` | Send message on Shift+Enter | v1.0+ |
 | `instanceClass` | string | `''` | Custom CSS class for multi-instance scoping | v1.1.14+ |
+| `virtualScrolling` | boolean | `true` | Enable virtual scrolling for large message volumes | v1.1.16+ |
+| `virtualScrollingThreshold` | number | `500` | Number of messages before virtual scrolling activates | v1.1.16+ |
 
 **Example:**
 ```javascript
@@ -321,6 +323,42 @@ Returns all unique tags that have been used in the current chat.
 ```javascript
 const tags = chat.getActiveTags();
 console.log('Active tags:', tags); // ['system', 'user', 'priority']
+```
+
+---
+
+## Virtual Scrolling
+
+### `isVirtualScrollingEnabled()`
+*Available in v1.1.16+*
+
+Checks if virtual scrolling is currently active for the chat instance.
+
+**Returns:** `boolean` - Whether virtual scrolling is enabled and active
+
+**Example:**
+```javascript
+if (chat.isVirtualScrollingEnabled()) {
+    console.log('Virtual scrolling is handling message rendering');
+}
+```
+
+### `getVirtualScrollingConfig()`
+*Available in v1.1.16+*
+
+Returns the current virtual scrolling configuration.
+
+**Returns:** `object` - Configuration object with the following properties:
+- `enabled` (boolean): Whether virtual scrolling is enabled in configuration
+- `active` (boolean): Whether virtual scrolling is currently active
+- `threshold` (number): Message count threshold for activation
+
+**Example:**
+```javascript
+const config = chat.getVirtualScrollingConfig();
+console.log(`Virtual scrolling: ${config.enabled}`);
+console.log(`Currently active: ${config.active}`);
+console.log(`Threshold: ${config.threshold} messages`);
 ```
 
 ---
@@ -738,4 +776,4 @@ QuikChat uses a structured CSS class system for styling and functionality:
 
 ---
 
-*This reference covers QuikChat v1.1.14. For migration guides and practical examples, see the [Developer Guide](DEVELOPER-GUIDE.md).*
+*This reference covers QuikChat v1.1.16. For migration guides and practical examples, see the [Developer Guide](DEVELOPER-GUIDE.md).*

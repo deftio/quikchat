@@ -1,5 +1,41 @@
 # Release Notes
 
+## 1.1.16 (2025-08-10)
+
+### Major Performance Enhancement: Virtual Scrolling
+
+#### Virtual Scrolling Implementation
+- **Zero-dependency virtual scrolling** built directly into QuikChat core
+- Automatically renders only visible messages in viewport plus buffer zone
+- Dynamic height measurement and caching for variable-length messages (critical for LLM responses)
+- Seamless activation based on configurable message count threshold
+
+#### Performance Improvements
+- **10,000 messages**: Renders in 38ms (vs 146,043ms without virtual scrolling)
+- **1,000 messages**: Renders in 12ms
+- **DOM efficiency**: Maintains ~36 DOM nodes regardless of total message count
+- **Memory usage**: ~2MB for 10,000 messages (vs ~187MB without)
+
+#### Configuration
+- Enabled by default (`virtualScrolling: true`)
+- Configurable threshold (default: 500 messages)
+- Status checking via `isVirtualScrollingEnabled()` and `getVirtualScrollingConfig()`
+
+### New Testing Infrastructure
+- Added comprehensive performance test page (`test/test-long-messages.html`)
+- Real-time performance metrics display
+- Batch message addition support (100, 1000 messages)
+- Visual performance indicators with color coding
+
+### Bug Fixes
+- Fixed virtual scrolling height calculation for variable-length messages
+- Resolved CORS issues in test files
+
+### Documentation
+- Created comprehensive virtual scrolling documentation (`docs/virtual_scrolling.md`)
+- Updated all documentation to use factual performance metrics
+- Removed marketing language in favor of technical specifications
+
 ## 1.1.15 (2025-08-10)
 
 ### New Features

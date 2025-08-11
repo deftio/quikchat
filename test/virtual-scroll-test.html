@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Scrolling Test</title>
+    <link rel="stylesheet" href="../dist/quikchat.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .chat-box {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            height: 600px;
+        }
+        .chat-wrapper {
+            height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .controls {
+            grid-column: 1 / -1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <h2>Virtual Scrolling Test</h2>
+            <div>
+                <button onclick="addMessages(100)">Add 100 Messages</button>
+                <button onclick="addMessages(1000)">Add 1000 Messages</button>
+                <button onclick="addMessages(10000)">Add 10000 Messages</button>
+                <button onclick="clearChats()">Clear All</button>
+            </div>
+            <div id="status" class="status">Ready</div>
+        </div>
+
+        <div class="chat-box">
+            <h2>Standard QuikChat</h2>
+            <div id="chat1" class="chat-wrapper"></div>
+        </div>
+
+        <div class="chat-box">
+            <h2>Virtual Scrolling QuikChat</h2>
+            <div id="chat2" class="chat-wrapper"></div>
+        </div>
+    </div>
+
+    <script src="../dist/quikchat.umd.js"></script>
+    <script>
+        let chat1, chat2;
+        let messageCount = 0;
+
+        // Initialize chats
+        function initChats() {
+            chat1 = new quikchat('#chat1', null, {
+                theme: 'quikchat-theme-light',
+                trackHistory: true,
+                virtualScrolling: false
+            });
+            
+            chat2 = new quikchat('#chat2', null, {
+                theme: 'quikchat-theme-light',
+                trackHistory: true,
+                virtualScrolling: true
+            });
+            
+            console.log('Chats initialized');
+            console.log('Chat1 virtual scrolling:', chat1.virtualScrollingEnabled);
+            console.log('Chat2 virtual scrolling:', chat2.virtualScrollingEnabled);
+        }
+
+        function addMessages(count) {
+            const startTime = performance.now();
+            const status = document.getElementById('status');
+            status.textContent = `Adding ${count} messages...`;
+            
+            for (let i = 0; i < count; i++) {
+                const content = `Message #${messageCount + i + 1}: This is a test message with some content to simulate real chat.`;
+                const user = i % 2 === 0 ? 'User' : 'Assistant';
+                const align = i % 2 === 0 ? 'right' : 'left';
+                
+                chat1.messageAddNew(content, user, align, 'user', false);
+                chat2.messageAddNew(content, user, align, 'user', false);
+            }
+            
+            messageCount += count;
+            
+            const endTime = performance.now();
+            const duration = (endTime - startTime).toFixed(2);
+            
+            status.textContent = `Added ${count} messages in ${duration}ms. Total: ${messageCount} messages`;
+            
+            // Check DOM nodes
+            setTimeout(() => {
+                const nodes1 = document.querySelector('#chat1 .quikchat-messages-area').querySelectorAll('.quikchat-message').length;
+                const nodes2 = document.querySelector('#chat2 .quikchat-messages-area').querySelectorAll('.quikchat-message').length;
+                console.log(`Standard chat DOM nodes: ${nodes1}`);
+                console.log(`Virtual scroll DOM nodes: ${nodes2}`);
+                status.textContent += ` | Standard DOM: ${nodes1} nodes | Virtual DOM: ${nodes2} nodes`;
+            }, 100);
+        }
+
+        function clearChats() {
+            if (chat1) chat1.historyClear();
+            if (chat2) chat2.historyClear();
+            messageCount = 0;
+            document.getElementById('status').textContent = 'Chats cleared';
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            initChats();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuikChat Performance Benchmark</title>
+    <link rel="stylesheet" href="../dist/quikchat.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .chat-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            height: 600px;
+        }
+        .chat-wrapper {
+            height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .controls {
+            grid-column: 1 / -1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .metrics {
+            grid-column: 1 / -1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .metric {
+            display: inline-block;
+            margin: 10px 20px 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .metric-unit {
+            font-size: 14px;
+            color: #666;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .status.running {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status.complete {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .test-config {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .comparison-table th,
+        .comparison-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .comparison-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        .better {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .worse {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <h2>Performance Benchmark Controls</h2>
+            <div id="versionInfo" style="color: #666; font-size: 0.9em; margin-bottom: 10px;">
+                Loading version info...
+            </div>
+            <div class="test-config">
+                <label>Number of messages: 
+                    <input type="number" id="messageCount" value="10000" min="100" max="50000" step="1000">
+                </label>
+                <label style="margin-left: 20px;">
+                    <input type="checkbox" id="enableAutoTest" checked>
+                    Auto-test both modes
+                </label>
+            </div>
+            <div>
+                <button onclick="runBenchmark('standard')">Run Standard Benchmark</button>
+                <button onclick="runBenchmark('scroll')">Run Scroll Test</button>
+                <button onclick="runBenchmark('update')">Run Update Test</button>
+                <button onclick="runBenchmark('memory')">Run Memory Test</button>
+                <button onclick="clearChats()">Clear All</button>
+            </div>
+            <div id="status" class="status"></div>
+        </div>
+
+        <div class="chat-container">
+            <h2>Standard QuikChat</h2>
+            <div id="chat1" class="chat-wrapper"></div>
+        </div>
+
+        <div class="chat-container">
+            <h2>Virtual Scrolling QuikChat</h2>
+            <div id="chat2" class="chat-wrapper"></div>
+        </div>
+
+        <div class="metrics">
+            <h2>Performance Metrics</h2>
+            <div id="metrics-display">
+                <div class="metric">
+                    <div class="metric-label">Initial Render</div>
+                    <div class="metric-value" id="renderTime">-</div>
+                    <div class="metric-unit">ms</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">DOM Nodes</div>
+                    <div class="metric-value" id="domNodes">-</div>
+                    <div class="metric-unit">nodes</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Memory Used</div>
+                    <div class="metric-value" id="memoryUsed">-</div>
+                    <div class="metric-unit">MB</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Scroll FPS</div>
+                    <div class="metric-value" id="scrollFps">-</div>
+                    <div class="metric-unit">fps</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Update Time</div>
+                    <div class="metric-value" id="updateTime">-</div>
+                    <div class="metric-unit">ms</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Messages/sec</div>
+                    <div class="metric-value" id="throughput">-</div>
+                    <div class="metric-unit">msg/s</div>
+                </div>
+            </div>
+            
+            <h3 style="margin-top: 30px;">Comparison Results</h3>
+            <table class="comparison-table" id="comparisonTable">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Standard</th>
+                        <th>Virtual Scrolling</th>
+                        <th>Difference</th>
+                        <th>Winner</th>
+                    </tr>
+                </thead>
+                <tbody id="comparisonBody">
+                    <tr>
+                        <td>Initial Render (ms)</td>
+                        <td id="std-render">-</td>
+                        <td id="vs-render">-</td>
+                        <td id="diff-render">-</td>
+                        <td id="win-render">-</td>
+                    </tr>
+                    <tr>
+                        <td>DOM Nodes</td>
+                        <td id="std-nodes">-</td>
+                        <td id="vs-nodes">-</td>
+                        <td id="diff-nodes">-</td>
+                        <td id="win-nodes">-</td>
+                    </tr>
+                    <tr>
+                        <td>Memory (MB)</td>
+                        <td id="std-memory">-</td>
+                        <td id="vs-memory">-</td>
+                        <td id="diff-memory">-</td>
+                        <td id="win-memory">-</td>
+                    </tr>
+                    <tr>
+                        <td>Scroll FPS</td>
+                        <td id="std-fps">-</td>
+                        <td id="vs-fps">-</td>
+                        <td id="diff-fps">-</td>
+                        <td id="win-fps">-</td>
+                    </tr>
+                    <tr>
+                        <td>Update Time (ms)</td>
+                        <td id="std-update">-</td>
+                        <td id="vs-update">-</td>
+                        <td id="diff-update">-</td>
+                        <td id="win-update">-</td>
+                    </tr>
+                    <tr>
+                        <td>Throughput (msg/s)</td>
+                        <td id="std-throughput">-</td>
+                        <td id="vs-throughput">-</td>
+                        <td id="diff-throughput">-</td>
+                        <td id="win-throughput">-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="../dist/quikchat.umd.js"></script>
+    <script>
+        let chat1, chat2;
+        let metrics = {
+            standard: {},
+            virtual: {}
+        };
+
+        // Initialize chats
+        function initChats() {
+            if (chat1) chat1.destroy?.() || (document.getElementById('chat1').innerHTML = '');
+            if (chat2) chat2.destroy?.() || (document.getElementById('chat2').innerHTML = '');
+            
+            chat1 = new quikchat('#chat1', null, {
+                theme: 'quikchat-theme-light',
+                trackHistory: true,
+                virtualScrolling: false
+            });
+            
+            // For now, also standard mode (virtual scrolling not integrated yet due to module loading)
+            chat2 = new quikchat('#chat2', null, {
+                theme: 'quikchat-theme-light',
+                trackHistory: true,
+                virtualScrolling: true  // Enable virtual scrolling
+            });
+        }
+
+        // Generate sample messages
+        function generateMessages(count) {
+            const messages = [];
+            const users = ['Alice', 'Bob', 'Charlie', 'System', 'Assistant'];
+            const sampleTexts = [
+                'This is a short message.',
+                'This is a medium length message that contains more text to simulate real chat content.',
+                'This is a longer message that simulates what a real user might type when they are explaining something in detail. It contains multiple sentences and represents a more realistic chat scenario where users provide detailed explanations or descriptions.',
+                'Quick reply!',
+                'I agree with that point. Let me add some additional context here...',
+                '<b>Formatted message</b> with <i>HTML</i> content and <code>code blocks</code>',
+                'Message with emoji 😊 and special characters: @#$%^&*()',
+            ];
+            
+            for (let i = 0; i < count; i++) {
+                messages.push({
+                    content: sampleTexts[i % sampleTexts.length] + ` [Message #${i + 1}]`,
+                    userString: users[i % users.length],
+                    align: i % 2 === 0 ? 'left' : 'right',
+                    role: i % 3 === 0 ? 'assistant' : 'user'
+                });
+            }
+            return messages;
+        }
+
+        // Measure performance
+        async function measurePerformance(chat, messages, testType) {
+            const startMemory = performance.memory ? performance.memory.usedJSHeapSize : 0;
+            const container = chat._messagesArea || chat.container;
+            
+            updateStatus(`Running ${testType} test with ${messages.length} messages...`, 'running');
+            
+            // Clear chat
+            chat.historyClear();
+            await delay(100);
+            
+            // Measure initial render time
+            const renderStart = performance.now();
+            
+            // Add messages in batches to prevent hanging
+            const batchSize = 100;
+            const totalMessages = messages.length;
+            console.log(`Starting to add ${totalMessages} messages in batches of ${batchSize}...`);
+            
+            for (let i = 0; i < totalMessages; i += batchSize) {
+                const batch = messages.slice(i, Math.min(i + batchSize, totalMessages));
+                const progress = Math.round((i / totalMessages) * 100);
+                
+                // Update status with progress
+                updateStatus(`Adding messages: ${i}/${totalMessages} (${progress}%)...`, 'running');
+                console.log(`Processing batch: ${i}-${Math.min(i + batchSize, totalMessages)} of ${totalMessages}`);
+                
+                // Add batch of messages
+                for (const msg of batch) {
+                    chat.messageAddNew(msg.content, msg.userString, msg.align, msg.role, false);
+                }
+                
+                // Allow browser to breathe and update UI
+                if (i + batchSize < totalMessages) {
+                    await delay(10);
+                }
+            }
+            
+            const renderEnd = performance.now();
+            const renderTime = renderEnd - renderStart;
+            console.log(`Completed adding ${totalMessages} messages in ${renderTime.toFixed(2)}ms`);
+            
+            // Wait for rendering to complete
+            await delay(100);
+            
+            // Count DOM nodes - for virtual scrolling, count rendered elements
+            let domNodes;
+            if (chat.virtualScroller) {
+                // For virtual scrolling, count the actual rendered elements
+                domNodes = chat.virtualScroller.renderedElements.size + 
+                          container.querySelectorAll('.quikchat-message').length;
+                // Ensure virtual scroller shows some messages
+                chat.virtualScroller.container.scrollTop = 0;
+                chat.virtualScroller._updateVisibleRange();
+                chat.virtualScroller._renderVisibleItems();
+                await delay(100);
+                domNodes = container.querySelectorAll('.quikchat-message').length;
+            } else {
+                domNodes = container.querySelectorAll('*').length;
+            }
+            
+            // Measure memory
+            const endMemory = performance.memory ? performance.memory.usedJSHeapSize : 0;
+            const memoryUsed = (endMemory - startMemory) / (1024 * 1024);
+            
+            // Measure scroll performance
+            let scrollFps = 0;
+            if (testType === 'scroll') {
+                scrollFps = await measureScrollPerformance(container);
+            }
+            
+            // Measure update performance
+            let updateTime = 0;
+            if (testType === 'update') {
+                updateTime = await measureUpdatePerformance(chat, messages.length);
+            }
+            
+            // Calculate throughput
+            const throughput = Math.round(messages.length / (renderTime / 1000));
+            
+            return {
+                renderTime: renderTime.toFixed(2),
+                domNodes,
+                memoryUsed: memoryUsed.toFixed(2),
+                scrollFps: scrollFps.toFixed(1),
+                updateTime: updateTime.toFixed(2),
+                throughput,
+                messageCount: messages.length
+            };
+        }
+
+        // Measure scroll performance
+        async function measureScrollPerformance(container) {
+            const frames = [];
+            let lastTime = performance.now();
+            let scrolling = true;
+            
+            const measureFrame = () => {
+                if (!scrolling) return;
+                
+                const currentTime = performance.now();
+                const deltaTime = currentTime - lastTime;
+                if (deltaTime > 0) {
+                    frames.push(1000 / deltaTime);
+                }
+                lastTime = currentTime;
+                requestAnimationFrame(measureFrame);
+            };
+            
+            measureFrame();
+            
+            // Perform scroll test
+            container.scrollTop = 0;
+            await delay(100);
+            
+            // Smooth scroll to bottom
+            const scrollStep = container.scrollHeight / 30;
+            for (let i = 0; i < 30; i++) {
+                container.scrollTop += scrollStep;
+                await delay(16); // ~60fps timing
+            }
+            
+            scrolling = false;
+            
+            // Calculate average FPS
+            if (frames.length > 0) {
+                const avgFps = frames.reduce((a, b) => a + b, 0) / frames.length;
+                return Math.min(avgFps, 60); // Cap at 60fps
+            }
+            return 0;
+        }
+
+        // Measure update performance
+        async function measureUpdatePerformance(chat, messageCount) {
+            const updateStart = performance.now();
+            
+            // Update last 10 messages
+            const updates = Math.min(10, messageCount);
+            for (let i = 0; i < updates; i++) {
+                const msgId = messageCount - i - 1;
+                chat.messageAppendContent(msgId, ' [UPDATED]');
+            }
+            
+            const updateEnd = performance.now();
+            return updateEnd - updateStart;
+        }
+
+        // Run benchmark
+        async function runBenchmark(testType) {
+            initChats();
+            const messageCount = parseInt(document.getElementById('messageCount').value);
+            const messages = generateMessages(messageCount);
+            const autoTest = document.getElementById('enableAutoTest').checked;
+            
+            try {
+                // Run standard benchmark
+                updateStatus(`Testing Standard Mode with ${messageCount} messages...`, 'running');
+                const standardMetrics = await measurePerformance(chat1, messages, testType);
+                metrics.standard = standardMetrics;
+                
+                if (autoTest) {
+                    // Run virtual scrolling benchmark
+                    updateStatus(`Testing Virtual Scrolling Mode with ${messageCount} messages...`, 'running');
+                    const virtualMetrics = await measurePerformance(chat2, messages, testType);
+                    metrics.virtual = virtualMetrics;
+                    
+                    // Update comparison table
+                    updateComparisonTable(standardMetrics, virtualMetrics);
+                } else {
+                    // Update display with standard only
+                    updateMetricsDisplay(standardMetrics);
+                }
+                
+                updateStatus(`${testType} benchmark complete! Tested with ${messageCount} messages.`, 'complete');
+                
+                // Log detailed results
+                console.log('Benchmark Results:', {
+                    testType,
+                    messageCount,
+                    standard: metrics.standard,
+                    virtual: metrics.virtual
+                });
+                
+            } catch (error) {
+                updateStatus(`Error: ${error.message}`, 'error');
+                console.error('Benchmark error:', error);
+            }
+        }
+        
+        // Update comparison table
+        function updateComparisonTable(standard, virtual) {
+            // Helper function to determine winner
+            const getWinner = (std, virt, lowerBetter = true) => {
+                const stdVal = parseFloat(std);
+                const virtVal = parseFloat(virt);
+                if (isNaN(stdVal) || isNaN(virtVal)) return '-';
+                
+                if (lowerBetter) {
+                    if (stdVal < virtVal) return '✅ Standard';
+                    if (virtVal < stdVal) return '✅ Virtual';
+                } else {
+                    if (stdVal > virtVal) return '✅ Standard';
+                    if (virtVal > stdVal) return '✅ Virtual';
+                }
+                return '🤝 Tie';
+            };
+            
+            // Helper function to calculate difference
+            const getDiff = (std, virt, suffix = '') => {
+                const stdVal = parseFloat(std);
+                const virtVal = parseFloat(virt);
+                if (isNaN(stdVal) || isNaN(virtVal)) return '-';
+                
+                const diff = virtVal - stdVal;
+                const percent = ((diff / stdVal) * 100).toFixed(1);
+                const sign = diff > 0 ? '+' : '';
+                return `${sign}${diff.toFixed(2)}${suffix} (${sign}${percent}%)`;
+            };
+            
+            // Update render time
+            document.getElementById('std-render').textContent = standard.renderTime;
+            document.getElementById('vs-render').textContent = virtual.renderTime;
+            document.getElementById('diff-render').textContent = getDiff(standard.renderTime, virtual.renderTime, 'ms');
+            document.getElementById('win-render').textContent = getWinner(standard.renderTime, virtual.renderTime, true);
+            
+            // Update DOM nodes
+            document.getElementById('std-nodes').textContent = standard.domNodes;
+            document.getElementById('vs-nodes').textContent = virtual.domNodes;
+            document.getElementById('diff-nodes').textContent = getDiff(standard.domNodes, virtual.domNodes);
+            document.getElementById('win-nodes').textContent = getWinner(standard.domNodes, virtual.domNodes, true);
+            
+            // Update memory
+            document.getElementById('std-memory').textContent = standard.memoryUsed;
+            document.getElementById('vs-memory').textContent = virtual.memoryUsed;
+            document.getElementById('diff-memory').textContent = getDiff(standard.memoryUsed, virtual.memoryUsed, 'MB');
+            document.getElementById('win-memory').textContent = getWinner(standard.memoryUsed, virtual.memoryUsed, true);
+            
+            // Update FPS
+            document.getElementById('std-fps').textContent = standard.scrollFps;
+            document.getElementById('vs-fps').textContent = virtual.scrollFps;
+            document.getElementById('diff-fps').textContent = getDiff(standard.scrollFps, virtual.scrollFps, 'fps');
+            document.getElementById('win-fps').textContent = getWinner(standard.scrollFps, virtual.scrollFps, false);
+            
+            // Update update time
+            document.getElementById('std-update').textContent = standard.updateTime;
+            document.getElementById('vs-update').textContent = virtual.updateTime;
+            document.getElementById('diff-update').textContent = getDiff(standard.updateTime, virtual.updateTime, 'ms');
+            document.getElementById('win-update').textContent = getWinner(standard.updateTime, virtual.updateTime, true);
+            
+            // Update throughput
+            document.getElementById('std-throughput').textContent = standard.throughput;
+            document.getElementById('vs-throughput').textContent = virtual.throughput;
+            document.getElementById('diff-throughput').textContent = getDiff(standard.throughput, virtual.throughput);
+            document.getElementById('win-throughput').textContent = getWinner(standard.throughput, virtual.throughput, false);
+            
+            // Also update the main metrics display with standard values
+            updateMetricsDisplay(standard);
+        }
+
+        // Update metrics display
+        function updateMetricsDisplay(data) {
+            document.getElementById('renderTime').textContent = data.renderTime || '-';
+            document.getElementById('domNodes').textContent = data.domNodes || '-';
+            document.getElementById('memoryUsed').textContent = data.memoryUsed || '-';
+            document.getElementById('scrollFps').textContent = data.scrollFps || '-';
+            document.getElementById('updateTime').textContent = data.updateTime || '-';
+            document.getElementById('throughput').textContent = data.throughput || '-';
+        }
+
+        // Update status
+        function updateStatus(message, type = '') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        // Clear chats
+        function clearChats() {
+            if (chat1) chat1.historyClear();
+            if (chat2) chat2.historyClear();
+            updateMetricsDisplay({});
+            updateStatus('Chats cleared', 'complete');
+        }
+
+        // Utility delay function
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            initChats();
+            updateStatus('Ready to run benchmarks', 'complete');
+            
+            // Display version and virtual scrolling info
+            const versionInfo = quikchat.version();
+            const vsConfig1 = chat1.getVirtualScrollingConfig();
+            const vsConfig2 = chat2.getVirtualScrollingConfig();
+            
+            document.getElementById('versionInfo').innerHTML = `
+                <strong>QuikChat Version:</strong> ${versionInfo.version} | 
+                <strong>Chat 1 (Standard):</strong> Virtual Scrolling ${vsConfig1.enabled ? 'Enabled' : 'Disabled'} | 
+                <strong>Chat 2 (Virtual):</strong> Virtual Scrolling ${vsConfig2.enabled ? 'Enabled' : 'Disabled'}
+            `;
+        });
+    </script>
+</body>
+</html>

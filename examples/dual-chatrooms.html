@@ -37,6 +37,9 @@
     <div class="container">
         <br>
         <h2 class="">Dual Chat Containers</h2>
+        <div id="versionInfo" style="color: #666; font-size: 0.9em; margin-bottom: 1rem;">
+            <!-- Version will be displayed here -->
+        </div>
         <p>These chat containers can send messages to each other showing that each chat control is a separate instance. </p>
 
         <div class="row">
@@ -81,6 +84,10 @@
 
         chat2.messageAddNew("Hello, Pat!","Sue Smith","left"); // writes to chat2
         chat2.messageAddNew("Hello, Sue!","Pat Park","right");
+        
+        // Display QuikChat version
+        const versionInfo = quikchat.version();
+        document.getElementById('versionInfo').innerHTML = `QuikChat Version: ${versionInfo.version}`;
 
         
         

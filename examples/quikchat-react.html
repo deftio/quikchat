@@ -39,6 +39,9 @@
 </head>
 <body>
     <h2>QuikChat React Wrapper Example</h2>
+    <div id="versionInfo" style="color: #666; font-size: 0.9em; margin-bottom: 1rem;">
+        <!-- Version will be displayed here -->
+    </div>
     <div id="root"></div>
 
     <script type="text/babel">
@@ -95,6 +98,14 @@
         };
 
         ReactDOM.render(React.createElement(App), document.getElementById('root'));
+        
+        // Display QuikChat version (need to wait for window.quikchat to be available)
+        window.addEventListener('load', function() {
+            if (window.quikchat) {
+                const versionInfo = window.quikchat.version();
+                document.getElementById('versionInfo').innerHTML = `QuikChat Version: ${versionInfo.version}`;
+            }
+        });
     </script>
 </body>
 </html>

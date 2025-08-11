@@ -57,10 +57,10 @@ This document outlines the standard process for developing features and creating
    - Be technical and factual
 
 2. **Files to update:**
-   - `docs/release-notes.md` - Add new version section
+   - `docs/release-notes.md` - Add new version section with completed features
    - `README.md` - Update "What's New" section if needed
    - `docs/API-REFERENCE.md` - Document new APIs
-   - `dev/todo.md` - Move completed items to "Completed" section
+   - `dev/todo.md` - Remove completed items (do NOT add completed features here)
 
 ### 3. Version Finalization
 
@@ -200,6 +200,8 @@ If doing manually:
 - **ENSURE** version numbers don't conflict
 - **TEST** examples manually before release
 - **MAINTAIN** test coverage above 80%
+- **COMPLETED FEATURES** go in `docs/release-notes.md`, NOT in `dev/todo.md`
+- **TODO.MD** is for tracking future work only - remove items as they're completed
 
 ---
-*Last updated: 2025-08-10*
+*Last updated: 2025-08-11*

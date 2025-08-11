@@ -1,20 +1,5 @@
 # QuikChat Development Roadmap
 
-## 🚀 Completed Features
-
-### v1.1.16-dev1 (2025-08-10)
-- [x] **Virtual Scrolling**: High-performance rendering for 10,000+ messages
-  - Zero-dependency implementation
-  - Dynamic height measurement for variable-length messages
-  - 38ms render time for 10,000 messages
-  - See [docs/virtual_scrolling.md](../docs/virtual_scrolling.md)
-
-### v1.1.15 (2025-08-10)
-- [x] **Pagination**: historyGetPage() with full pagination support
-- [x] **Message Search**: historySearch() with text, user, role, tags filters
-- [x] **Enhanced Callbacks**: onMessageAppend, onMessageReplace, onMessageDelete
-- [x] **Smart Scroll**: Fixed Issue #1 - respects user scroll position
-
 ## 🎯 Critical - Production Readiness
 
 - [ ] **Accessibility**: ARIA labels, keyboard navigation, screen reader support
@@ -88,5 +73,4 @@
 - **i18n** - No internationalization support
 
 ---
-*Last updated: 2025-08-10*
-*Current version: 1.1.16-dev1*
+*Last updated: 2025-08-11*

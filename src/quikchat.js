@@ -1116,15 +1116,9 @@ class quikchat {
      * Scrolls the messages area to the bottom.
      */
     messageScrollToBottom() {
-        if (this.virtualScroller) {
-            // For virtual scrolling, scroll to the maximum scroll position
-            this._messagesArea.scrollTop = this._messagesArea.scrollHeight - this._messagesArea.clientHeight;
-        } else {
-            // For regular DOM, use the last element
-            if (this._messagesArea.lastElementChild) {
-                this._messagesArea.lastElementChild.scrollIntoView();
-            }
-        }
+        // Always use scrollTop to avoid page jumping
+        // This ensures only the chat container scrolls, not the entire page
+        this._messagesArea.scrollTop = this._messagesArea.scrollHeight;
     }
 
     /**

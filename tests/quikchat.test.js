@@ -1,10 +1,16 @@
 import quikchat from '../src/quikchat';
-// Prevent scrollIntoView error in jsdom - track calls for testing
-let scrollIntoViewCalls = 0;
-Element.prototype.scrollIntoView = function() {
-    scrollIntoViewCalls++;
-    this._scrolledIntoView = true;
-};
+// Mock scrollHeight and scrollTop for testing scroll behavior
+Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
+    configurable: true,
+    get: function() { return this._scrollHeight || 1000; },
+    set: function(val) { this._scrollHeight = val; }
+});
+
+Object.defineProperty(HTMLElement.prototype, 'scrollTop', {
+    configurable: true,
+    get: function() { return this._scrollTop || 0; },
+    set: function(val) { this._scrollTop = val; }
+});
 
 describe('quikchat', () => {
     let parentElement;
@@ -501,19 +507,22 @@ describe('quikchat', () => {
 
     describe('Scroll Behavior', () => {
         beforeEach(() => {
-            scrollIntoViewCalls = 0;
+            // Reset scroll position for each test
+            chatInstance._messagesArea.scrollTop = 0;
+            chatInstance._messagesArea.scrollHeight = 1000;
         });
 
         test('should scroll to bottom when scrollIntoView is true', () => {
-            const initialCalls = scrollIntoViewCalls;
             chatInstance.messageAddNew('Test message', 'User', 'left', 'user', true);
-            expect(scrollIntoViewCalls).toBeGreaterThan(initialCalls);
+            // Should scroll to bottom (scrollTop should equal scrollHeight)
+            expect(chatInstance._messagesArea.scrollTop).toBe(chatInstance._messagesArea.scrollHeight);
         });
 
         test('should NOT scroll when scrollIntoView is false', () => {
-            const initialCalls = scrollIntoViewCalls;
+            chatInstance._messagesArea.scrollTop = 100;
+            const initialScrollTop = chatInstance._messagesArea.scrollTop;
             chatInstance.messageAddNew('Test message', 'User', 'left', 'user', false);
-            expect(scrollIntoViewCalls).toBe(initialCalls);
+            expect(chatInstance._messagesArea.scrollTop).toBe(initialScrollTop);
         });
 
         test('should provide smart scroll option to only scroll if near bottom', () => {
@@ -524,25 +533,27 @@ describe('quikchat', () => {
             
             // Simulate user scrolled up
             chatInstance.userScrolledUp = true;
-            const initialCalls = scrollIntoViewCalls;
+            chatInstance._messagesArea.scrollTop = 100;
+            const initialScrollTop = chatInstance._messagesArea.scrollTop;
             
             // Adding a message with smart scroll should not scroll
             chatInstance.messageAddNew('New message', 'User', 'left', 'user', 'smart');
-            expect(scrollIntoViewCalls).toBe(initialCalls);
+            expect(chatInstance._messagesArea.scrollTop).toBe(initialScrollTop);
             
             // Simulate user near bottom
             chatInstance.userScrolledUp = false;
             
             // Adding a message with smart scroll should scroll
             chatInstance.messageAddNew('Another message', 'User', 'left', 'user', 'smart');
-            expect(scrollIntoViewCalls).toBeGreaterThan(initialCalls);
+            expect(chatInstance._messagesArea.scrollTop).toBe(chatInstance._messagesArea.scrollHeight);
         });
 
         test('messageScrollToBottom should always scroll', () => {
-            const initialCalls = scrollIntoViewCalls;
+            chatInstance._messagesArea.scrollTop = 100;
+            chatInstance._messagesArea.scrollHeight = 1000;
             chatInstance.messageAddNew('Test', 'User', 'left');
             chatInstance.messageScrollToBottom();
-            expect(scrollIntoViewCalls).toBeGreaterThan(initialCalls);
+            expect(chatInstance._messagesArea.scrollTop).toBe(chatInstance._messagesArea.scrollHeight);
         });
     });
 

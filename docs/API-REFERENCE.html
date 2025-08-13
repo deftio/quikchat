@@ -65,7 +65,7 @@
 <body>
     <article class="markdown-body">
         <h1>QuikChat API Reference</h1>
-<p>Complete technical reference for QuikChat v1.1.16+ - a zero-dependency JavaScript chat widget.</p>
+<p>Complete technical reference for QuikChat v1.1.17+ - a zero-dependency JavaScript chat widget.</p>
 <h2>Table of Contents</h2>
 <ol>
 <li><a href="#constructor">Constructor</a></li>
@@ -73,6 +73,8 @@
 <li><a href="#visibility-controls">Visibility Controls</a></li>
 <li><a href="#history-management">History Management</a></li>
 <li><a href="#ui-controls">UI Controls</a></li>
+<li><a href="#security--sanitization">Security &amp; Sanitization</a></li>
+<li><a href="#internationalization-i18n">Internationalization (i18n)</a></li>
 <li><a href="#static-methods">Static Methods</a></li>
 <li><a href="#events--callbacks">Events &amp; Callbacks</a></li>
 </ol>
@@ -199,6 +201,34 @@
 <td><code>500</code></td>
 <td>Number of messages before virtual scrolling activates</td>
 <td>v1.1.16+</td>
+</tr>
+<tr>
+<td><code>sanitizer</code></td>
+<td>function | null</td>
+<td><code>null</code></td>
+<td>Content sanitization function to prevent XSS</td>
+<td>v1.1.17+</td>
+</tr>
+<tr>
+<td><code>lang</code></td>
+<td>string</td>
+<td><code>&#39;en&#39;</code></td>
+<td>Language code for UI elements</td>
+<td>v1.1.17+</td>
+</tr>
+<tr>
+<td><code>dir</code></td>
+<td>string</td>
+<td><code>&#39;ltr&#39;</code></td>
+<td>Text direction: <code>&#39;ltr&#39;</code> or <code>&#39;rtl&#39;</code></td>
+<td>v1.1.17+</td>
+</tr>
+<tr>
+<td><code>translations</code></td>
+<td>object</td>
+<td><code>{}</code></td>
+<td>Custom translations for UI elements</td>
+<td>v1.1.17+</td>
 </tr>
 </tbody></table>
 <p><strong>Example:</strong></p>
@@ -947,6 +977,110 @@ chat.inputAreaHide();
 <p><strong>Example:</strong></p>
 <pre><code class="language-javascript">chat.messageScrollToBottom();
 </code></pre>
+<hr>
+<h2>Security &amp; Sanitization</h2>
+<h3><code>setSanitizer(sanitizer)</code></h3>
+<p>Sets or updates the content sanitization function.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>sanitizer</code></td>
+<td>function | null</td>
+<td>Function to sanitize content or null to disable</td>
+</tr>
+</tbody></table>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">// Use built-in HTML escaping
+chat.setSanitizer(quikchat.sanitizers.escapeHTML);
+
+// Use built-in HTML stripping
+chat.setSanitizer(quikchat.sanitizers.stripHTML);
+
+// Custom sanitizer
+chat.setSanitizer((content) =&gt; DOMPurify.sanitize(content));
+
+// Disable sanitization
+chat.setSanitizer(null);
+</code></pre>
+<h3><code>getSanitizer()</code></h3>
+<p>Gets the current sanitization function.</p>
+<p><strong>Returns:</strong> <code>function | null</code> - Current sanitizer or null</p>
+<h3>Built-in Sanitizers</h3>
+<h4><code>quikchat.sanitizers.escapeHTML</code></h4>
+<p>Escapes HTML tags to prevent XSS attacks.</p>
+<pre><code class="language-javascript">// Input: &lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;
+// Output: &amp;lt;script&amp;gt;alert(&#39;xss&#39;)&amp;lt;/script&amp;gt;
+</code></pre>
+<h4><code>quikchat.sanitizers.stripHTML</code></h4>
+<p>Removes all HTML tags from content.</p>
+<pre><code class="language-javascript">// Input: &lt;b&gt;Hello&lt;/b&gt; &lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;
+// Output: Hello
+</code></pre>
+<hr>
+<h2>Internationalization (i18n)</h2>
+<h3><code>setLanguage(lang, translations)</code></h3>
+<p>Sets the UI language and optionally adds translations.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>lang</code></td>
+<td>string</td>
+<td>Language code (e.g., &#39;en&#39;, &#39;es&#39;, &#39;ar&#39;)</td>
+</tr>
+<tr>
+<td><code>translations</code></td>
+<td>object</td>
+<td>Optional translations for the language</td>
+</tr>
+</tbody></table>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">chat.setLanguage(&#39;es&#39;, {
+    sendButton: &#39;Enviar&#39;,
+    inputPlaceholder: &#39;Escribe un mensaje...&#39;,
+    titleDefault: &#39;Chat&#39;
+});
+</code></pre>
+<h3><code>getLanguage()</code></h3>
+<p>Gets the current language code.</p>
+<p><strong>Returns:</strong> <code>string</code> - Current language code</p>
+<h3><code>setDirection(dir)</code></h3>
+<p>Sets text direction for RTL/LTR languages.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>dir</code></td>
+<td>string</td>
+<td>Direction: &#39;ltr&#39; or &#39;rtl&#39;</td>
+</tr>
+</tbody></table>
+<p><strong>Example:</strong></p>
+<pre><code class="language-javascript">// For Arabic or Hebrew
+chat.setDirection(&#39;rtl&#39;);
+</code></pre>
+<h3><code>getDirection()</code></h3>
+<p>Gets the current text direction.</p>
+<p><strong>Returns:</strong> <code>string</code> - Current direction (&#39;ltr&#39; or &#39;rtl&#39;)</p>
 <hr>
 <h2>Static Methods</h2>
 <h3><code>quikchat.version()</code></h3>

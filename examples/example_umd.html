@@ -5,62 +5,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuikChatJS</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
-        rel="stylesheet">
     <link
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90' style='fill:blue'>&#x1F4AC;</text></svg>"
         rel="icon" />
 
     <link href="../dist/quikchat.css" rel="stylesheet" />
+    <link href="common-example-styles.css" rel="stylesheet" />
     <script src="../dist/quikchat.umd.min.js"></script>
     <style>
-        body {
-            margin: 0;
-            padding: 5%;
-            height: 100%;
-            width: 100%;
-            font-family: 'Open Sans', sans-serif;
-            font-weight: 300;
-            box-sizing: border-box;
-        }
-
-        .chatContainer {
+        .chat-container {
             height: 45vh;
-            width: 100%;
-            margin: 0 auto;
-        }
-
-        /* these are not part of the widget, just for the demo test */
-        .system-btn {
-            margin-top: 2px;
-            margin-bottom:  2px;
-            padding: 12px 8px;
-            background-color: #443491;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            white-space: nowrap;
         }
     </style>
 </head>
 
 <body>
-    <h2>Quikchatjs Simple Example (UMD)</h2>
-    <div id="versionInfo" style="color: #666; font-size: 0.9em; margin-bottom: 1rem;">
-        <!-- Version will be displayed here -->
+    <div class="example-container">
+        <div class="example-header">
+            <h1>QuikChatJS Simple Example (UMD)</h1>
+            <div class="version" id="version-info"></div>
+            <p class="description">This themeable chat widget with a title area, messages area, and input area.</p>
+        </div>
+        <div class="example-content">
+            <div class="controls">
+                <h3>Demo Controls</h3>
+                <div class="control-group">
+                    <button onclick="chatBox.titleAreaToggle()">Toggle Title</button>
+                    <button onclick="chatBox.inputAreaToggle()">Toggle Input</button>
+                    <button id="themeBtn">Change Themes</button>
+                    <button onclick="chatBox.messagesAreaAlternateColorsToggle()">Alternating Colors</button>
+                </div>
+            </div>
+            <div class="chat-wrapper">
+                <h2>Chat Widget</h2>
+                <div class="chat-container" id="chatContainerInstance"></div>
+            </div>
+        </div>
     </div>
-    <p>This themeable chat widget with a title area, messages area, and input area.</p>
-    <div class="chatContainer" id="chatContainerInstance"></div>
-    <br>
-    <br>
-    <button class="system-btn" onclick="chatBox.titleAreaToggle()">Toggle Title</button>
-    <button class="system-btn" onclick="chatBox.inputAreaToggle()">Toggle Input</button>
-    <button class="system-btn" id="themeBtn">Change Themes</button>
-    <button class="system-btn" onclick="chatBox.messagesAreaAlternateColorsToggle()">Alternating Colors</button>
-    <br>
     <script >
         document.addEventListener('DOMContentLoaded', () => {
             const parentDiv = document.querySelector('#chatContainerInstance');
@@ -85,7 +66,7 @@
             
             // Display QuikChat version
             const versionInfo = quikchat.version();
-            document.getElementById('versionInfo').innerHTML = `QuikChat Version: ${versionInfo.version}`;
+            document.getElementById('version-info').textContent = 'QuikChat v' + versionInfo.version;
 
         });
 

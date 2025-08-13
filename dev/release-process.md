@@ -58,7 +58,7 @@ This document outlines the standard process for developing features and creating
 
 2. **Files to update:**
    - `docs/release-notes.md` - Add new version section with completed features
-   - `README.md` - Update "What's New" section if needed
+   - `README.md` - update README.md so its current with all features but don't add release note specific items here.
    - `docs/API-REFERENCE.md` - Document new APIs
    - `dev/todo.md` - Remove completed items (do NOT add completed features here)
 

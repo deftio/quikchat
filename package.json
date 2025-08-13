@@ -1,6 +1,6 @@
 {
   "name": "quikchat",
-  "version": "1.1.17-dev1",
+  "version": "1.1.17",
   "description": "quikchat is a simple vanilla (no dependancies) JavaScript chat control for browsers ",
   "author": "deftio (https://github.com/deftio",
   "license": "BSD-2-Clause",
@@ -92,6 +92,7 @@
     "playwright": "^1.54.2",
     "rollup": "^4.18.1",
     "rollup-plugin-css-only": "^4.5.2",
-    "rollup-plugin-postcss": "^4.0.2"
+    "rollup-plugin-postcss": "^4.0.2",
+    "typescript": "^5.9.2"
   }
 }

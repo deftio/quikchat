@@ -90,7 +90,7 @@
   // This file is automatically updated by tools/updateVersion.js
 
   var quikchatVersion = {
-    version: "1.1.17-dev1",
+    version: "1.1.17",
     license: "BSD-2",
     url: "https://github/deftio/quikchat",
     fun: true

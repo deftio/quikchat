@@ -1,6 +1,6 @@
 # QuikChat API Reference
 
-Complete technical reference for QuikChat v1.1.16+ - a zero-dependency JavaScript chat widget.
+Complete technical reference for QuikChat v1.1.17+ - a zero-dependency JavaScript chat widget.
 
 ## Table of Contents
 
@@ -9,8 +9,10 @@ Complete technical reference for QuikChat v1.1.16+ - a zero-dependency JavaScrip
 3. [Visibility Controls](#visibility-controls)
 4. [History Management](#history-management)
 5. [UI Controls](#ui-controls)
-6. [Static Methods](#static-methods)
-7. [Events & Callbacks](#events--callbacks)
+6. [Security & Sanitization](#security--sanitization)
+7. [Internationalization (i18n)](#internationalization-i18n)
+8. [Static Methods](#static-methods)
+9. [Events & Callbacks](#events--callbacks)
 
 ---
 
@@ -44,6 +46,10 @@ Creates a new QuikChat instance.
 | `instanceClass` | string | `''` | Custom CSS class for multi-instance scoping | v1.1.14+ |
 | `virtualScrolling` | boolean | `true` | Enable virtual scrolling for large message volumes | v1.1.16+ |
 | `virtualScrollingThreshold` | number | `500` | Number of messages before virtual scrolling activates | v1.1.16+ |
+| `sanitizer` | function \| null | `null` | Content sanitization function to prevent XSS | v1.1.17+ |
+| `lang` | string | `'en'` | Language code for UI elements | v1.1.17+ |
+| `dir` | string | `'ltr'` | Text direction: `'ltr'` or `'rtl'` | v1.1.17+ |
+| `translations` | object | `{}` | Custom translations for UI elements | v1.1.17+ |
 
 **Example:**
 ```javascript
@@ -595,6 +601,111 @@ Scrolls the message area to show the latest message.
 ```javascript
 chat.messageScrollToBottom();
 ```
+
+---
+
+## Security & Sanitization
+
+### `setSanitizer(sanitizer)`
+
+Sets or updates the content sanitization function.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `sanitizer` | function \| null | Function to sanitize content or null to disable |
+
+**Example:**
+```javascript
+// Use built-in HTML escaping
+chat.setSanitizer(quikchat.sanitizers.escapeHTML);
+
+// Use built-in HTML stripping
+chat.setSanitizer(quikchat.sanitizers.stripHTML);
+
+// Custom sanitizer
+chat.setSanitizer((content) => DOMPurify.sanitize(content));
+
+// Disable sanitization
+chat.setSanitizer(null);
+```
+
+### `getSanitizer()`
+
+Gets the current sanitization function.
+
+**Returns:** `function | null` - Current sanitizer or null
+
+### Built-in Sanitizers
+
+#### `quikchat.sanitizers.escapeHTML`
+Escapes HTML tags to prevent XSS attacks.
+
+```javascript
+// Input: <script>alert('xss')</script>
+// Output: &lt;script&gt;alert('xss')&lt;/script&gt;
+```
+
+#### `quikchat.sanitizers.stripHTML`
+Removes all HTML tags from content.
+
+```javascript
+// Input: <b>Hello</b> <script>alert('xss')</script>
+// Output: Hello
+```
+
+---
+
+## Internationalization (i18n)
+
+### `setLanguage(lang, translations)`
+
+Sets the UI language and optionally adds translations.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `lang` | string | Language code (e.g., 'en', 'es', 'ar') |
+| `translations` | object | Optional translations for the language |
+
+**Example:**
+```javascript
+chat.setLanguage('es', {
+    sendButton: 'Enviar',
+    inputPlaceholder: 'Escribe un mensaje...',
+    titleDefault: 'Chat'
+});
+```
+
+### `getLanguage()`
+
+Gets the current language code.
+
+**Returns:** `string` - Current language code
+
+### `setDirection(dir)`
+
+Sets text direction for RTL/LTR languages.
+
+**Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `dir` | string | Direction: 'ltr' or 'rtl' |
+
+**Example:**
+```javascript
+// For Arabic or Hebrew
+chat.setDirection('rtl');
+```
+
+### `getDirection()`
+
+Gets the current text direction.
+
+**Returns:** `string` - Current direction ('ltr' or 'rtl')
 
 ---
 

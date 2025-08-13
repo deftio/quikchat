@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90' style='fill:blue'>&#x1F4AC;</text></svg>"
+        rel="icon" />
     <title>QuikChat Sanitizer Performance Test</title>
     <link rel="stylesheet" href="../dist/quikchat.min.css">
     <style>
@@ -138,11 +141,21 @@
     <script src="../dist/quikchat.umd.min.js"></script>
     <script>
         // Initialize chats
-        const chat1 = new quikchat('#chat1', null, {
+        const chat1 = new quikchat('#chat1', function(instance, message) {
+            instance.messageAddNew(message, 'User', 'right');
+            setTimeout(function() {
+                instance.messageAddNew('Response: ' + message, 'Bot', 'left');
+            }, 500);
+        }, {
             virtualScrolling: false  // Disable to measure pure sanitization impact
         });
         
-        const chat2 = new quikchat('#chat2', null, {
+        const chat2 = new quikchat('#chat2', function(instance, message) {
+            instance.messageAddNew(message, 'User', 'right');
+            setTimeout(function() {
+                instance.messageAddNew('Response: ' + message, 'Bot', 'left');
+            }, 500);
+        }, {
             sanitizer: quikchat.sanitizers.escapeHTML,
             virtualScrolling: false  // Disable to measure pure sanitization impact
         });

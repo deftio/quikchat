@@ -65,23 +65,34 @@
 <body>
     <article class="markdown-body">
         <h1>Release Notes</h1>
-<h2>1.1.17 (Development)</h2>
-<h3>New Features</h3>
-<h4>Accessibility (ARIA) Support</h4>
+<h2>1.1.17</h2>
+<h3>Content Sanitization for Security</h3>
+<ul>
+<li><strong>XSS Protection</strong>: Built-in content sanitization to prevent cross-site scripting attacks</li>
+<li><strong>Opt-in by default</strong>: Maintains backward compatibility (sanitization disabled by default)</li>
+<li><strong>Built-in sanitizers</strong>: <ul>
+<li><code>escapeHTML</code> - Escapes HTML tags to display them as text</li>
+<li><code>stripHTML</code> - Removes all HTML tags from content</li>
+</ul>
+</li>
+<li><strong>Custom sanitizer support</strong>: Use your own sanitization library (e.g., DOMPurify)</li>
+<li><strong>Runtime configuration</strong>: Change sanitizers dynamically via <code>setSanitizer()</code></li>
+</ul>
+<h3>Accessibility (ARIA) Support</h3>
 <ul>
 <li>Full ARIA label implementation for screen reader compatibility</li>
 <li><code>role=&quot;log&quot;</code> and <code>aria-live=&quot;polite&quot;</code> for message area</li>
 <li>Proper labeling for all interactive elements (input, send button)</li>
 <li>Configurable ARIA labels via constructor options</li>
 </ul>
-<h4>Mobile Experience Enhancements</h4>
+<h3>Mobile Experience Enhancements</h3>
 <ul>
 <li>Automatic viewport meta tag management to prevent zoom on input focus</li>
 <li>Virtual keyboard detection and layout adjustment</li>
 <li>Dynamic padding adjustment when virtual keyboard appears/disappears</li>
 <li>Smooth transitions for keyboard show/hide events</li>
 </ul>
-<h4>Internationalization (i18n) Support</h4>
+<h3>Internationalization (i18n) Support</h3>
 <ul>
 <li>Built-in translation system with zero dependencies</li>
 <li>Support for multiple languages via <code>setLanguage()</code> method</li>
@@ -89,11 +100,25 @@
 <li>Translatable UI elements: send button, input placeholder, title</li>
 <li>Default English translations with easy extension for other languages</li>
 </ul>
+<h3>Bug Fixes</h3>
+<ul>
+<li><strong>Fixed input field clearing issue</strong>: Input field was being cleared before callback could read the value</li>
+<li><strong>Fixed scrolling behavior in RTL demos</strong>: Messages now use smart scrolling to prevent jumping</li>
+<li><strong>Fixed test file callbacks</strong>: All test HTML files now properly handle user input for manual testing</li>
+</ul>
+<h3>Developer Experience</h3>
+<ul>
+<li><strong>Enhanced API documentation</strong>: Added comprehensive docs for sanitization and i18n features</li>
+<li><strong>Improved test files</strong>: All test files now support manual message input for debugging</li>
+<li><strong>Added favicons</strong>: All example and test HTML files now have consistent favicon branding</li>
+<li><strong>Smart scrolling in demos</strong>: Reduced UI jumping in multilingual demonstrations</li>
+</ul>
 <h3>Test Coverage</h3>
 <ul>
 <li>Added 21 new tests covering all new features</li>
 <li>Maintained 80%+ overall test coverage</li>
-<li>Comprehensive testing for ARIA, mobile, and i18n functionality</li>
+<li>Comprehensive testing for ARIA, mobile, i18n, and sanitization functionality</li>
+<li>Added Playwright E2E tests for virtual scrolling + sanitizer integration</li>
 </ul>
 <h2>1.1.16 (2025-08-10)</h2>
 <h3>Major Performance Enhancement: Virtual Scrolling</h3>

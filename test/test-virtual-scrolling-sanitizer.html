@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90' style='fill:blue'>&#x1F4AC;</text></svg>"
+        rel="icon" />
     <title>Virtual Scrolling + Sanitizer Test</title>
     <link rel="stylesheet" href="../dist/quikchat.min.css">
     <style>
@@ -83,13 +86,27 @@
     <script src="../dist/quikchat.umd.min.js"></script>
     <script>
         // Initialize chats with virtual scrolling and sanitizer
-        window.chat1 = new quikchat('#chat1', null, {
+        window.chat1 = new quikchat('#chat1', function(instance, message) {
+            // Add the user's message
+            instance.messageAddNew(message, 'User', 'right');
+            // Simulate a response
+            setTimeout(function() {
+                instance.messageAddNew('Response to: ' + message, 'Bot', 'left');
+            }, 500);
+        }, {
             sanitizer: quikchat.sanitizers.escapeHTML,
             virtualScrolling: true,
             virtualScrollingThreshold: 500
         });
         
-        window.chat2 = new quikchat('#chat2', null, {
+        window.chat2 = new quikchat('#chat2', function(instance, message) {
+            // Add the user's message
+            instance.messageAddNew(message, 'User', 'right');
+            // Simulate a response
+            setTimeout(function() {
+                instance.messageAddNew('Response to: ' + message, 'Bot', 'left');
+            }, 500);
+        }, {
             virtualScrolling: true,
             virtualScrollingThreshold: 500
         });

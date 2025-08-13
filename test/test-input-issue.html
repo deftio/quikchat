@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Issue Test</title>
+    <link
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90' style='fill:blue'>&#x1F4AC;</text></svg>"
+        rel="icon" />
+    <link rel="stylesheet" href="../dist/quikchat.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .chat-container {
+            height: 400px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .debug-info {
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Input Issue Test</h1>
+    <p>Type "this is it" and press Send or Enter to test</p>
+    
+    <div id="chat1" class="chat-container"></div>
+    
+    <div class="debug-info" id="debug">
+        <p>Debug Info:</p>
+        <div id="debugLog"></div>
+    </div>
+    
+    <script src="../dist/quikchat.umd.min.js"></script>
+    <script>
+        const debugLog = document.getElementById('debugLog');
+        
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            debugLog.innerHTML += `<div>[${time}] ${message}</div>`;
+            console.log(message);
+        }
+        
+        // Initialize chat with detailed logging
+        const chat = new quikchat('#chat1', (instance, message) => {
+            log(`onSend callback triggered with message: "${message}"`);
+            log(`Message length: ${message.length}`);
+            log(`Message trimmed: "${message.trim()}"`);
+            
+            // Add the message to chat
+            instance.messageAddNew(message, 'You', 'right');
+            
+            // Simulate response
+            setTimeout(() => {
+                instance.messageAddNew(`You said: "${message}"`, 'Bot', 'left');
+            }, 500);
+        }, {
+            theme: 'quikchat-theme-light',
+            sendOnEnter: true
+        });
+        
+        // Monitor input field
+        const inputField = document.querySelector('#chat1 .quikchat-input-textbox');
+        const sendButton = document.querySelector('#chat1 .quikchat-input-send-btn');
+        
+        if (inputField) {
+            // Log all input events
+            inputField.addEventListener('input', (e) => {
+                log(`Input event: value="${e.target.value}"`);
+            });
+            
+            inputField.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    log(`Enter key pressed. Shift: ${e.shiftKey}, value="${e.target.value}"`);
+                }
+            });
+            
+            inputField.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') {
+                    log(`Enter key released. value="${e.target.value}"`);
+                }
+            });
+        }
+        
+        if (sendButton) {
+            sendButton.addEventListener('click', (e) => {
+                log(`Send button clicked. Input value="${inputField.value}"`);
+            });
+        }
+        
+        log('Test page initialized');
+    </script>
+</body>
+</html>

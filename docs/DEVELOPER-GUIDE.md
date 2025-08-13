@@ -12,6 +12,7 @@ Build powerful chat applications with QuikChat - a lightweight, flexible chat UI
 6. [Advanced History Management](#advanced-history-management)
 7. [Mastering Visibility Controls](#mastering-visibility-controls)
 8. [Performance Optimization](#performance-optimization)
+9. [Security Best Practices](#security-best-practices)
 
 ---
 
@@ -2271,6 +2272,151 @@ setInterval(() => {
     const report = monitor.getPerformanceReport();
     console.log('Performance Report:', report);
 }, 60000); // Every minute
+```
+
+---
+
+## Security Best Practices
+
+### Content Sanitization
+
+QuikChat provides built-in sanitization to protect against XSS attacks. **Sanitization is opt-in** to maintain backward compatibility.
+
+#### Built-in Sanitizers
+
+```javascript
+// HTML Escaping - Converts HTML tags to entities
+const secureChat = new quikchat('#chat', handler, {
+    sanitizer: quikchat.sanitizers.escapeHTML
+});
+// Input: <script>alert('xss')</script>
+// Output: &lt;script&gt;alert('xss')&lt;/script&gt;
+
+// HTML Stripping - Removes all HTML tags
+const plainChat = new quikchat('#chat', handler, {
+    sanitizer: quikchat.sanitizers.stripHTML
+});
+// Input: <b>Hello</b> <script>alert('xss')</script>
+// Output: Hello
+```
+
+#### Custom Sanitizers
+
+```javascript
+// Use DOMPurify for advanced sanitization
+const customChat = new quikchat('#chat', handler, {
+    sanitizer: (content) => {
+        // Your custom sanitization logic
+        return DOMPurify.sanitize(content, {
+            ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a'],
+            ALLOWED_ATTR: ['href']
+        });
+    }
+});
+
+// Change sanitizer at runtime
+chat.setSanitizer(quikchat.sanitizers.escapeHTML);
+
+// Check current sanitizer
+const currentSanitizer = chat.getSanitizer();
+```
+
+#### When to Use Sanitization
+
+**Always enable sanitization when:**
+- Displaying user-generated content
+- Receiving content from external APIs
+- Building public-facing applications
+- Handling untrusted input sources
+
+**Sanitization may not be needed when:**
+- All content is from trusted sources
+- You need to preserve HTML formatting
+- Working with internal tools only
+
+#### Testing Sanitization
+
+```javascript
+// Test your sanitization configuration
+const testPayloads = [
+    '<script>alert("XSS")</script>',
+    '<img src=x onerror="alert(\'XSS\')">',
+    '<svg onload="alert(\'XSS\')">',
+    'javascript:alert("XSS")',
+    '<iframe src="javascript:alert(\'XSS\')"></iframe>'
+];
+
+testPayloads.forEach(payload => {
+    chat.messageAddNew(payload, 'Test', 'left');
+});
+
+// Check if content is properly sanitized in DOM
+const messages = document.querySelectorAll('.quikchat-message-content');
+messages.forEach(msg => {
+    if (msg.innerHTML.includes('<script>')) {
+        console.error('Sanitization failed!');
+    }
+});
+```
+
+### Additional Security Considerations
+
+1. **CSP Headers**: Implement Content Security Policy headers
+```html
+<meta http-equiv="Content-Security-Policy" 
+      content="default-src 'self'; script-src 'self' 'unsafe-inline';">
+```
+
+2. **Input Validation**: Validate message length and format
+```javascript
+chat.setCallbackonSend((instance, message) => {
+    // Validate message length
+    if (message.length > 10000) {
+        alert('Message too long');
+        return;
+    }
+    
+    // Validate content
+    if (containsProfanity(message)) {
+        alert('Please keep the conversation respectful');
+        return;
+    }
+    
+    instance.messageAddNew(message, 'User', 'right');
+});
+```
+
+3. **Rate Limiting**: Prevent spam and abuse
+```javascript
+class RateLimitedChat {
+    constructor(container, maxMessagesPerMinute = 30) {
+        this.messageTimestamps = [];
+        this.maxMessagesPerMinute = maxMessagesPerMinute;
+        
+        this.chat = new quikchat(container, this.handleMessage.bind(this), {
+            sanitizer: quikchat.sanitizers.escapeHTML
+        });
+    }
+    
+    handleMessage(instance, message) {
+        const now = Date.now();
+        const oneMinuteAgo = now - 60000;
+        
+        // Remove old timestamps
+        this.messageTimestamps = this.messageTimestamps.filter(
+            ts => ts > oneMinuteAgo
+        );
+        
+        // Check rate limit
+        if (this.messageTimestamps.length >= this.maxMessagesPerMinute) {
+            alert('Too many messages. Please slow down.');
+            return;
+        }
+        
+        this.messageTimestamps.push(now);
+        instance.messageAddNew(message, 'User', 'right');
+    }
+}
 ```
 
 ---

@@ -136,43 +136,7 @@ const chat = new quikchat(&#39;#chat-container&#39;, (instance, message) =&gt; {
 </code></pre>
 <h3>Direct Download</h3>
 <p>Download the latest release from <a href="https://github.com/deftio/quikchat/releases">GitHub Releases</a></p>
-<h2>🆕 What&#39;s New in v1.1.16</h2>
-<h3>⚡ Virtual Scrolling for High Performance</h3>
-<p>QuikChat now includes built-in virtual scrolling that handles 10,000+ messages efficiently. Only visible messages are rendered in the DOM, providing massive performance improvements:</p>
-<ul>
-<li><strong>10,000 messages</strong>: Renders in 38ms (vs 146 seconds without)</li>
-<li><strong>Memory efficient</strong>: ~2MB for 10,000 messages (vs ~187MB without)</li>
-<li><strong>Automatic activation</strong>: Enables at 500+ messages by default</li>
-<li><strong>Dynamic height support</strong>: Handles variable-length LLM responses</li>
-</ul>
-<pre><code class="language-javascript">// Virtual scrolling is enabled by default
-const chat = new quikchat(&#39;#chat&#39;, handler);
-
-// Check if virtual scrolling is active
-if (chat.isVirtualScrollingEnabled()) {
-    console.log(&#39;Virtual scrolling is active&#39;);
-}
-
-// Get virtual scrolling configuration
-const config = chat.getVirtualScrollingConfig();
-console.log(`Enabled: ${config.enabled}, Threshold: ${config.threshold}`);
-
-// Disable if needed for specific use cases
-const customChat = new quikchat(&#39;#custom-chat&#39;, handler, {
-    virtualScrolling: false
-});
-</code></pre>
-<h3>🎯 Smart Scroll Behavior</h3>
-<p>Improved user experience when reading chat history:</p>
-<pre><code class="language-javascript">// Never auto-scroll (user has full control)
-chat.messageAddNew(&#39;New message&#39;, &#39;Bot&#39;, &#39;left&#39;, &#39;assistant&#39;, false);
-
-// Smart scroll - only scrolls if user is near bottom
-chat.messageAddNew(&#39;New message&#39;, &#39;Bot&#39;, &#39;left&#39;, &#39;assistant&#39;, &#39;smart&#39;);
-
-// Always scroll to new messages (default)
-chat.messageAddNew(&#39;New message&#39;, &#39;Bot&#39;, &#39;left&#39;, &#39;assistant&#39;, true);
-</code></pre>
+<p><strong><a href="docs/release-notes.md">📖 View Full Release Notes</a></strong></p>
 <h3>🔔 Enhanced Message Callbacks</h3>
 <p>Track message modifications for streaming and real-time updates:</p>
 <pre><code class="language-javascript">// Track streaming content as it arrives
@@ -209,40 +173,6 @@ const info = chat.historyGetInfo();
 console.log(`Total messages: ${info.totalMessages}`);
 console.log(`Memory used: ${info.memoryUsage.estimatedSize} bytes`);
 </code></pre>
-<h2>📦 Previous Release: v1.1.14</h2>
-<h3>🏷 Tagged Message System</h3>
-<p>Group and control message visibility with powerful tagging:</p>
-<pre><code class="language-javascript">// Add messages with tags
-chat.messageAddNew(&#39;System initialized&#39;, &#39;System&#39;, &#39;center&#39;, &#39;system&#39;, true, true, [&#39;system&#39;, &#39;startup&#39;]);
-
-// Control visibility by tag
-chat.setTagVisibility(&#39;system&#39;, false); // Hide all system messages
-chat.setTagVisibility(&#39;system&#39;, true);  // Show all system messages
-
-// Get active tags
-const tags = chat.getActiveTags(); // [&#39;system&#39;, &#39;startup&#39;, &#39;user&#39;]
-</code></pre>
-<h3>🎯 Instance Scoping</h3>
-<p>Multiple chat instances with different styling and behavior:</p>
-<pre><code class="language-javascript">const salesChat = new quikchat(&#39;#sales&#39;, handler, {
-    theme: &#39;quikchat-theme-light&#39;,
-    instanceClass: &#39;sales-chat&#39;
-});
-
-const supportChat = new quikchat(&#39;#support&#39;, handler, {
-    theme: &#39;quikchat-theme-dark&#39;,
-    instanceClass: &#39;support-chat&#39;
-});
-</code></pre>
-<h3>👁 Enhanced Visibility Controls (v1.1.13+)</h3>
-<p>Fine-grained control over message display:</p>
-<pre><code class="language-javascript">// Hide individual messages
-chat.messageSetVisibility(messageId, false);
-
-// Check visibility status
-const isVisible = chat.messageGetVisibility(messageId);
-</code></pre>
-<p><strong><a href="https://github.com/deftio/quikchat/releases">View Complete Changelog</a></strong></p>
 <h2>🎨 Theming &amp; Customization</h2>
 <p>QuikChat includes beautiful built-in themes and supports complete customization:</p>
 <pre><code class="language-javascript">// Use built-in themes

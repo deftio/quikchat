@@ -95,48 +95,7 @@ Download the latest release from [GitHub Releases](https://github.com/deftio/qui
 
 
 
-## 🆕 What's New in v1.1.16
-
-### ⚡ Virtual Scrolling for High Performance
-QuikChat now includes built-in virtual scrolling that handles 10,000+ messages efficiently. Only visible messages are rendered in the DOM, providing massive performance improvements:
-
-- **10,000 messages**: Renders in 38ms (vs 146 seconds without)
-- **Memory efficient**: ~2MB for 10,000 messages (vs ~187MB without)
-- **Automatic activation**: Enables at 500+ messages by default
-- **Dynamic height support**: Handles variable-length LLM responses
-
-```javascript
-// Virtual scrolling is enabled by default
-const chat = new quikchat('#chat', handler);
-
-// Check if virtual scrolling is active
-if (chat.isVirtualScrollingEnabled()) {
-    console.log('Virtual scrolling is active');
-}
-
-// Get virtual scrolling configuration
-const config = chat.getVirtualScrollingConfig();
-console.log(`Enabled: ${config.enabled}, Threshold: ${config.threshold}`);
-
-// Disable if needed for specific use cases
-const customChat = new quikchat('#custom-chat', handler, {
-    virtualScrolling: false
-});
-```
-
-### 🎯 Smart Scroll Behavior
-Improved user experience when reading chat history:
-
-```javascript
-// Never auto-scroll (user has full control)
-chat.messageAddNew('New message', 'Bot', 'left', 'assistant', false);
-
-// Smart scroll - only scrolls if user is near bottom
-chat.messageAddNew('New message', 'Bot', 'left', 'assistant', 'smart');
-
-// Always scroll to new messages (default)
-chat.messageAddNew('New message', 'Bot', 'left', 'assistant', true);
-```
+**[📖 View Full Release Notes](docs/release-notes.md)**
 
 ### 🔔 Enhanced Message Callbacks
 Track message modifications for streaming and real-time updates:
@@ -180,50 +139,6 @@ console.log(`Total messages: ${info.totalMessages}`);
 console.log(`Memory used: ${info.memoryUsage.estimatedSize} bytes`);
 ```
 
-## 📦 Previous Release: v1.1.14
-
-### 🏷 Tagged Message System
-Group and control message visibility with powerful tagging:
-
-```javascript
-// Add messages with tags
-chat.messageAddNew('System initialized', 'System', 'center', 'system', true, true, ['system', 'startup']);
-
-// Control visibility by tag
-chat.setTagVisibility('system', false); // Hide all system messages
-chat.setTagVisibility('system', true);  // Show all system messages
-
-// Get active tags
-const tags = chat.getActiveTags(); // ['system', 'startup', 'user']
-```
-
-### 🎯 Instance Scoping
-Multiple chat instances with different styling and behavior:
-
-```javascript
-const salesChat = new quikchat('#sales', handler, {
-    theme: 'quikchat-theme-light',
-    instanceClass: 'sales-chat'
-});
-
-const supportChat = new quikchat('#support', handler, {
-    theme: 'quikchat-theme-dark',
-    instanceClass: 'support-chat'
-});
-```
-
-### 👁 Enhanced Visibility Controls (v1.1.13+)
-Fine-grained control over message display:
-
-```javascript
-// Hide individual messages
-chat.messageSetVisibility(messageId, false);
-
-// Check visibility status
-const isVisible = chat.messageGetVisibility(messageId);
-```
-
-**[View Complete Changelog](https://github.com/deftio/quikchat/releases)**
 
 
 

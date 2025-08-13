@@ -76,6 +76,7 @@
 <li><a href="#advanced-history-management">Advanced History Management</a></li>
 <li><a href="#mastering-visibility-controls">Mastering Visibility Controls</a></li>
 <li><a href="#performance-optimization">Performance Optimization</a></li>
+<li><a href="#security-best-practices">Security Best Practices</a></li>
 </ol>
 <hr>
 <h2>Quick Start</h2>
@@ -2200,6 +2201,138 @@ setInterval(() =&gt; {
     const report = monitor.getPerformanceReport();
     console.log(&#39;Performance Report:&#39;, report);
 }, 60000); // Every minute
+</code></pre>
+<hr>
+<h2>Security Best Practices</h2>
+<h3>Content Sanitization</h3>
+<p>QuikChat provides built-in sanitization to protect against XSS attacks. <strong>Sanitization is opt-in</strong> to maintain backward compatibility.</p>
+<h4>Built-in Sanitizers</h4>
+<pre><code class="language-javascript">// HTML Escaping - Converts HTML tags to entities
+const secureChat = new quikchat(&#39;#chat&#39;, handler, {
+    sanitizer: quikchat.sanitizers.escapeHTML
+});
+// Input: &lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;
+// Output: &amp;lt;script&amp;gt;alert(&#39;xss&#39;)&amp;lt;/script&amp;gt;
+
+// HTML Stripping - Removes all HTML tags
+const plainChat = new quikchat(&#39;#chat&#39;, handler, {
+    sanitizer: quikchat.sanitizers.stripHTML
+});
+// Input: &lt;b&gt;Hello&lt;/b&gt; &lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;
+// Output: Hello
+</code></pre>
+<h4>Custom Sanitizers</h4>
+<pre><code class="language-javascript">// Use DOMPurify for advanced sanitization
+const customChat = new quikchat(&#39;#chat&#39;, handler, {
+    sanitizer: (content) =&gt; {
+        // Your custom sanitization logic
+        return DOMPurify.sanitize(content, {
+            ALLOWED_TAGS: [&#39;b&#39;, &#39;i&#39;, &#39;em&#39;, &#39;strong&#39;, &#39;a&#39;],
+            ALLOWED_ATTR: [&#39;href&#39;]
+        });
+    }
+});
+
+// Change sanitizer at runtime
+chat.setSanitizer(quikchat.sanitizers.escapeHTML);
+
+// Check current sanitizer
+const currentSanitizer = chat.getSanitizer();
+</code></pre>
+<h4>When to Use Sanitization</h4>
+<p><strong>Always enable sanitization when:</strong></p>
+<ul>
+<li>Displaying user-generated content</li>
+<li>Receiving content from external APIs</li>
+<li>Building public-facing applications</li>
+<li>Handling untrusted input sources</li>
+</ul>
+<p><strong>Sanitization may not be needed when:</strong></p>
+<ul>
+<li>All content is from trusted sources</li>
+<li>You need to preserve HTML formatting</li>
+<li>Working with internal tools only</li>
+</ul>
+<h4>Testing Sanitization</h4>
+<pre><code class="language-javascript">// Test your sanitization configuration
+const testPayloads = [
+    &#39;&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;&#39;,
+    &#39;&lt;img src=x onerror=&quot;alert(\&#39;XSS\&#39;)&quot;&gt;&#39;,
+    &#39;&lt;svg onload=&quot;alert(\&#39;XSS\&#39;)&quot;&gt;&#39;,
+    &#39;javascript:alert(&quot;XSS&quot;)&#39;,
+    &#39;&lt;iframe src=&quot;javascript:alert(\&#39;XSS\&#39;)&quot;&gt;&lt;/iframe&gt;&#39;
+];
+
+testPayloads.forEach(payload =&gt; {
+    chat.messageAddNew(payload, &#39;Test&#39;, &#39;left&#39;);
+});
+
+// Check if content is properly sanitized in DOM
+const messages = document.querySelectorAll(&#39;.quikchat-message-content&#39;);
+messages.forEach(msg =&gt; {
+    if (msg.innerHTML.includes(&#39;&lt;script&gt;&#39;)) {
+        console.error(&#39;Sanitization failed!&#39;);
+    }
+});
+</code></pre>
+<h3>Additional Security Considerations</h3>
+<ol>
+<li><strong>CSP Headers</strong>: Implement Content Security Policy headers</li>
+</ol>
+<pre><code class="language-html">&lt;meta http-equiv=&quot;Content-Security-Policy&quot; 
+      content=&quot;default-src &#39;self&#39;; script-src &#39;self&#39; &#39;unsafe-inline&#39;;&quot;&gt;
+</code></pre>
+<ol start="2">
+<li><strong>Input Validation</strong>: Validate message length and format</li>
+</ol>
+<pre><code class="language-javascript">chat.setCallbackonSend((instance, message) =&gt; {
+    // Validate message length
+    if (message.length &gt; 10000) {
+        alert(&#39;Message too long&#39;);
+        return;
+    }
+    
+    // Validate content
+    if (containsProfanity(message)) {
+        alert(&#39;Please keep the conversation respectful&#39;);
+        return;
+    }
+    
+    instance.messageAddNew(message, &#39;User&#39;, &#39;right&#39;);
+});
+</code></pre>
+<ol start="3">
+<li><strong>Rate Limiting</strong>: Prevent spam and abuse</li>
+</ol>
+<pre><code class="language-javascript">class RateLimitedChat {
+    constructor(container, maxMessagesPerMinute = 30) {
+        this.messageTimestamps = [];
+        this.maxMessagesPerMinute = maxMessagesPerMinute;
+        
+        this.chat = new quikchat(container, this.handleMessage.bind(this), {
+            sanitizer: quikchat.sanitizers.escapeHTML
+        });
+    }
+    
+    handleMessage(instance, message) {
+        const now = Date.now();
+        const oneMinuteAgo = now - 60000;
+        
+        // Remove old timestamps
+        this.messageTimestamps = this.messageTimestamps.filter(
+            ts =&gt; ts &gt; oneMinuteAgo
+        );
+        
+        // Check rate limit
+        if (this.messageTimestamps.length &gt;= this.maxMessagesPerMinute) {
+            alert(&#39;Too many messages. Please slow down.&#39;);
+            return;
+        }
+        
+        this.messageTimestamps.push(now);
+        instance.messageAddNew(message, &#39;User&#39;, &#39;right&#39;);
+    }
+}
 </code></pre>
 <hr>
 <p><em>For complete API documentation, see <a href="API-REFERENCE.md">API Reference</a>. For questions and examples, visit our <a href="https://github.com/deftio/quikchat">GitHub repository</a>.</em></p>

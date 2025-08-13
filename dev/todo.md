@@ -2,7 +2,7 @@
 
 ## 🎯 Critical - Production Readiness
 
-- [ ] **Security**: XSS protection, sanitization hooks for innerHTML
+- [x] **Security**: XSS protection, sanitization hooks for innerHTML ✅ v1.1.17
 - [ ] **Error Boundaries**: Add error handling and recovery mechanisms
 
 ## ⚡ High Priority - Core Features
@@ -16,14 +16,14 @@
 
 - [ ] **Message Threading**: Reply to specific messages
 - [ ] **Message Editing**: Edit sent messages with history
-- [ ] **Connection Status**: Online/offline indicators
-- [ ] **LocalStorage Persistence**: Save/restore from browser storage
-- [ ] **Message Grouping**: Group consecutive messages from same user
+- [ ] **Connection Status**: Online/offline indicators (?)
+- [ ] **LocalStorage Persistence**: Save/restore from browser storage (tbd)
+- [ ] **Message Grouping**: Group consecutive messages from same user (make api option but need to deal with timestamps)
 - [ ] **Typing Indicators**: Show when users are typing
-- [ ] **Read Receipts**: Message delivery/read status
-- [ ] **Code Syntax Highlighting**: Highlight code blocks in messages
-- [ ] **File Attachments**: Image preview, file upload support
-- [ ] **Message Reactions**: Emoji reactions on messages
+- [ ] **Read Receipts**: Message delivery/read status (? this requires server side possibly)
+- [ ] **Code Syntax Highlighting**: Highlight code blocks in messages (see markdown support)
+- [ ] **File Attachments**: Image preview, file upload support (needs architecture discussion)
+- [ ] **Message Reactions**: Emoji reactions on messages (?)
 
 ## 🔮 Future Enhancements
 
@@ -64,8 +64,45 @@
 - Internationalization (i18n/RTL support)
 
 ### ⚠️ Needs Work for Production
-- **Security** - No XSS protection or sanitization hooks
+
 - **Error handling** - No error boundaries or recovery mechanisms
 
+## ✅ Recently Completed (v1.1.17)
+
+### Security & Content Sanitization
+
+- ✅ Built-in XSS protection with opt-in sanitizers
+- ✅ HTML escaping and stripping sanitizers
+- ✅ Custom sanitizer support
+- ✅ Runtime sanitizer configuration
+
+### Internationalization (i18n)
+
+- ✅ Multi-language support with translation system
+- ✅ RTL/LTR text direction support
+- ✅ Dynamic language switching
+- ✅ Translatable UI elements
+
+### Accessibility (ARIA)
+
+- ✅ Full ARIA label implementation
+- ✅ Screen reader compatibility
+- ✅ Proper role attributes for all elements
+
+### Mobile Experience
+
+- ✅ Viewport meta tag management
+- ✅ Virtual keyboard detection and handling
+- ✅ Dynamic layout adjustment for keyboard
+
+### Bug Fixes & Improvements
+
+- ✅ Fixed input field clearing issue
+- ✅ Fixed scrolling behavior in RTL demos
+- ✅ Added callbacks to all test files
+- ✅ Added favicons to all HTML files
+- ✅ Enhanced API documentation
+
 ---
-*Last updated: 2025-08-11*
+
+**Last updated: 2025-08-11**

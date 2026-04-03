@@ -164,17 +164,33 @@ If several widgets are on the same page, each can have a separate theme.
 
 quikchat is built with [rollup.js](https://rollupjs.org/).
 
-Make sure to run npm install.  Then run npm run build.
+```bash
+npm install
+npm run build    # lint, build all formats, report bundle sizes
+```
 
-Note that at run time quikchat has no dependancies, but at build time several tools are used for packing and minifying code.
+Note that at run time quikchat has zero dependencies.  Build-time tooling (rollup, babel, eslint, jest, etc.) is all in devDependencies.
 
 ## Testing
 
-quikchat is tested with the jest framwork.  To run unit tests and see coverage run:
+quikchat is tested with the jest framework.  To run unit tests and see coverage run:
 
 ```bash
-npm run test
+npm test
 ```
+
+## Development
+
+To start a new feature branch with an automatic patch version bump:
+
+```bash
+npm run feature my-feature-name        # creates feature/my-feature-name, bumps 0.0.1
+npm run feature my-feature-name minor  # bumps 0.x.0
+```
+
+A pre-commit hook runs lint and tests automatically before each commit.
+
+See [RELEASE-PROCEDURE.md](RELEASE-PROCEDURE.md) for the full release workflow.
 
 ## License
 

@@ -178,7 +178,7 @@ class quikchat {
         const msgid = this.msgid;
         const messageDiv = document.createElement('div');
         const msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
-        const userIdClass = 'quikchat-userid-' + String(input.userString).padStart(10, '0'); // hash this..
+        // TODO: hash userString for class name
         messageDiv.classList.add('quikchat-message', msgidClass);
         this.msgid++;
         messageDiv.classList.add(this._messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
@@ -232,8 +232,8 @@ class quikchat {
             this._messagesArea.removeChild(this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`));
             sucess = true;
         }
-        catch (error) {
-            console.log(`{String(n)} : Message ID not found`);
+        catch (_err) {
+            console.log(`${String(n)} : Message ID not found`); // eslint-disable-line no-console
         }
         if (sucess) {
             // slow way to remove from history
@@ -252,8 +252,8 @@ class quikchat {
         try {
             msg = this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`);
         }
-        catch (error) {
-            console.log(`{String(n)} : Message ID not found`);
+        catch (_err) {
+            console.log(`${String(n)} : Message ID not found`); // eslint-disable-line no-console
         }
         return msg;
     }
@@ -267,8 +267,8 @@ class quikchat {
             content = this._history.filter((item) => item.msgid === n)[0].content;
             //content =  this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.textContent;
         }
-        catch (error) {
-            console.log(`{String(n)} : Message ID not found`);
+        catch (_err) {
+            console.log(`${String(n)} : Message ID not found`); // eslint-disable-line no-console
         }
         return content;
     }
@@ -281,7 +281,7 @@ class quikchat {
         try {
             this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML += content;
             // update history
-            let item = this._history.filter((item) => item.msgid === n)[0];
+            const item = this._history.filter((entry) => entry.msgid === n)[0];
             item.content += content;
             item.updatedtime = new Date().toISOString();
             success = true;
@@ -290,12 +290,12 @@ class quikchat {
             if (!this.userScrolledUp) {
                 this._messagesArea.lastElementChild.scrollIntoView();
             }
-        } catch (error) {
-            console.log(`${String(n)} : Message ID not found`);
+        } catch (_err) {
+            console.log(`${String(n)} : Message ID not found`); // eslint-disable-line no-console
         }
         return success;
     }
-    
+
     /* replace message content
     */
     messageReplaceContent(n, content) {
@@ -303,7 +303,7 @@ class quikchat {
         try {
             this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML = content;
             // update history
-            let item = this._history.filter((item) => item.msgid === n)[0];
+            const item = this._history.filter((entry) => entry.msgid === n)[0];
             item.content = content;
             item.updatedtime = new Date().toISOString();
             success = true;
@@ -312,8 +312,8 @@ class quikchat {
             if (!this.userScrolledUp) {
                 this._messagesArea.lastElementChild.scrollIntoView();
             }
-        } catch (error) {
-            console.log(`${String(n)} : Message ID not found`);
+        } catch (_err) {
+            console.log(`${String(n)} : Message ID not found`); // eslint-disable-line no-console
         }
         return success;
     }
@@ -327,7 +327,7 @@ class quikchat {
      */
     historyGet(n, m) {
 
-        if (n == undefined) {
+        if (n === undefined) {
             n = 0;
             m = this._history.length;
         }
@@ -373,7 +373,7 @@ class quikchat {
     }
 
     static version() {
-        return { "version": "1.1.3", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
+        return { "version": "1.1.4", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
     }
 
     /**
@@ -412,7 +412,7 @@ class quikchat {
             startSpot = (startSpot + 1) % loremText.length;
         }
 
-        let l = loremText.substring(startSpot) + loremText.substring(0, startSpot);
+        const l = loremText.substring(startSpot) + loremText.substring(0, startSpot);
 
         if (typeof numChars !== "number") {
             numChars = l.length;

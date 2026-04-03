@@ -18,20 +18,20 @@
   function _defineProperties(e, r) {
     for (var t = 0; t < r.length; t++) {
       var o = r[t];
-      o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o);
+      o.enumerable = o.enumerable || false, o.configurable = true, "value" in o && (o.writable = true), Object.defineProperty(e, _toPropertyKey(o.key), o);
     }
   }
   function _createClass(e, r, t) {
     return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", {
-      writable: !1
+      writable: false
     }), e;
   }
   function _defineProperty(e, r, t) {
     return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
       value: t,
-      enumerable: !0,
-      configurable: !0,
-      writable: !0
+      enumerable: true,
+      configurable: true,
+      writable: true
     }) : e[r] = t, e;
   }
   function _iterableToArray(r) {
@@ -53,7 +53,7 @@
   function _objectSpread2(e) {
     for (var r = 1; r < arguments.length; r++) {
       var t = null != arguments[r] ? arguments[r] : {};
-      r % 2 ? ownKeys(Object(t), !0).forEach(function (r) {
+      r % 2 ? ownKeys(Object(t), true).forEach(function (r) {
         _defineProperty(e, r, t[r]);
       }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) {
         Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
@@ -68,7 +68,7 @@
     if ("object" != typeof t || !t) return t;
     var e = t[Symbol.toPrimitive];
     if (void 0 !== e) {
-      var i = e.call(t, r );
+      var i = e.call(t, r);
       if ("object" != typeof i) return i;
       throw new TypeError("@@toPrimitive must return a primitive value.");
     }
@@ -309,7 +309,7 @@
         var msgid = this.msgid;
         var messageDiv = document.createElement('div');
         var msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
-        'quikchat-userid-' + String(input.userString).padStart(10, '0'); // hash this..
+        // TODO: hash userString for class name
         messageDiv.classList.add('quikchat-message', msgidClass);
         this.msgid++;
         messageDiv.classList.add(this._messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
@@ -370,8 +370,8 @@
         try {
           this._messagesArea.removeChild(this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0'))));
           sucess = true;
-        } catch (error) {
-          console.log("{String(n)} : Message ID not found");
+        } catch (_err) {
+          console.log("".concat(String(n), " : Message ID not found")); // eslint-disable-line no-console
         }
         if (sucess) {
           // slow way to remove from history
@@ -393,8 +393,8 @@
         // now use css selector to get the message 
         try {
           msg = this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0')));
-        } catch (error) {
-          console.log("{String(n)} : Message ID not found");
+        } catch (_err) {
+          console.log("".concat(String(n), " : Message ID not found")); // eslint-disable-line no-console
         }
         return msg;
       }
@@ -411,8 +411,8 @@
             return item.msgid === n;
           })[0].content;
           //content =  this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.textContent;
-        } catch (error) {
-          console.log("{String(n)} : Message ID not found");
+        } catch (_err) {
+          console.log("".concat(String(n), " : Message ID not found")); // eslint-disable-line no-console
         }
         return content;
       }
@@ -426,8 +426,8 @@
         try {
           this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0'))).lastChild.innerHTML += content;
           // update history
-          var item = this._history.filter(function (item) {
-            return item.msgid === n;
+          var item = this._history.filter(function (entry) {
+            return entry.msgid === n;
           })[0];
           item.content += content;
           item.updatedtime = new Date().toISOString();
@@ -437,8 +437,8 @@
           if (!this.userScrolledUp) {
             this._messagesArea.lastElementChild.scrollIntoView();
           }
-        } catch (error) {
-          console.log("".concat(String(n), " : Message ID not found"));
+        } catch (_err) {
+          console.log("".concat(String(n), " : Message ID not found")); // eslint-disable-line no-console
         }
         return success;
       }
@@ -452,8 +452,8 @@
         try {
           this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0'))).lastChild.innerHTML = content;
           // update history
-          var item = this._history.filter(function (item) {
-            return item.msgid === n;
+          var item = this._history.filter(function (entry) {
+            return entry.msgid === n;
           })[0];
           item.content = content;
           item.updatedtime = new Date().toISOString();
@@ -463,8 +463,8 @@
           if (!this.userScrolledUp) {
             this._messagesArea.lastElementChild.scrollIntoView();
           }
-        } catch (error) {
-          console.log("".concat(String(n), " : Message ID not found"));
+        } catch (_err) {
+          console.log("".concat(String(n), " : Message ID not found")); // eslint-disable-line no-console
         }
         return success;
       }
@@ -479,7 +479,7 @@
     }, {
       key: "historyGet",
       value: function historyGet(n, m) {
-        if (n == undefined) {
+        if (n === undefined) {
           n = 0;
           m = this._history.length;
         }
@@ -531,7 +531,7 @@
       key: "version",
       value: function version() {
         return {
-          "version": "1.1.3",
+          "version": "1.1.4",
           "license": "BSD-2",
           "url": "https://github/deftio/quikchat"
         };

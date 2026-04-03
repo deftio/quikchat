@@ -17,6 +17,10 @@ node_modules/
 *.dylib
 
 
+# build/test artifacts
+coverage/
+test-results/
+
 # env
 .env
 .env.local

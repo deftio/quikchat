@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,8 +29,46 @@ jobs:
     - name: Install dependencies
       run: npm install
 
+    - name: Lint
+      run: npm run lint
+
     - name: Run tests
       run: npm test
 
     - name: Build project
       run: npm run build
+
+  tag-version:
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20.x
+
+    - name: Check version is not already published
+      run: node tools/checkVersion.cjs
+
+    - name: Read version from package.json
+      id: version
+      run: echo "version=v$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_OUTPUT"
+
+    - name: Check if tag already exists
+      id: check
+      run: |
+        if git ls-remote --tags origin "${{ steps.version.outputs.version }}" | grep -q .; then
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Create and push tag
+      if: steps.check.outputs.exists == 'false'
+      run: |
+        git tag "${{ steps.version.outputs.version }}"
+        git push origin "${{ steps.version.outputs.version }}"

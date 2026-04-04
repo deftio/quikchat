@@ -2,15 +2,25 @@
 
 Step-by-step checklist for contributing to and releasing quikchat.
 
+## TL;DR
+
+```bash
+# Start a feature
+npm run feature my-feature-name        # creates branch, bumps patch version
+
+# Do your work, then release
+npm run release                        # preflight, merge to main, push — CI does the rest
+```
+
 ## Branch Model
 
 - `main` is the production branch. Only the repo maintainer (@deftio) merges to `main`.
 - All work happens on feature branches created from `main`.
-- Feature branches use the naming convention: `feature/<short-description>` or `fix/<short-description>`.
+- Feature branches use the naming convention: `feature/<short-description>`.
 
 ## Development Workflow
 
-### 1. Create Feature Branch and Bump Version
+### 1. Start a Feature
 
 ```bash
 npm run feature <short-description>            # patch bump (default)
@@ -18,7 +28,13 @@ npm run feature <short-description> minor       # minor bump
 npm run feature <short-description> major       # major bump
 ```
 
-This creates a `feature/<short-description>` branch, bumps the version in `src/quikchat.js` and `package.json`, and commits the bump.
+This script will:
+1. Verify you're on `main` with a clean working tree.
+2. **Pull latest `main` from origin** (prevents starting from a stale local copy).
+3. Verify local main matches origin/main (warns if they differ).
+4. Create `feature/<short-description>` branch.
+5. Bump version in `src/quikchat.js` and `package.json`.
+6. Commit the version bump.
 
 ### 2. Implement and Test Locally
 
@@ -28,33 +44,37 @@ This creates a `feature/<short-description>` branch, bumps the version in `src/q
   - `npm run lint` — 0 errors and 0 warnings.
   - `npm test` — all tests passing, no skips, coverage not decreased.
   - `npm run build` — succeeds, review the size report output.
+- [ ] `npm run dev` — check the docs site and examples in the browser.
 
 Local testing should be more comprehensive than CI. CI is the gate, not the only test environment.
 
-### 3. Open Pull Request
+### 3. Release
 
-- [ ] Push feature branch: `git push -u origin feature/<short-description>`
-- [ ] Open PR targeting `main` on GitHub.
-- [ ] PR title is concise (under 70 chars). Description explains the "why".
-- [ ] Reference the related issue (e.g., "Closes #42").
-- [ ] CI must pass (lint, test, build on Node 20).
+From your feature branch:
 
-### 4. Code Review
+```bash
+npm run release
+```
 
-- [ ] Maintainer reviews the PR.
-- [ ] Address any review feedback with new commits (do not force-push).
-- [ ] CI passes on the final state of the PR.
+This script will:
+1. Verify you're on a feature branch (not main) with a clean working tree.
+2. Check that the version was bumped (compares against published npm version).
+3. Run lint, tests, and build — **fails fast if anything is wrong**.
+4. Show a summary (branch, version, commit count) and ask for confirmation.
+5. Switch to main, pull latest, squash-merge the feature branch.
+6. Push main to origin.
 
-### 5. Merge to Main
+After the push, everything else is automatic (see below).
 
-Only the repo maintainer (@deftio) performs this step.
+If the push fails (e.g., local main diverged from origin), the script tells you. In that case, if you're the sole maintainer and confident the local state is correct:
 
-- [ ] Squash-merge the PR into `main`.
-- [ ] Delete the feature branch after merge.
+```bash
+git push origin main --force
+```
 
-## Automated Release Pipeline
+### 4. Automated Pipeline
 
-After a squash-merge to `main`, everything else is automatic:
+After push to `main`, CI handles everything:
 
 ```
 push to main
@@ -75,17 +95,28 @@ publish.yml: create GitHub Release with dist assets
 - **GitHub Release**: Created automatically with generated release notes and dist assets (UMD min, ESM min, CSS min).
 - **npm Publish**: Published via `NPM_TOKEN` secret with `--provenance`.
 
-### Post-Release Verification
+### 5. Verify
 
-- [ ] Verify the GitHub Release appears at https://github.com/deftio/quikchat/releases
-- [ ] Verify npm has the new version: `npm view quikchat version`
-- [ ] Verify CDN availability: https://cdn.jsdelivr.net/npm/quikchat@latest/dist/quikchat.umd.min.js
+- [ ] CI passed: https://github.com/deftio/quikchat/actions
+- [ ] GitHub Release: https://github.com/deftio/quikchat/releases
+- [ ] npm: `npm view quikchat version`
+- [ ] CDN: https://cdn.jsdelivr.net/npm/quikchat@latest/dist/quikchat.umd.min.js
+
+## Alternative: Open a Pull Request
+
+For contributions from others or when you want a review step:
+
+1. Push feature branch: `git push -u origin feature/<short-description>`
+2. Open PR targeting `main` on GitHub.
+3. CI runs on the PR.
+4. Squash-merge after review.
+5. CI auto-tags and publishes (same as above).
 
 ## Manual Recovery
 
 If the automated publish fails:
 
-1. Re-run the failed publish workflow from the **Actions** tab.
+1. Re-run the failed workflow from the **Actions** tab.
 
 If a tag was created but the release/publish failed:
 
@@ -97,10 +128,21 @@ git tag -d vX.Y.Z
 # Fix the issue, push to main, and let CI re-tag
 ```
 
+## npm Scripts Reference
+
+| Script | What it does |
+|--------|-------------|
+| `npm run feature <name> [patch\|minor\|major]` | Create feature branch, pull latest main, bump version |
+| `npm run release` | Preflight (lint/test/build), squash-merge to main, push |
+| `npm run dev` | Local dev server on port 6809 |
+| `npm run lint` | ESLint on src/ |
+| `npm test` | Jest with coverage |
+| `npm run build` | Lint + build all bundles + size report |
+
 ## Rules
 
 - No direct commits to `main` except by the maintainer.
-- No `--force` pushes to `main`.
+- No `--force` pushes to `main` (except when resetting from a known-good state).
 - No `--no-verify` to skip hooks.
 - No skipped tests (`it.skip`, `describe.skip`, `xit`).
 - All lint warnings must be resolved, not suppressed.

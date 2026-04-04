@@ -51,6 +51,7 @@
     "updateVersion": "node ./tools/updateVersion",
     "build": "npm run lint && npm run updateVersion && npm run minifyCSS && rollup -c && npm run reportSizes",
     "feature": "bash ./tools/feature.sh",
+    "release": "bash ./tools/release.sh",
     "prepare": "husky"
   },
   "jest": {

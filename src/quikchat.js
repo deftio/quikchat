@@ -1,9 +1,9 @@
 
 class quikchat {
     /**
-     * 
-     * @param string or DOM element  parentElement 
-     * @param {*} meta 
+     *
+     * @param string or DOM element  parentElement
+     * @param {*} meta
      */
     constructor(parentElement, onSend = () => { }, options = {}) {
         const defaultOpts = {
@@ -17,7 +17,6 @@ class quikchat {
         if (typeof parentElement === 'string') {
             parentElement = document.querySelector(parentElement);
         }
-        //console.log(parentElement, meta);
         this._parentElement = parentElement;
         this._theme = meta.theme;
         this._onSend = onSend ? onSend : () => { }; // call back function for onSend
@@ -37,7 +36,7 @@ class quikchat {
         }
         // plumbing
         this._attachEventListeners();
-        this.trackHistory = meta.trackHistory || true;
+        this.trackHistory = meta.trackHistory !== false;
         this._historyLimit = 10000000;
         this._history = [];
     }
@@ -46,12 +45,10 @@ class quikchat {
         const widgetHTML =
             `
             <div class="quikchat-base ${this.theme}">
-                <div class="quikchat-title-area">
-                    <span style="font-size: 1.5em; font-weight: 600;">Title Area</span>
-                </div>
-                <div class="quikchat-messages-area"></div>
+                <div class="quikchat-title-area"></div>
+                <div class="quikchat-messages-area" role="log" aria-live="polite" aria-label="Chat messages"></div>
                 <div class="quikchat-input-area">
-                    <textarea class="quikchat-input-textbox"></textarea>
+                    <textarea class="quikchat-input-textbox" aria-label="Type a message"></textarea>
                     <button class="quikchat-input-send-btn">Send</button>
                 </div>
             </div>
@@ -72,8 +69,6 @@ class quikchat {
      */
     _attachEventListeners() {
         this._sendButton.addEventListener('click', () => this._onSend(this, this._textEntry.value.trim()));
-        window.addEventListener('resize', () => this._handleContainerResize());
-        this._chatWidget.addEventListener('resize', () => this._handleContainerResize());
         this._textEntry.addEventListener('keydown', (event) => {
             // Check if Shift + Enter is pressed
             if (event.shiftKey && event.keyCode === 13) {
@@ -87,8 +82,14 @@ class quikchat {
             const { scrollTop, scrollHeight, clientHeight } = this._messagesArea;
             this.userScrolledUp = scrollTop + clientHeight < scrollHeight;
         });
+
+        // Use ResizeObserver to detect parent container resize
+        if (typeof ResizeObserver !== 'undefined') {
+            this._resizeObserver = new ResizeObserver(() => this._handleContainerResize());
+            this._resizeObserver.observe(this._parentElement);
+        }
     }
-   
+
     // set the onSend function callback.
     setCallbackOnSend(callback) {
         this._onSend = callback;
@@ -100,17 +101,19 @@ class quikchat {
 
     // Public methods
     titleAreaToggle() {
-        this._titleArea.style.display === 'none' ? this.titleAreaShow() : this.titleAreaHide();
+        if (this._titleArea.style.display === 'none') {
+            this.titleAreaShow();
+        } else {
+            this.titleAreaHide();
+        }
     }
 
     titleAreaShow() {
         this._titleArea.style.display = '';
-        this._adjustMessagesAreaHeight();
     }
 
     titleAreaHide() {
         this._titleArea.style.display = 'none';
-        this._adjustMessagesAreaHeight();
     }
 
     titleAreaSetContents(title, align = 'center') {
@@ -123,38 +126,24 @@ class quikchat {
     }
 
     inputAreaToggle() {
-        this._inputArea.classList.toggle('hidden');
-        this._inputArea.style.display === 'none' ? this.inputAreaShow() : this.inputAreaHide();
+        if (this._inputArea.style.display === 'none') {
+            this.inputAreaShow();
+        } else {
+            this.inputAreaHide();
+        }
     }
 
     inputAreaShow() {
         this._inputArea.style.display = '';
-        this._adjustMessagesAreaHeight();
     }
 
     inputAreaHide() {
         this._inputArea.style.display = 'none';
-        this._adjustMessagesAreaHeight();
-    }
-
-    _adjustMessagesAreaHeight() {
-        const hiddenElements = [...this._chatWidget.children].filter(child => child.classList.contains('hidden'));
-        const totalHiddenHeight = hiddenElements.reduce((sum, child) => sum + child.offsetHeight, 0);
-        const containerHeight = this._chatWidget.offsetHeight;
-        this._messagesArea.style.height = `calc(100% - ${containerHeight - totalHiddenHeight}px)`;
     }
 
     _handleContainerResize() {
-        this._adjustMessagesAreaHeight();
-        this._adjustSendButtonWidth();
-        //console.log('Container resized');
-    }
-
-    _adjustSendButtonWidth() {
-        const sendButtonText = this._sendButton.textContent.trim();
-        const fontSize = parseFloat(getComputedStyle(this._sendButton).fontSize);
-        const minWidth = fontSize * sendButtonText.length + 16;
-        this._sendButton.style.minWidth = `${minWidth}px`;
+        // Layout is handled by CSS flexbox — no JS height calculation needed.
+        // This hook exists for future use or custom resize callbacks.
     }
 
     //messagesArea functions
@@ -178,17 +167,18 @@ class quikchat {
         const msgid = this.msgid;
         const messageDiv = document.createElement('div');
         const msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
-        // TODO: hash userString for class name
         messageDiv.classList.add('quikchat-message', msgidClass);
         this.msgid++;
         messageDiv.classList.add(this._messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
 
         const userDiv = document.createElement('div');
+        userDiv.classList.add('quikchat-user-label');
+        userDiv.style.textAlign = input.align;
         userDiv.innerHTML = input.userString;
-        userDiv.style = `width: 100%; text-align: ${input.align}; font-size: 1em; font-weight:700;`;
 
         const contentDiv = document.createElement('div');
-        contentDiv.style = `width: 100%; text-align: ${input.align};`;
+        contentDiv.classList.add('quikchat-message-content');
+        contentDiv.style.textAlign = input.align;
         contentDiv.innerHTML = input.content;
 
         messageDiv.appendChild(userDiv);
@@ -197,11 +187,10 @@ class quikchat {
 
         // Scroll to the last message only if the user is not actively scrolling up
         if (!this.userScrolledUp) {
-            this._messagesArea.lastElementChild.scrollIntoView();
+            this._messagesArea.scrollTop = this._messagesArea.scrollHeight;
         }
 
         this._textEntry.value = '';
-        this._adjustMessagesAreaHeight();
         const timestamp = new Date().toISOString();
         const updatedtime = timestamp;
 
@@ -219,79 +208,67 @@ class quikchat {
         return msgid;
     }
 
-   
+
     messageAddNew(content = "", userString = "user", align = "right", role = "user") {
         return this.messageAddFull(
             { content: content, userString: userString, align: align, role: role }
         );
     }
     messageRemove(n) {
-        // use css selector to remove the message
-        let sucess = false;
+        let success = false;
         try {
             this._messagesArea.removeChild(this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`));
-            sucess = true;
+            success = true;
         }
-        catch (_err) {
-            console.log(`${String(n)} : Message ID not found`); // eslint-disable-line no-console
+        catch (_error) {
+            // Message ID not found
         }
-        if (sucess) {
-            // slow way to remove from history
-            //this._history = this._history.filter((item) => item.msgid !== n); // todo make this more efficient
-
-            // better way to delete this from history
+        if (success) {
             this._history.splice(this._history.findIndex((item) => item.msgid === n), 1);
         }
-        return sucess;
+        return success;
     }
     /* returns the message html object from the DOM
     */
     messageGetDOMObject(n) {
         let msg = null;
-        // now use css selector to get the message 
         try {
             msg = this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`);
         }
-        catch (_err) {
-            console.log(`${String(n)} : Message ID not found`); // eslint-disable-line no-console
+        catch (_error) {
+            // Message ID not found
         }
         return msg;
     }
     /* returns the message content only
     */
     messageGetContent(n) {
-        let content = ""
-        // now use css selector to get the message 
+        let content = "";
         try {
-            // get from history..
             content = this._history.filter((item) => item.msgid === n)[0].content;
-            //content =  this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.textContent;
         }
-        catch (_err) {
-            console.log(`${String(n)} : Message ID not found`); // eslint-disable-line no-console
+        catch (_error) {
+            // Message ID not found
         }
         return content;
     }
 
     /* append message to the message content
     */
-
     messageAppendContent(n, content) {
         let success = false;
         try {
             this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML += content;
-            // update history
             const item = this._history.filter((entry) => entry.msgid === n)[0];
             item.content += content;
             item.updatedtime = new Date().toISOString();
             success = true;
 
-            // Scroll to the last message only if the user is not actively scrolling up
             if (!this.userScrolledUp) {
-                this._messagesArea.lastElementChild.scrollIntoView();
+                this._messagesArea.scrollTop = this._messagesArea.scrollHeight;
             }
-        } catch (_err) {
-            console.log(`${String(n)} : Message ID not found`); // eslint-disable-line no-console
+        } catch (_error) {
+            // Message ID not found
         }
         return success;
     }
@@ -302,31 +279,28 @@ class quikchat {
         let success = false;
         try {
             this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML = content;
-            // update history
             const item = this._history.filter((entry) => entry.msgid === n)[0];
             item.content = content;
             item.updatedtime = new Date().toISOString();
             success = true;
 
-            // Scroll to the last message only if the user is not actively scrolling up
             if (!this.userScrolledUp) {
-                this._messagesArea.lastElementChild.scrollIntoView();
+                this._messagesArea.scrollTop = this._messagesArea.scrollHeight;
             }
-        } catch (_err) {
-            console.log(`${String(n)} : Message ID not found`); // eslint-disable-line no-console
+        } catch (_error) {
+            // Message ID not found
         }
         return success;
     }
-    
+
     // history functions
     /**
-     * 
-     * @param {*} n 
-     * @param {*} m 
+     *
+     * @param {*} n
+     * @param {*} m
      * @returns array of history messages
      */
     historyGet(n, m) {
-
         if (n === undefined) {
             n = 0;
             m = this._history.length;
@@ -334,8 +308,6 @@ class quikchat {
         if (m === undefined) {
             m = n < 0 ? m : n + 1;
         }
-        // remember that entries could be deleted.  TODO: So we need to return the actual history entries
-        // so now we need to find the array index that correspondes to messageIds n (start) and m (end)
 
         return this._history.slice(n, m);
     }
@@ -351,14 +323,13 @@ class quikchat {
 
     historyGetMessage(n) {
         if (n >= 0 && n < this._history.length) {
-            this._history[n];
+            return this._history[n];
         }
         return {};
-
     }
 
     historyGetMessageContent(n) {
-        return this._history[n].message;
+        return this._history[n].content;
     }
 
 
@@ -379,17 +350,17 @@ class quikchat {
     /**
      * quikchat.loremIpsum() - Generate a simple string of Lorem Ipsum text (sample typographer's text) of numChars in length.
      * borrowed from github.com/deftio/bitwrench.js
-     * @param {number} numChars - The number of characters to generate (random btw 25 and 150 if undefined).    
+     * @param {number} numChars - The number of characters to generate (random btw 25 and 150 if undefined).
      * @param {number} [startSpot=0] - The starting index in the Lorem Ipsum text. If undefined, a random startSpot will be generated.
      * @param {boolean} [startWithCapitalLetter=true] - If true, capitalize the first character or inject a capital letter if the first character isn't a capital letter.
-     * 
+     *
      * @returns {string} A string of Lorem Ipsum text.
-     * 
-     * @example 
+     *
+     * @example
      * // Returns 200 characters of Lorem Ipsum starting from index 50
      * loremIpsum(200, 50);
-     * 
-     * @example 
+     *
+     * @example
      * //Returns a 200 Lorem Ipsum characters starting from a random index
      * loremIpsum(200);
      */
@@ -398,7 +369,7 @@ class quikchat {
         const loremText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. ";
 
         if (typeof numChars !== "number") {
-            numChars = Math.floor(Math.random() * (150)) + 25;
+            numChars = Math.floor(Math.random() * 126) + 25;
         }
 
         if (startSpot === undefined) {
@@ -414,10 +385,6 @@ class quikchat {
 
         const l = loremText.substring(startSpot) + loremText.substring(0, startSpot);
 
-        if (typeof numChars !== "number") {
-            numChars = l.length;
-        }
-
         let s = "";
         while (numChars > 0) {
             s += numChars < l.length ? l.substring(0, numChars) : l;
@@ -429,9 +396,7 @@ class quikchat {
         }
 
         if (startWithCapitalLetter) {
-            let c = s[0].toUpperCase();
-            c = /[A-Z]/.test(c) ? c : "M";
-            s = c + s.substring(1);
+            s = s[0].toUpperCase() + s.substring(1);
         }
 
         return s;

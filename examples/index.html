@@ -1,97 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-        type="image/gif">
-
-    <!-- include bitwrench for styling -->
-    <title>Examples</title>
-    <style>
-        body {
-            width: 100%;
-            height: 100%;
-            font-family: sans-serif;
-        }
-        #container {
-            width: 90%;
-            margin: 0 auto;
-            padding: 1rem;
-        }
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            font-weight: 700;
-        }
-
-        h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        a {
-            display: inline-block;
-            text-decoration: underline;
-         
-        }
-
-        a:hover {
-            font-weight: 700;
-            color: #0622dd;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — Examples</title>
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="../site/site.css" rel="stylesheet">
 </head>
-
 <body>
-    <!-- example page explains how to use quikchat -->
-    <div id="container">
-        <h1>QuikChat Examples</h1>
-        <p>These examples demonstrate how to use QuikChat in your projects. Included are basic themes for light, dark,
-            and debugging.</p>
 
-        <h2>Basic Usage as Module</h2>
-        <p>This example demonstrates how to create a basic chat widget with QuikChatJS using ESM module import</p>
-        <a href="./example_esm.html">View Example ESM</a>
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a class="site-logo" href="../site/">QuikChat</a>
+    <a href="../site/#demo">Demo</a>
+    <a href="../site/#install">Install</a>
+    <a href="../site/#api">API</a>
+    <a href="./">Examples</a>
+    <a href="../site/theming.html">Theming</a>
+    <a href="https://github.com/deftio/quikchat">GitHub</a>
+    <a href="#" onclick="document.body.classList.toggle('site-dark');return false" style="margin-left:auto">Light/Dark</a>
+  </div>
+</nav>
 
-        <h2>Basic Usage as UMD</h2>
-        <p>This example demonstrates how to create a basic chat widget with QuikChatJS using UMD script tag import</p>
-        <a href="./example_umd.html">View Example UMD</a>
+<div class="wrap">
 
-        <h2>Dual Chatrooms</h2>
-        <p>This example demonstrates how to create two chatrooms that can send messages to each other</p>
-        <a href="./dual-chatrooms.html">View Example Dual Chatrooms</a>
+  <header style="padding: 32px 0 16px;">
+    <h1>Examples</h1>
+    <p>Working examples showing how to use QuikChat. Includes basic usage, theming, multiple chats, and LLM integrations.</p>
+  </header>
 
-        <h2>Simple Ollama</h2>
-        <p>This example shows how to use quikchat with a local LLM using <a href="https://ollama.ai">Ollama</a></p>
-        <a href="./simple_ollama.html">View Example Ollama</a>
+  <section>
+    <h2>Basic Usage</h2>
+    <ul class="example-list">
+      <li><a href="example_umd.html">UMD (script tag)</a> <span class="desc">— theme switching, toggle controls</span></li>
+      <li><a href="example_esm.html">ESM (module import)</a> <span class="desc">— ES module usage</span></li>
+      <li><a href="dual-chatrooms.html">Dual Chatrooms</a> <span class="desc">— two widgets that send messages to each other</span></li>
+    </ul>
+  </section>
 
-        <h2>LLM with Conversational Memory</h2>
-        <p>This example demonstrates how to use quikchat with a local LLM using Ollama where quikchat provides the chat
-            history
-            to Ollama provides the llm model. This allows the chat to "remember" what is being discussed.</p>
-        <a href="./ollama_with_memory.html">View Example Ollama with Memory</a>
+  <section>
+    <h2>LLM Integrations</h2>
+    <ul class="example-list">
+      <li><a href="simple_ollama.html">Ollama (simple)</a> <span class="desc">— local LLM chat with <a href="https://ollama.ai">Ollama</a></span></li>
+      <li><a href="ollama_with_memory.html">Ollama with Memory</a> <span class="desc">— conversational context via historyGet()</span></li>
+      <li><a href="lmstudio_with_memory.html">LM Studio with Memory</a> <span class="desc">— local LLM via <a href="https://lmstudio.ai/">LM Studio</a></span></li>
+      <li><a href="openai.html">OpenAI</a> <span class="desc">— GPT-4o with token streaming</span></li>
+    </ul>
+  </section>
 
-        <h2>LLM with Conversational Memory using LMStudio</h2>
-        <p>This example demonstrates how to use quikchat with a local LLM using LMStudio where quikchat provides the
-            chat
-            history to LMStudio provides the llm model. This allows the chat to "remember" what is being discussed.
-            <br>This
-            example assumes <a href='https://lmstudio.ai/'>LMStudio</a> is installed and running on port 1234 locally.
-            Also it
-            assumes the llama3.1 model is running. This example will not work on the github pages demo website you must
-            run this
-            locally.</p>
-        <a href="./lmstudio_with_memory.html">View Example LMStudio with Memory</a>
+  <section>
+    <h2>Framework Integration</h2>
+    <ul class="example-list">
+      <li><a href="quikchat-react.html">React</a> <span class="desc">— using quikchat inside a React component</span></li>
+    </ul>
+  </section>
 
-        <h2>OpenAI</h2>
-        <p>This example demonstrates how to use QuikChat with OpenAI's GPT-4o model. You can use this example with any
-            API that
-            supports token streaming. The example uses the OpenAI API to generate responses to user prompts.</p>
-        <a href="./openai.html">View Example OpenAI</a>
-        <br>
-    </div>
+</div>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <a href="https://github.com/deftio/quikchat">GitHub</a> &middot;
+    <a href="https://www.npmjs.com/package/quikchat">npm</a> &middot;
+    BSD-2-Clause License &middot;
+    &copy; <a href="https://github.com/deftio">deftio</a>
+  </div>
+</footer>
+
 </body>
-
 </html>

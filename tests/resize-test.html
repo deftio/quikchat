@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { margin: 0; padding: 0; }
+    body { font-family: sans-serif; height: 100vh; width: 100vw; }
+    #container { height: 500px; width: 600px; border: 2px solid red; }
+  </style>
+  <link rel="stylesheet" href="../dist/quikchat.css" />
+</head>
+<body>
+  <div id="container"></div>
+  <script src="../dist/quikchat.umd.js"></script>
+  <script>
+    window.chat = new quikchat('#container', (chat, msg) => {
+      chat.messageAddNew(msg, 'me', 'right');
+    }, {
+      theme: 'quikchat-theme-light',
+      titleArea: { title: 'Test Chat', align: 'left', show: true },
+      messagesArea: { alternating: true },
+    });
+    for (let i = 0; i < 15; i++) {
+      chat.messageAddNew('Message ' + i + ' — Lorem ipsum dolor sit amet, consectetur adipiscing elit.', 'user', 'right');
+    }
+  </script>
+</body>
+</html>

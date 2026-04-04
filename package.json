@@ -13,9 +13,17 @@
   },
   "homepage": "https://github.com/deftio/quikchat",
   "main": "dist/quikchat.umd.min.js",
-  "module": "dist/quikchat.min.js",
+  "module": "dist/quikchat.esm.min.js",
   "unpkg": "dist/quikchat.umd.min.js",
   "browser": "dist/quikchat.umd.min.js",
+  "exports": {
+    ".": {
+      "import": "./dist/quikchat.esm.min.js",
+      "require": "./dist/quikchat.cjs.min.js",
+      "default": "./dist/quikchat.umd.min.js"
+    },
+    "./dist/*": "./dist/*"
+  },
   "files": [
     "dist"
   ],
@@ -24,18 +32,23 @@
     "examples": "examples"
   },
   "scripts": {
+    "dev": "node ./tools/devserver.cjs",
     "lint": "eslint src/",
     "test": "jest --coverage",
+    "test:e2e": "npx playwright test tests/resize.spec.cjs --reporter=line",
     "minifyCSS": "node ./tools/minifyCSS.cjs",
     "reportSizes": "node ./tools/reportSizes.cjs",
     "updateVersion": "node ./tools/updateVersion",
-    "makeIndexHTML": "node ./node_modules/docbat/src/docbat-cli.js -i README.md -o index.html",
-    "build": "npm run lint && npm run updateVersion && npm run makeIndexHTML && npm run minifyCSS && rollup -c && npm run reportSizes",
+    "build": "npm run lint && npm run updateVersion && npm run minifyCSS && rollup -c && npm run reportSizes",
     "feature": "bash ./tools/feature.sh",
     "prepare": "husky"
   },
   "jest": {
     "testEnvironment": "jsdom",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "\\.spec\\.cjs$"
+    ],
     "transform": {
       "^.+\\.js$": "babel-jest"
     },
@@ -48,7 +61,15 @@
       "html",
       "text",
       "lcov"
-    ]
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 97,
+        "branches": 97,
+        "functions": 97,
+        "lines": 97
+      }
+    }
   },
   "keywords": [
     "chat",
@@ -72,7 +93,6 @@
     "clean-css": "^5.3.3",
     "clean-css-cli": "^5.6.3",
     "cssnano": "^7.1.4",
-    "docbat": "^0.9.3",
     "eslint": "^10.2.0",
     "globals": "^17.4.0",
     "husky": "^9.1.7",

@@ -21,13 +21,22 @@ Quikchat is a vanilla (no dependancies) JavaScript chat control that can be easi
 * Left / Right / Center support of individual users
 * Callback for all message events (to monitor chat)
 
+## Documentation
+
+| Guide | Description |
+|---|---|
+| [Getting Started](docs/getting-started.md) | Installation, minimal example, constructor options |
+| [API Reference](docs/api-reference.md) | Every public method, property, and return value |
+| [Streaming](docs/streaming.md) | Token-by-token LLM response display |
+| [Multi-User Chat](docs/multi-user-chat.md) | Multiple users, dual instances, message routing |
+| [LLM Integration](docs/llm-integration.md) | Ollama, OpenAI, LM Studio, tool calls, conversational memory |
+| [Theming](docs/theming.md) | Custom themes, CSS architecture, built-in themes |
+| [CSS Architecture](docs/css-architecture.md) | Base vs theme separation, ARIA accessibility |
+
 ## Demo & Examples
 [Simple Demo](https://deftio.github.io/quikchat/examples/example_umd.html)
 
-Full Examples are in the repo examples folder: 
-[Example Code and Demo](./examples/index.html).
-
-Examples include using ESM, UMD modules, theming, running multiple chats on the same page, and integration with LLM providers such as Ollama, LMStudio, OpenAI compatible providers.
+Full examples are in the [examples/](./examples/index.html) folder, including ESM/UMD usage, theming, running multiple chats on the same page, and integration with LLM providers (Ollama, LM Studio, OpenAI).
 
 ## Installation
 
@@ -63,20 +72,19 @@ Initialize quikchat in your JavaScript code by providing the container element a
 See /examples for full working code.
 
 ```javascript
-chat = new quikchat(
-      "#chat-container",   // this can be a css selector such as "#chat-container" or DOM element
-      {
-      theme: 'quikchat-theme-light', // set theme, see quikchat.css
-      (chat, msg) => { // this callback triggered when user hits the Send
-            // messages are not automatically echoed.
-            // allows filtering / other processing of the message before posting.
-            chat.messageAddNew(msg, 'me', 'right'); // echo msg to chat area 
+const chat = new quikchat(
+      "#chat-container",   // CSS selector or DOM element
+      (chat, msg) => {     // callback triggered when user clicks Send or Shift+Enter
+            // messages are not automatically echoed — you decide what to do
+            chat.messageAddNew(msg, 'me', 'right'); // echo msg to chat area
 
             // now call an LLM or do other actions with msg
-            // ... callLLM(msg) ... do other logic if needed.
-            // or callLLM(chat.historyGet());  // pass full history (can also filter)
-        }
-        titleArea: { title: 'My Chat', align: 'left', show: true }, // internal title area if desired
+            // callLLM(msg);
+            // callLLM(chat.historyGet());  // pass full history for conversational memory
+      },
+      {
+        theme: 'quikchat-theme-light',
+        titleArea: { title: 'My Chat', align: 'left', show: true },
       });
 
 // Add a message at any point not just from callback
@@ -100,59 +108,41 @@ chat.changeTheme("quikchat-theme-dark"); // change theme on the fly (see quikcha
 
 ## Theming
 
-QuikChat allows theming using CSS of all the messages, and user area, and overal widget.
+QuikChat themes are pure appearance — colors, borders, border-radius, and shadows. The base CSS handles all layout and sizing. To create a custom theme, copy the light theme and change the colors. See [Theming Guide](docs/theming.md) for full details.
 
-Below is the prebuilt 'light' theme.  To change the theme, make a new set of classes with different values but the same css selector naming (e.g. change "quikchat-theme-light" to "my-theme") and save as a style.  Then pass the "my-theme" to the constructor or to the changeTheme() function.
-
-Themes can be changed at anytime by calling
-myChatWidget.changeTheme(newTheme) where myChatWidget is the instance of your widget. 
-
-If several widgets are on the same page, each can have a separate theme.
+Themes can be changed at any time: `chat.changeTheme('my-theme')`. Multiple widgets on the same page can each have a different theme.
 
 ```css
-/* quikchat theme light */
-.quikchat-theme-light {
+/* Example: custom theme (appearance only — no padding, font-size, etc.) */
+.my-theme {
   border: 1px solid #cccccc;
   border-radius: 10px;
   background-color: #f9f9f9;
 }
-  
-.quikchat-theme-light .quikchat-title-area {
-  padding: 8px;
+
+.my-theme .quikchat-title-area {
   color: #333;
 }
-  
-.quikchat-theme-light .quikchat-messages-area {
+
+.my-theme .quikchat-messages-area {
   background-color: #ffffffe2;
   color: #333;
 }
- 
-/* support for alternating row styles */
-.quikchat-theme-light .quikchat-messages-area-alt .quikchat-message:nth-child(odd) {
-    background-color: #fffffff0;
-    color: #005662;
-}
-.quikchat-theme-light .quikchat-messages-area-alt .quikchat-message:nth-child(even) {
-    background-color: #eeeeeee9;
-    color: #353535;
-}
 
-/* input area / text entry / send button */
-.quikchat-theme-light .quikchat-input-area {
+.my-theme .quikchat-input-area {
   background-color: #f9f9f9;
-  border-bottom-left-radius : 10px;
-  border-bottom-right-radius : 10px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
 }
 
-.quikchat-theme-light .quikchat-input-textbox {
+.my-theme .quikchat-input-textbox {
   background-color: #ffffff;
   border: 1px solid #ccc;
   border-radius: 4px;
-  font-size: 14px;
   color: #333;
 }
-  
-.quikchat-theme-light .quikchat-input-send-btn {
+
+.my-theme .quikchat-input-send-btn {
   background-color: #4caf50;
   color: white;
   border: none;
@@ -198,7 +188,7 @@ quikchat is licensed under the BSD-2 License.
 
 ## Home Page
 
-[quikchat homepage and source code](https://githhub.com/deftio/quikchat)
+[quikchat homepage and source code](https://github.com/deftio/quikchat)
 
  
 

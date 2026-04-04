@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — Theming Guide</title>
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="site.css" rel="stylesheet">
+  <link href="../dist/quikchat.css" rel="stylesheet">
+  <script src="../dist/quikchat.umd.min.js"></script>
+  <style>
+    .css-diagram {
+      font-size: 0.84rem;
+      line-height: 1.6;
+      background: #f8f8f8;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 16px;
+      overflow-x: auto;
+    }
+    .css-diagram .comment { color: #888; }
+    .css-diagram .selector { color: #0056b3; font-weight: 600; }
+    .css-diagram .prop { color: #1a1a1a; }
+
+    .side-by-side { display: flex; gap: 20px; align-items: stretch; }
+    .side-by-side > * { flex: 1; min-width: 0; }
+    @media (max-width: 700px) { .side-by-side { flex-direction: column; } }
+
+    .theme-preview { height: 280px; }
+  </style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a class="site-logo" href="./">QuikChat</a>
+    <a href="./#demo">Demo</a>
+    <a href="./#install">Install</a>
+    <a href="./#api">API</a>
+    <a href="../examples/">Examples</a>
+    <a href="theming.html">Theming</a>
+    <a href="https://github.com/deftio/quikchat">GitHub</a>
+    <a href="#" onclick="document.body.classList.toggle('site-dark');return false" style="margin-left:auto">Light/Dark</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <header style="padding: 32px 0 16px;">
+    <h1>Theming Guide</h1>
+    <p>How QuikChat CSS is organized and how to create your own themes.</p>
+  </header>
+
+  <!-- Architecture -->
+  <section>
+    <h2>CSS Architecture</h2>
+    <p>QuikChat's CSS has two layers:</p>
+    <ul>
+      <li><strong>Base styles</strong> — structural layout (flexbox, sizing, padding). These never change between themes.</li>
+      <li><strong>Theme styles</strong> — visual appearance (colors, backgrounds, borders, shadows, border-radius). Scoped under a theme class like <code>.quikchat-theme-light</code>.</li>
+    </ul>
+    <p>This means a theme only needs to define colors and visual properties — the layout is handled for you.</p>
+  </section>
+
+  <!-- Widget Structure -->
+  <section>
+    <h2>Widget Structure</h2>
+    <p>Every QuikChat widget renders this DOM structure. Each element has a CSS class you can target:</p>
+<pre><code>&lt;div class="quikchat-base <strong>quikchat-theme-light</strong>"&gt;    <span style="color:#888">/* outer container + theme class */</span>
+  &lt;div class="<strong>quikchat-title-area</strong>"&gt;...&lt;/div&gt;        <span style="color:#888">/* title bar (hideable) */</span>
+  &lt;div class="<strong>quikchat-messages-area</strong>"&gt;             <span style="color:#888">/* scrollable message list */</span>
+    &lt;div class="<strong>quikchat-message</strong>"&gt;                 <span style="color:#888">/* one per message */</span>
+      &lt;div class="<strong>quikchat-user-label</strong>"&gt;...&lt;/div&gt;  <span style="color:#888">/* sender name */</span>
+      &lt;div&gt;...&lt;/div&gt;                              <span style="color:#888">/* message content */</span>
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="<strong>quikchat-input-area</strong>"&gt;               <span style="color:#888">/* input bar (hideable) */</span>
+    &lt;textarea class="<strong>quikchat-input-textbox</strong>"&gt;...&lt;/textarea&gt;
+    &lt;button class="<strong>quikchat-input-send-btn</strong>"&gt;Send&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+    <p>Alternating row colors use the additional class <code>quikchat-messages-area-alt</code> on the messages container, which you target with <code>:nth-child(odd)</code> and <code>:nth-child(even)</code> selectors.</p>
+  </section>
+
+  <!-- Switching Themes -->
+  <section>
+    <h2>Switching Themes</h2>
+    <p>Set the theme in the constructor or change it at runtime:</p>
+<pre><code>// At construction
+const chat = new quikchat("#container", onSend, {
+  theme: "quikchat-theme-dark"
+});
+
+// At any time later
+chat.changeTheme("quikchat-theme-light");</code></pre>
+    <p>This swaps the theme class on the widget root element. All three built-in themes:</p>
+    <div class="demo-controls">
+      <span class="btn-group">
+        <button class="btn active" id="previewLight" onclick="previewTheme('quikchat-theme-light')">Light</button>
+        <button class="btn" id="previewDark" onclick="previewTheme('quikchat-theme-dark')">Dark</button>
+        <button class="btn" id="previewDebug" onclick="previewTheme('quikchat-theme-debug')">Debug</button>
+        <button class="btn" id="previewCustom" onclick="previewTheme('quikchat-theme-ocean')">Custom (below)</button>
+      </span>
+    </div>
+    <div class="theme-preview" id="theme-preview"></div>
+  </section>
+
+  <!-- Creating a Custom Theme -->
+  <section>
+    <h2>Creating a Custom Theme</h2>
+    <p>A theme is just a set of CSS rules scoped under your theme class name. Here's a complete example:</p>
+<pre><code>/* quikchat-theme-ocean */
+.quikchat-theme-ocean {
+  border: 1px solid #1a6b7a;
+  border-radius: 10px;
+  background-color: #0d2b36;
+  color: #d4edee;
+}
+
+.quikchat-theme-ocean .quikchat-title-area {
+  background-color: #0d2b36;
+  color: #5ec4d4;
+  border-bottom: 1px solid #1a4a5a;
+}
+
+.quikchat-theme-ocean .quikchat-messages-area {
+  background-color: #0a2530;
+  color: #d4edee;
+}
+
+.quikchat-theme-ocean .quikchat-messages-area-alt .quikchat-message:nth-child(odd) {
+  background-color: #0d3040;
+  border-radius: 4px;
+}
+
+.quikchat-theme-ocean .quikchat-messages-area-alt .quikchat-message:nth-child(even) {
+  background-color: #11384a;
+  border-radius: 4px;
+}
+
+.quikchat-theme-ocean .quikchat-input-area {
+  background-color: #0d2b36;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.quikchat-theme-ocean .quikchat-input-textbox {
+  background-color: #163a48;
+  color: #d4edee;
+  border: 1px solid #1a5a6a;
+  border-radius: 4px;
+}
+
+.quikchat-theme-ocean .quikchat-input-send-btn {
+  background-color: #1a8a6a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+}
+
+.quikchat-theme-ocean .quikchat-input-send-btn:hover {
+  background-color: #1fa07a;
+}</code></pre>
+    <p>Include this CSS in your page (inline or in a stylesheet), then use it:</p>
+    <pre><code>chat.changeTheme("quikchat-theme-ocean");</code></pre>
+    <p>Click "Custom" above to see this ocean theme in action.</p>
+  </section>
+
+  <!-- What to Style -->
+  <section>
+    <h2>Theme Properties Reference</h2>
+    <p>A theme typically sets these properties on each element. You don't need all of them — only set what you want to change from the defaults.</p>
+    <table class="api-table">
+      <tr><th>Selector</th><th>Typical Properties</th></tr>
+      <tr><td><code>.quikchat-theme-NAME</code></td><td><code>background-color</code>, <code>color</code>, <code>border</code>, <code>border-radius</code>, <code>box-shadow</code></td></tr>
+      <tr><td><code>.quikchat-theme-NAME .quikchat-title-area</code></td><td><code>background-color</code>, <code>color</code>, <code>border-bottom</code></td></tr>
+      <tr><td><code>.quikchat-theme-NAME .quikchat-messages-area</code></td><td><code>background-color</code>, <code>color</code></td></tr>
+      <tr><td><code>...alt .quikchat-message:nth-child(odd/even)</code></td><td><code>background-color</code>, <code>color</code>, <code>border-radius</code></td></tr>
+      <tr><td><code>.quikchat-theme-NAME .quikchat-input-area</code></td><td><code>background-color</code>, <code>border-*-radius</code></td></tr>
+      <tr><td><code>.quikchat-theme-NAME .quikchat-input-textbox</code></td><td><code>background-color</code>, <code>color</code>, <code>border</code>, <code>border-radius</code></td></tr>
+      <tr><td><code>.quikchat-theme-NAME .quikchat-input-send-btn</code></td><td><code>background-color</code>, <code>color</code>, <code>border</code>, <code>border-radius</code></td></tr>
+      <tr><td><code>...quikchat-input-send-btn:hover</code></td><td><code>background-color</code></td></tr>
+    </table>
+  </section>
+
+  <!-- Tips -->
+  <section>
+    <h2>Tips</h2>
+    <ul>
+      <li>Use the <strong>debug theme</strong> during development — each section has a distinct color so you can see exactly where each area starts and ends.</li>
+      <li>Multiple widgets on the same page can each have a different theme.</li>
+      <li>Themes can be switched at any time without losing messages or state.</li>
+      <li>The full source for all built-in themes is in <a href="../dist/quikchat.css">quikchat.css</a> — copy one as a starting point.</li>
+    </ul>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <a href="https://github.com/deftio/quikchat">GitHub</a> &middot;
+    <a href="https://www.npmjs.com/package/quikchat">npm</a> &middot;
+    BSD-2-Clause License &middot;
+    &copy; <a href="https://github.com/deftio">deftio</a>
+  </div>
+</footer>
+
+<style>
+/* Ocean theme — inline for the demo */
+.quikchat-theme-ocean { border: 1px solid #1a6b7a; border-radius: 10px; background-color: #0d2b36; color: #d4edee; }
+.quikchat-theme-ocean .quikchat-title-area { background-color: #0d2b36; color: #5ec4d4; border-bottom: 1px solid #1a4a5a; }
+.quikchat-theme-ocean .quikchat-messages-area { background-color: #0a2530; color: #d4edee; }
+.quikchat-theme-ocean .quikchat-messages-area-alt .quikchat-message:nth-child(odd) { background-color: #0d3040; border-radius: 4px; }
+.quikchat-theme-ocean .quikchat-messages-area-alt .quikchat-message:nth-child(even) { background-color: #11384a; border-radius: 4px; }
+.quikchat-theme-ocean .quikchat-input-area { background-color: #0d2b36; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; }
+.quikchat-theme-ocean .quikchat-input-textbox { background-color: #163a48; color: #d4edee; border: 1px solid #1a5a6a; border-radius: 4px; }
+.quikchat-theme-ocean .quikchat-input-send-btn { background-color: #1a8a6a; color: white; border: none; border-radius: 4px; }
+.quikchat-theme-ocean .quikchat-input-send-btn:hover { background-color: #1fa07a; }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  window.previewChat = new quikchat("#theme-preview",
+    (chat, msg) => {
+      chat.messageAddNew(msg, "you", "right", "user");
+      setTimeout(() => {
+        chat.messageAddNew(quikchat.loremIpsum(Math.floor(Math.random() * 60) + 20), "bot", "left", "assistant");
+      }, 200);
+    },
+    {
+      theme: "quikchat-theme-light",
+      titleArea: { title: "Theme Preview", align: "left", show: true },
+      messagesArea: { alternating: true }
+    }
+  );
+  previewChat.messageAddNew("This is what your theme looks like.", "bot", "left", "assistant");
+  previewChat.messageAddNew("Try switching between themes above.", "bot", "left", "assistant");
+  previewChat.messageAddNew("The ocean theme is a custom example.", "bot", "left", "assistant");
+});
+
+function previewTheme(theme) {
+  previewChat.changeTheme(theme);
+  document.querySelectorAll("#previewLight, #previewDark, #previewDebug, #previewCustom").forEach(b => b.classList.remove("active"));
+  const map = {
+    "quikchat-theme-light": "previewLight",
+    "quikchat-theme-dark": "previewDark",
+    "quikchat-theme-debug": "previewDebug",
+    "quikchat-theme-ocean": "previewCustom"
+  };
+  if (map[theme]) document.getElementById(map[theme]).classList.add("active");
+}
+</script>
+
+</body>
+</html>

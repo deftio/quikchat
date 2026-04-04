@@ -1,13 +1,14 @@
 # QuikChat JS TODO list
 
+* CSS cleanup: separate structural from theme properties (see dev/quikchat-css-cleanup.md)
 * show/hide timestamps
 * add support for right to left languages by making css with [send] on left
 * add support for inline "user" icon with chat message instead of on top
 * example Anthropic
 * example Mistral
 * example React Component
-* test suite coverage to 90%
-* add travis ci / build passing badge 
+* test suite coverage to 97% (threshold enforced in jest config)
+* improve docs site (see discussion in dev/quikchat-css-cleanup.md and bitwrench comparison)
 * clean up scroll to bottom behavior (in progress)
 * add stats api (num messages, users, total chars written etc)
 * add user mgmt

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — Zero-dependency chat widget for the browser</title>
+  <meta name="description" content="A vanilla JavaScript chat control with zero runtime dependencies. Themeable, LLM-ready, under 4KB gzipped.">
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="site.css" rel="stylesheet">
+  <link href="../dist/quikchat.css" rel="stylesheet">
+  <script src="../dist/quikchat.umd.min.js"></script>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a class="site-logo" href="./">QuikChat</a>
+    <a href="#demo">Demo</a>
+    <a href="#install">Install</a>
+    <a href="#api">API</a>
+    <a href="../examples/">Examples</a>
+    <a href="theming.html">Theming</a>
+    <a href="https://github.com/deftio/quikchat">GitHub</a>
+    <a href="#" onclick="document.body.classList.toggle('site-dark');return false" style="margin-left:auto">Light/Dark</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <header style="padding: 32px 0 24px;">
+    <h1>QuikChat</h1>
+    <p style="color: #555; font-size: 1.05rem; margin: 0;">
+      A vanilla JavaScript chat widget with zero runtime dependencies.<br>
+      Themeable, LLM-ready, under 4KB gzipped.
+    </p>
+    <div class="badges">
+      <a href="https://opensource.org/licenses/BSD-2-Clause"><img src="https://img.shields.io/badge/License-BSD%202--Clause-blue.svg" alt="License"></a>
+      <a href="https://www.npmjs.com/package/quikchat"><img src="https://img.shields.io/npm/v/quikchat.svg?style=flat-square" alt="npm version"></a>
+      <a href="https://github.com/deftio/quikchat/actions/workflows/ci.yml"><img src="https://github.com/deftio/quikchat/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+    </div>
+  </header>
+
+  <section id="demo">
+    <h2>Try it</h2>
+    <p>This is a live widget. Type a message and hit Send (or Shift+Enter).</p>
+    <div class="demo-controls">
+      <button class="btn" onclick="demoChat.titleAreaToggle()">Toggle Title</button>
+      <button class="btn" onclick="demoChat.inputAreaToggle()">Toggle Input</button>
+      <button class="btn" onclick="demoChat.messagesAreaAlternateColorsToggle()">Alternating</button>
+      <span class="sep"></span>
+      <span class="btn-group">
+        <button class="btn" id="themeBtnLight" onclick="setTheme('quikchat-theme-light')">Light</button>
+        <button class="btn" id="themeBtnDark" onclick="setTheme('quikchat-theme-dark')">Dark</button>
+        <button class="btn" id="themeBtnDebug" onclick="setTheme('quikchat-theme-debug')">Debug</button>
+      </span>
+    </div>
+    <div class="demo-row">
+      <div class="demo-box" id="demo-main"></div>
+    </div>
+  </section>
+
+  <section id="install">
+    <h2>Install</h2>
+    <h3>npm</h3>
+    <pre><code>npm install quikchat</code></pre>
+    <h3>CDN (no build step needed)</h3>
+<pre><code>&lt;link rel="stylesheet" href="https://unpkg.com/quikchat/dist/quikchat.css"&gt;
+&lt;script src="https://unpkg.com/quikchat/dist/quikchat.umd.min.js"&gt;&lt;/script&gt;</code></pre>
+    <h3>ESM import</h3>
+    <pre><code>import quikchat from 'quikchat';</code></pre>
+  </section>
+
+  <section>
+    <h2>Quick Start</h2>
+    <p>Create a container, include quikchat, and initialize with a callback:</p>
+<pre><code>&lt;div id="chat" style="height: 400px;"&gt;&lt;/div&gt;
+&lt;script&gt;
+const chat = new quikchat("#chat",
+  (chat, msg) =&gt; {
+    chat.messageAddNew(msg, "me", "right");
+    // send msg to your backend / LLM and post the response:
+    chat.messageAddNew("Got it!", "bot", "left");
+  },
+  {
+    theme: "quikchat-theme-light",
+    titleArea: { title: "My Chat", align: "left", show: true }
+  }
+);
+&lt;/script&gt;</code></pre>
+    <p>The callback fires when the user clicks Send or presses Shift+Enter.
+       Messages are not auto-echoed, so you control what appears and when.</p>
+  </section>
+
+  <section>
+    <h2>LLM Integration</h2>
+    <p>QuikChat tracks full message history. Feed it directly to any OpenAI-compatible API:</p>
+<pre><code>const history = chat.historyGet().map(m =&gt; ({
+  role: m.role,
+  content: m.content
+}));
+
+const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer " + API_KEY
+  },
+  body: JSON.stringify({ model: "gpt-4o", messages: history })
+});</code></pre>
+    <p>Works with OpenAI, Ollama, LM Studio, Anthropic, Mistral, or any provider with a compatible API.
+       See the <a href="../examples/ollama_with_memory.html">Ollama</a> and
+       <a href="../examples/openai.html">OpenAI</a> examples for complete working code.</p>
+  </section>
+
+  <section>
+    <h2>Features</h2>
+    <ul class="features">
+      <li>Zero runtime dependencies</li>
+      <li>Under 4KB gzipped (UMD)</li>
+      <li>Themeable with CSS (light, dark, custom)</li>
+      <li>Responsive — resizes with parent container</li>
+      <li>Multiple instances on one page</li>
+      <li>Multiple users per chat</li>
+      <li>Show/hide title and input areas</li>
+      <li>Full message history with retrieval</li>
+      <li>Append to messages (streaming / token completion)</li>
+      <li>Replace or remove messages</li>
+      <li>Per-message left / right / center alignment</li>
+      <li>Callbacks for send and message-added events</li>
+      <li>UMD, ESM, and CJS builds included</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Theming</h2>
+    <p>Themes are CSS classes applied to the widget root. Switch themes at runtime:</p>
+    <pre><code>chat.changeTheme("quikchat-theme-dark");</code></pre>
+    <p>Three themes are included: <code>quikchat-theme-light</code>,
+       <code>quikchat-theme-dark</code>, and <code>quikchat-theme-debug</code>.
+       To create a custom theme, see the <a href="theming.html">Theming Guide</a>.</p>
+  </section>
+
+  <section id="api">
+    <h2>API Reference</h2>
+
+    <h3>Constructor</h3>
+    <pre><code>new quikchat(parentElement, onSend, options)</code></pre>
+    <table class="api-table">
+      <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+      <tr><td><code>parentElement</code></td><td>string | Element</td><td>CSS selector or DOM element. Widget fills 100% of parent.</td></tr>
+      <tr><td><code>onSend</code></td><td>function</td><td>Callback <code>(chat, msg) =&gt; {}</code> fired on Send click or Shift+Enter.</td></tr>
+      <tr><td><code>options</code></td><td>object</td><td>Optional. <code>{ theme, trackHistory, titleArea: { title, show, align }, messagesArea: { alternating } }</code></td></tr>
+    </table>
+
+    <h3>Messages</h3>
+    <table class="api-table">
+      <tr><th>Method</th><th>Description</th></tr>
+      <tr><td><code>messageAddNew(content, user, align, role)</code></td><td>Add a message. Returns message ID. <code>align</code>: "left", "right", or "center".</td></tr>
+      <tr><td><code>messageAddFull({content, userString, align, role, userID})</code></td><td>Add a message with full options object.</td></tr>
+      <tr><td><code>messageAppendContent(id, content)</code></td><td>Append to an existing message (streaming / token completion).</td></tr>
+      <tr><td><code>messageReplaceContent(id, content)</code></td><td>Replace the content of an existing message.</td></tr>
+      <tr><td><code>messageRemove(id)</code></td><td>Remove a message by ID.</td></tr>
+      <tr><td><code>messageGetContent(id)</code></td><td>Get the content string of a message.</td></tr>
+      <tr><td><code>messageGetDOMObject(id)</code></td><td>Get the DOM element of a message.</td></tr>
+    </table>
+
+    <h3>History</h3>
+    <table class="api-table">
+      <tr><th>Method</th><th>Description</th></tr>
+      <tr><td><code>historyGet(n, m)</code></td><td>Get history entries. No args = all. <code>historyGet(3)</code> = entry 3. <code>historyGet(2, 5)</code> = entries 2–5.</td></tr>
+      <tr><td><code>historyGetLength()</code></td><td>Number of messages in history.</td></tr>
+      <tr><td><code>historyClear()</code></td><td>Clear all history and reset message IDs.</td></tr>
+    </table>
+
+    <h3>UI Controls</h3>
+    <table class="api-table">
+      <tr><th>Method</th><th>Description</th></tr>
+      <tr><td><code>titleAreaShow()</code> / <code>titleAreaHide()</code> / <code>titleAreaToggle()</code></td><td>Show, hide, or toggle the title bar.</td></tr>
+      <tr><td><code>titleAreaSetContents(html, align)</code></td><td>Set title area HTML and alignment.</td></tr>
+      <tr><td><code>titleAreaGetContents()</code></td><td>Get the title area innerHTML.</td></tr>
+      <tr><td><code>inputAreaShow()</code> / <code>inputAreaHide()</code> / <code>inputAreaToggle()</code></td><td>Show, hide, or toggle the input area.</td></tr>
+      <tr><td><code>changeTheme(themeName)</code></td><td>Switch CSS theme at runtime.</td></tr>
+      <tr><td><code>messagesAreaAlternateColors(bool)</code></td><td>Enable/disable alternating message row colors.</td></tr>
+      <tr><td><code>messagesAreaAlternateColorsToggle()</code></td><td>Toggle alternating colors.</td></tr>
+    </table>
+
+    <h3>Callbacks</h3>
+    <table class="api-table">
+      <tr><th>Method</th><th>Description</th></tr>
+      <tr><td><code>setCallbackOnSend(fn)</code></td><td>Set or replace the onSend callback.</td></tr>
+      <tr><td><code>setCallbackonMessageAdded(fn)</code></td><td>Set a listener called after every message is added. <code>(chat, msgId) =&gt; {}</code></td></tr>
+    </table>
+
+    <h3>Static</h3>
+    <table class="api-table">
+      <tr><th>Method</th><th>Description</th></tr>
+      <tr><td><code>quikchat.version()</code></td><td>Returns <code>{ version, license, url }</code>.</td></tr>
+      <tr><td><code>quikchat.loremIpsum(numChars, startSpot, capitalize)</code></td><td>Generate placeholder text. Useful for testing.</td></tr>
+    </table>
+  </section>
+
+  <section id="examples">
+    <h2>Examples</h2>
+    <ul class="example-list">
+      <li><a href="../examples/example_umd.html">Basic Usage (UMD)</a> <span class="desc">— script tag, theme switching, toggle controls</span></li>
+      <li><a href="../examples/example_esm.html">Basic Usage (ESM)</a> <span class="desc">— ES module import</span></li>
+      <li><a href="../examples/dual-chatrooms.html">Dual Chatrooms</a> <span class="desc">— two widgets talking to each other</span></li>
+      <li><a href="../examples/simple_ollama.html">Ollama (simple)</a> <span class="desc">— local LLM chat</span></li>
+      <li><a href="../examples/ollama_with_memory.html">Ollama with Memory</a> <span class="desc">— conversational context via historyGet()</span></li>
+      <li><a href="../examples/lmstudio_with_memory.html">LM Studio with Memory</a> <span class="desc">— local LLM via LM Studio</span></li>
+      <li><a href="../examples/openai.html">OpenAI</a> <span class="desc">— GPT-4o with streaming</span></li>
+      <li><a href="../examples/quikchat-react.html">React Integration</a> <span class="desc">— using quikchat inside React</span></li>
+    </ul>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <a href="https://github.com/deftio/quikchat">GitHub</a> &middot;
+    <a href="https://www.npmjs.com/package/quikchat">npm</a> &middot;
+    BSD-2-Clause License &middot;
+    &copy; <a href="https://github.com/deftio">deftio</a>
+  </div>
+</footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  window.demoChat = new quikchat("#demo-main",
+    (chat, msg) => {
+      chat.messageAddNew(msg, "you", "right", "user");
+      setTimeout(() => {
+        const reply = quikchat.loremIpsum(Math.floor(Math.random() * 80) + 20);
+        chat.messageAddNew(reply, "bot", "left", "assistant");
+      }, 300);
+    },
+    {
+      theme: "quikchat-theme-light",
+      titleArea: { title: "QuikChat Demo", align: "left", show: true },
+      messagesArea: { alternating: true }
+    }
+  );
+  demoChat.messageAddNew("Hello! Try sending a message.", "bot", "left", "assistant");
+  demoChat.messageAddNew("Use the buttons above to toggle UI elements and switch themes.", "bot", "left", "assistant");
+  setTheme("quikchat-theme-light");
+});
+
+function setTheme(theme) {
+  demoChat.changeTheme(theme);
+  document.querySelectorAll("#themeBtnLight, #themeBtnDark, #themeBtnDebug").forEach(b => b.classList.remove("active"));
+  const id = {
+    "quikchat-theme-light": "themeBtnLight",
+    "quikchat-theme-dark": "themeBtnDark",
+    "quikchat-theme-debug": "themeBtnDebug"
+  }[theme];
+  if (id) document.getElementById(id).classList.add("active");
+}
+</script>
+
+</body>
+</html>

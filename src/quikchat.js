@@ -131,6 +131,15 @@ class quikchat {
     setCallbackonMessageAdded(callback) {
         this._onMessageAdded = callback;
     }
+    setCallbackonMessageAppend(callback) {
+        this._onMessageAppend = callback;
+    }
+    setCallbackonMessageReplace(callback) {
+        this._onMessageReplace = callback;
+    }
+    setCallbackonMessageDelete(callback) {
+        this._onMessageDelete = callback;
+    }
 
     // Public methods
     titleAreaToggle() {
@@ -367,6 +376,9 @@ class quikchat {
         }
         if (success) {
             this._history.splice(this._history.findIndex((item) => item.msgid === n), 1);
+            if (this._onMessageDelete) {
+                this._onMessageDelete(this, n);
+            }
         }
         return success;
     }
@@ -453,6 +465,9 @@ class quikchat {
             if (!this.userScrolledUp) {
                 this._messagesArea.scrollTop = this._messagesArea.scrollHeight;
             }
+            if (this._onMessageAppend) {
+                this._onMessageAppend(this, n, content);
+            }
         } catch (_error) {
             // Message ID not found
         }
@@ -474,6 +489,9 @@ class quikchat {
 
             if (!this.userScrolledUp) {
                 this._messagesArea.scrollTop = this._messagesArea.scrollHeight;
+            }
+            if (this._onMessageReplace) {
+                this._onMessageReplace(this, n, content);
             }
         } catch (_error) {
             // Message ID not found
@@ -591,7 +609,7 @@ class quikchat {
     }
 
     static version() {
-        return { "version": "1.2.3", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
+        return { "version": "1.2.4", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
     }
 
     /**

@@ -839,7 +839,7 @@ describe('quikchat', () => {
     describe('static methods', () => {
         test('version should return version info', () => {
             const v = quikchat.version();
-            expect(v.version).toBe('1.2.3');
+            expect(v.version).toBe('1.2.4');
             expect(v.license).toBe('BSD-2');
             expect(v.url).toContain('quikchat');
         });
@@ -1644,6 +1644,63 @@ describe('quikchat', () => {
             expect(chatInstance.historyGetLength()).toBe(1);
             expect(chatInstance.messageGetContent(0)).toBe('Full');
             expect(chatInstance.messageGetTags(0)).toEqual(['x']);
+        });
+    });
+
+    // ==================== Enhanced Callbacks ====================
+
+    describe('enhanced callbacks', () => {
+        test('setCallbackonMessageAppend fires on messageAppendContent', () => {
+            const cb = jest.fn();
+            chatInstance.setCallbackonMessageAppend(cb);
+            const id = chatInstance.messageAddNew('Start', 'bot', 'left', 'assistant');
+            chatInstance.messageAppendContent(id, ' more');
+            expect(cb).toHaveBeenCalledWith(chatInstance, id, ' more');
+        });
+
+        test('onMessageAppend does not fire on failed append', () => {
+            const cb = jest.fn();
+            chatInstance.setCallbackonMessageAppend(cb);
+            chatInstance.messageAppendContent(99999, 'nope');
+            expect(cb).not.toHaveBeenCalled();
+        });
+
+        test('setCallbackonMessageReplace fires on messageReplaceContent', () => {
+            const cb = jest.fn();
+            chatInstance.setCallbackonMessageReplace(cb);
+            const id = chatInstance.messageAddNew('Original', 'bot', 'left', 'assistant');
+            chatInstance.messageReplaceContent(id, 'Replaced');
+            expect(cb).toHaveBeenCalledWith(chatInstance, id, 'Replaced');
+        });
+
+        test('onMessageReplace does not fire on failed replace', () => {
+            const cb = jest.fn();
+            chatInstance.setCallbackonMessageReplace(cb);
+            chatInstance.messageReplaceContent(99999, 'nope');
+            expect(cb).not.toHaveBeenCalled();
+        });
+
+        test('setCallbackonMessageDelete fires on messageRemove', () => {
+            const cb = jest.fn();
+            chatInstance.setCallbackonMessageDelete(cb);
+            const id = chatInstance.messageAddNew('To delete', 'user', 'right');
+            chatInstance.messageRemove(id);
+            expect(cb).toHaveBeenCalledWith(chatInstance, id);
+        });
+
+        test('onMessageDelete does not fire on failed remove', () => {
+            const cb = jest.fn();
+            chatInstance.setCallbackonMessageDelete(cb);
+            chatInstance.messageRemove(99999);
+            expect(cb).not.toHaveBeenCalled();
+        });
+
+        test('callbacks are not called when not set', () => {
+            // No callbacks registered — should not throw
+            const id = chatInstance.messageAddNew('Test', 'bot', 'left', 'assistant');
+            expect(() => chatInstance.messageAppendContent(id, ' x')).not.toThrow();
+            expect(() => chatInstance.messageReplaceContent(id, 'y')).not.toThrow();
+            expect(() => chatInstance.messageRemove(id)).not.toThrow();
         });
     });
 });

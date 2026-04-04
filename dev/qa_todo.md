@@ -54,11 +54,11 @@ Rule: bump version +0.0.1 per feature, maintain 100% test coverage on new lines.
 - [x] Preserves visibility, tags, roles, alignment
 - [x] Tests: 11 new tests, all passing, 97.4% branch coverage
 
-### 4. Enhanced callbacks — v1.2.4
-- [ ] `setCallbackonMessageAppend(fn)` — fires on messageAppendContent
-- [ ] `setCallbackonMessageReplace(fn)` — fires on messageReplaceContent
-- [ ] `setCallbackonMessageDelete(fn)` — fires on messageRemove
-- [ ] Tests: each callback fires with correct args
+### 4. Enhanced callbacks — v1.2.4 ✅
+- [x] `setCallbackonMessageAppend(fn)` — fires on messageAppendContent
+- [x] `setCallbackonMessageReplace(fn)` — fires on messageReplaceContent
+- [x] `setCallbackonMessageDelete(fn)` — fires on messageRemove
+- [x] Tests: 7 new tests, all fire with correct args, no-op when unset
 
 ### 5. Virtual scrolling — v1.2.5 (if needed)
 - [ ] Evaluate whether this is needed for the 1.2.x line

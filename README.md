@@ -55,7 +55,7 @@ That's a working streaming LLM chat in one file — no bundler, no framework, no
 - **RTL support** — `setDirection('rtl')` for Arabic, Hebrew, and other right-to-left languages
 - **Event callbacks** — hooks for message add, append, replace, and delete events
 - **Timestamps** — optional per-message timestamps (show/hide)
-- **Zero runtime dependencies** — ~5 KB gzipped (base), ~9 KB with markdown, ~23 KB full
+- **Zero runtime dependencies** — ~5 KB gzipped (base), ~9 KB with markdown, ~14 KB full
 - **Any environment** — works with CDN, npm, or local files; UMD, ESM, and CJS builds included
 - **Responsive** — fills its parent container and resizes automatically
 - **Accessible** — ARIA roles and labels on all interactive elements
@@ -204,7 +204,7 @@ Examples include: basic UMD/ESM usage, theme switching, dual chatrooms, markdown
 |---|---|---|---|
 | **Base** | Chat widget, zero deps | `quikchat.umd.min.js` (~5 KB) | None |
 | **Markdown** | + bold, italic, code, tables, lists | `quikchat-md.umd.min.js` (~9 KB) | None |
-| **Full** | + syntax highlighting, math, diagrams, maps | `quikchat-md-full.umd.min.js` (~23 KB) | CDN on demand |
+| **Full** | + syntax highlighting, math, diagrams, maps | `quikchat-md-full.umd.min.js` (~14 KB) | CDN on demand |
 | **CSS** | All themes (light, dark, blue, warm, midnight, ocean, modern, debug) | `quikchat.css` (~2.4 KB) | None |
 
 All builds are also available in ESM and CJS formats. Each has sourcemaps.

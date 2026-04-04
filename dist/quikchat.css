@@ -714,3 +714,216 @@
 .quikchat-theme-modern .quikchat-input-send-btn:hover {
     background-color: #0a84de;
 }
+
+/* ================================== */
+/* QuikDown markdown styles           */
+/* Scoped per quikchat theme          */
+/* ================================== */
+
+/* --- Light themes (light, blue, warm) --- */
+
+.quikchat-theme-light .quikdown-pre,
+.quikchat-theme-blue .quikdown-pre,
+.quikchat-theme-warm .quikdown-pre {
+    background: #f4f4f4;
+    padding: 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 0.5em 0;
+}
+
+.quikchat-theme-light .quikdown-code,
+.quikchat-theme-blue .quikdown-code,
+.quikchat-theme-warm .quikdown-code {
+    background: #f0f0f0;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+.quikchat-theme-light .quikdown-blockquote,
+.quikchat-theme-blue .quikdown-blockquote,
+.quikchat-theme-warm .quikdown-blockquote {
+    border-left: 4px solid #ddd;
+    margin-left: 0;
+    padding-left: 1em;
+    color: #555;
+}
+
+.quikchat-theme-light .quikdown-a,
+.quikchat-theme-blue .quikdown-a,
+.quikchat-theme-warm .quikdown-a {
+    color: #06c;
+}
+
+.quikchat-theme-light .quikdown-th,
+.quikchat-theme-blue .quikdown-th,
+.quikchat-theme-warm .quikdown-th {
+    border: 1px solid #ddd;
+    padding: 6px 8px;
+    background-color: #f2f2f2;
+    font-weight: bold;
+    text-align: left;
+}
+
+.quikchat-theme-light .quikdown-td,
+.quikchat-theme-blue .quikdown-td,
+.quikchat-theme-warm .quikdown-td {
+    border: 1px solid #ddd;
+    padding: 6px 8px;
+    text-align: left;
+}
+
+.quikchat-theme-light .quikdown-hr,
+.quikchat-theme-blue .quikdown-hr,
+.quikchat-theme-warm .quikdown-hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 0.5em 0;
+}
+
+/* --- Dark themes (dark, midnight, ocean) --- */
+
+.quikchat-theme-dark .quikdown-pre,
+.quikchat-theme-midnight .quikdown-pre,
+.quikchat-theme-ocean .quikdown-pre {
+    background: #2a2a2a;
+    padding: 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 0.5em 0;
+}
+
+.quikchat-theme-dark .quikdown-code,
+.quikchat-theme-midnight .quikdown-code,
+.quikchat-theme-ocean .quikdown-code {
+    background: #2a2a2a;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.9em;
+    color: #e0e0e0;
+}
+
+.quikchat-theme-dark .quikdown-blockquote,
+.quikchat-theme-midnight .quikdown-blockquote,
+.quikchat-theme-ocean .quikdown-blockquote {
+    border-left: 4px solid #3a3a3a;
+    margin-left: 0;
+    padding-left: 1em;
+    color: #bbb;
+}
+
+.quikchat-theme-dark .quikdown-a,
+.quikchat-theme-midnight .quikdown-a,
+.quikchat-theme-ocean .quikdown-a {
+    color: #6db3f2;
+}
+
+.quikchat-theme-dark .quikdown-th,
+.quikchat-theme-midnight .quikdown-th,
+.quikchat-theme-ocean .quikdown-th {
+    border: 1px solid #3a3a3a;
+    padding: 6px 8px;
+    background-color: #2a2a2a;
+    font-weight: bold;
+    text-align: left;
+    color: #e0e0e0;
+}
+
+.quikchat-theme-dark .quikdown-td,
+.quikchat-theme-midnight .quikdown-td,
+.quikchat-theme-ocean .quikdown-td {
+    border: 1px solid #3a3a3a;
+    padding: 6px 8px;
+    text-align: left;
+    color: #e0e0e0;
+}
+
+.quikchat-theme-dark .quikdown-hr,
+.quikchat-theme-midnight .quikdown-hr,
+.quikchat-theme-ocean .quikdown-hr {
+    border: none;
+    border-top: 1px solid #3a3a3a;
+    margin: 0.5em 0;
+}
+
+.quikchat-theme-dark .quikdown-h1,
+.quikchat-theme-dark .quikdown-h2,
+.quikchat-theme-dark .quikdown-h3,
+.quikchat-theme-dark .quikdown-h4,
+.quikchat-theme-dark .quikdown-li,
+.quikchat-theme-midnight .quikdown-h1,
+.quikchat-theme-midnight .quikdown-h2,
+.quikchat-theme-midnight .quikdown-h3,
+.quikchat-theme-midnight .quikdown-h4,
+.quikchat-theme-midnight .quikdown-li,
+.quikchat-theme-ocean .quikdown-h1,
+.quikchat-theme-ocean .quikdown-h2,
+.quikchat-theme-ocean .quikdown-h3,
+.quikchat-theme-ocean .quikdown-h4,
+.quikchat-theme-ocean .quikdown-li {
+    color: #e0e0e0;
+}
+
+/* --- Modern theme (bubble style) --- */
+
+.quikchat-theme-modern .quikdown-pre {
+    background: #f4f4f4;
+    padding: 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 0.5em 0;
+}
+
+.quikchat-theme-modern .quikdown-code {
+    background: rgba(0, 0, 0, 0.06);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+/* In blue bubbles (right-aligned/user messages), invert code blocks */
+.quikchat-theme-modern .quikchat-align-right .quikdown-pre {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.quikchat-theme-modern .quikchat-align-right .quikdown-code {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.quikchat-theme-modern .quikchat-align-right .quikdown-a {
+    color: #cce5ff;
+}
+
+.quikchat-theme-modern .quikchat-align-left .quikdown-a {
+    color: #06c;
+}
+
+.quikchat-theme-modern .quikdown-blockquote {
+    border-left: 4px solid #ddd;
+    margin-left: 0;
+    padding-left: 1em;
+    color: #666;
+}
+
+/* --- Debug theme --- */
+
+.quikchat-theme-debug .quikdown-pre {
+    background: #f4f4f4;
+    padding: 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 0.5em 0;
+}
+
+.quikchat-theme-debug .quikdown-code {
+    background: #e8e8e8;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.9em;
+}

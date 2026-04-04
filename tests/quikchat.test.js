@@ -839,7 +839,7 @@ describe('quikchat', () => {
     describe('static methods', () => {
         test('version should return version info', () => {
             const v = quikchat.version();
-            expect(v.version).toBe('1.2.2');
+            expect(v.version).toBe('1.2.3');
             expect(v.license).toBe('BSD-2');
             expect(v.url).toContain('quikchat');
         });
@@ -1523,6 +1523,127 @@ describe('quikchat', () => {
         test('constructor without direction option stays ltr', () => {
             expect(chatInstance.getDirection()).toBe('ltr');
             expect(chatInstance._chatWidget.classList.contains('quikchat-rtl')).toBe(false);
+        });
+    });
+
+    // ==================== History Export / Import ====================
+
+    describe('history export and import', () => {
+        test('historyExport returns serializable array without DOM refs', () => {
+            chatInstance.messageAddNew('Hello', 'user', 'right', 'user');
+            chatInstance.messageAddNew('Hi back', 'bot', 'left', 'assistant');
+            const exported = chatInstance.historyExport();
+            expect(exported).toHaveLength(2);
+            expect(exported[0].content).toBe('Hello');
+            expect(exported[0].userString).toBe('user');
+            expect(exported[0].role).toBe('user');
+            expect(exported[0].timestamp).toBeDefined();
+            expect(exported[1].content).toBe('Hi back');
+            expect(exported[1].role).toBe('assistant');
+            // No DOM references
+            expect(exported[0].messageDiv).toBeUndefined();
+            expect(exported[1].messageDiv).toBeUndefined();
+        });
+
+        test('historyExport preserves visibility and tags', () => {
+            chatInstance.messageAddFull({
+                content: 'Tagged hidden', userString: 'sys', align: 'center',
+                role: 'system', visible: false, tags: ['debug']
+            });
+            const exported = chatInstance.historyExport();
+            expect(exported[0].visible).toBe(false);
+            expect(exported[0].tags).toEqual(['debug']);
+        });
+
+        test('historyExport tags are copies', () => {
+            chatInstance.messageAddFull({
+                content: 'X', userString: 'u', align: 'left', role: 'user',
+                tags: ['a']
+            });
+            const exported = chatInstance.historyExport();
+            exported[0].tags.push('b');
+            expect(chatInstance.messageGetTags(0)).toEqual(['a']);
+        });
+
+        test('historyImport restores messages into the DOM', () => {
+            chatInstance.messageAddNew('Msg1', 'user', 'right', 'user');
+            chatInstance.messageAddNew('Msg2', 'bot', 'left', 'assistant');
+            const exported = chatInstance.historyExport();
+
+            chatInstance.historyImport(exported);
+            expect(chatInstance.historyGetLength()).toBe(2);
+            expect(chatInstance.messageGetContent(0)).toBe('Msg1');
+            expect(chatInstance.messageGetContent(1)).toBe('Msg2');
+            expect(chatInstance._messagesArea.children.length).toBe(2);
+        });
+
+        test('historyImport clears existing messages first', () => {
+            chatInstance.messageAddNew('Old msg', 'user', 'right');
+            chatInstance.messageAddNew('Old msg 2', 'user', 'right');
+            const data = [{ content: 'New msg', userString: 'u', align: 'right', role: 'user' }];
+            chatInstance.historyImport(data);
+            expect(chatInstance.historyGetLength()).toBe(1);
+            expect(chatInstance.messageGetContent(0)).toBe('New msg');
+        });
+
+        test('round-trip: export → import produces identical content', () => {
+            chatInstance.messageAddNew('Alpha', 'user1', 'right', 'user');
+            chatInstance.messageAddFull({
+                content: 'Beta', userString: 'bot', align: 'left',
+                role: 'assistant', tags: ['response'], visible: true
+            });
+            chatInstance.messageAddFull({
+                content: 'Hidden', userString: 'sys', align: 'center',
+                role: 'system', visible: false, tags: ['internal']
+            });
+
+            const exported = chatInstance.historyExport();
+            chatInstance.historyImport(exported);
+
+            expect(chatInstance.historyGetLength()).toBe(3);
+            expect(chatInstance.messageGetContent(0)).toBe('Alpha');
+            expect(chatInstance.messageGetContent(1)).toBe('Beta');
+            expect(chatInstance.messageGetContent(2)).toBe('Hidden');
+            expect(chatInstance.messageGetVisible(2)).toBe(false);
+            expect(chatInstance.messageGetTags(1)).toEqual(['response']);
+        });
+
+        test('historyImport with empty array clears everything', () => {
+            chatInstance.messageAddNew('Something', 'user', 'right');
+            chatInstance.historyImport([]);
+            expect(chatInstance.historyGetLength()).toBe(0);
+            expect(chatInstance._messagesArea.children.length).toBe(0);
+        });
+
+        test('historyImport handles entries with missing fields', () => {
+            chatInstance.historyImport([{ content: 'Minimal' }]);
+            expect(chatInstance.historyGetLength()).toBe(1);
+            expect(chatInstance.messageGetContent(0)).toBe('Minimal');
+        });
+
+        test('historyExport handles messages without tags property', () => {
+            chatInstance.messageAddNew('No tags', 'u', 'right', 'user');
+            // Manually remove tags from history entry to test the falsy branch
+            chatInstance._history[0].tags = null;
+            const exported = chatInstance.historyExport();
+            expect(exported[0].tags).toEqual([]);
+        });
+
+        test('historyImport uses defaults for empty string content', () => {
+            chatInstance.historyImport([{
+                content: '', userString: '', align: '', role: ''
+            }]);
+            expect(chatInstance.historyGetLength()).toBe(1);
+        });
+
+        test('historyImport with all optional fields specified', () => {
+            chatInstance.historyImport([{
+                content: 'Full', userString: 'bot', align: 'left',
+                role: 'assistant', userID: 42, visible: true, tags: ['x']
+            }]);
+            expect(chatInstance.historyGetLength()).toBe(1);
+            expect(chatInstance.messageGetContent(0)).toBe('Full');
+            expect(chatInstance.messageGetTags(0)).toEqual(['x']);
         });
     });
 });

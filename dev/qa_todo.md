@@ -40,12 +40,12 @@ Rule: bump version +0.0.1 per feature, maintain 100% test coverage on new lines.
 - [x] `messageAddFull` supports `visible` and `tags` options
 - [x] Tests: 18 new tests, all passing, 100% statement/line coverage
 
-### 2. i18n / RTL support — v1.2.2
-- [ ] `setDirection(dir)` — sets `dir` attribute on widget root ('ltr' or 'rtl')
-- [ ] `getDirection()` — returns current direction
-- [ ] RTL CSS: mirrored padding, send button on left, text alignment
-- [ ] Constructor option: `direction: 'ltr'` (default)
-- [ ] Tests: direction set/get, RTL class application, constructor option
+### 2. i18n / RTL support — v1.2.2 ✅
+- [x] `setDirection(dir)` — sets `dir` attribute on widget root ('ltr' or 'rtl')
+- [x] `getDirection()` — returns current direction
+- [x] RTL CSS: input area flex reversed, send button margin mirrored
+- [x] Constructor option: `direction: 'rtl'`
+- [x] Tests: 7 new tests, all passing, 100% statement/line coverage
 
 ### 3. History export / import — v1.2.3
 - [ ] `historyExport()` — returns serializable array (no DOM refs)

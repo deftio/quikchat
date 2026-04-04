@@ -546,6 +546,39 @@ class quikchat {
         return "";
     }
 
+    historyExport() {
+        return this._history.map((item) => ({
+            msgid: item.msgid,
+            content: item.content,
+            userString: item.userString,
+            align: item.align,
+            role: item.role,
+            userID: item.userID,
+            visible: item.visible,
+            tags: item.tags ? item.tags.slice() : [],
+            timestamp: item.timestamp,
+            updatedtime: item.updatedtime,
+        }));
+    }
+
+    historyImport(data) {
+        // Clear existing messages from DOM and history
+        this._messagesArea.innerHTML = '';
+        this._history = [];
+        this.msgid = 0;
+
+        for (const entry of data) {
+            this.messageAddFull({
+                content: entry.content || '',
+                userString: entry.userString || 'user',
+                align: entry.align || 'right',
+                role: entry.role || 'user',
+                userID: entry.userID,
+                visible: entry.visible,
+                tags: entry.tags,
+            });
+        }
+    }
 
     changeTheme(newTheme) {
         this._chatWidget.classList.remove(this._theme);
@@ -558,7 +591,7 @@ class quikchat {
     }
 
     static version() {
-        return { "version": "1.2.2", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
+        return { "version": "1.2.3", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
     }
 
     /**

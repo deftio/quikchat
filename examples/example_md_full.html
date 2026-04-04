@@ -49,9 +49,12 @@
     </div>
     <div class="parent" id="chat-container"></div>
 
-    <p class="note">Click the sample buttons below to inject rich markdown content, or type your own.</p>
+    <p class="note">Click the sample buttons to inject rich content. Features marked with * load their renderer from CDN on first use.</p>
     <div class="sample-btns">
-      <button class="btn" onclick="sendSample('code')">Code Block</button>
+      <button class="btn" onclick="sendSample('code')">Syntax Highlighting *</button>
+      <button class="btn" onclick="sendSample('multiLang')">Multi-Language *</button>
+      <button class="btn" onclick="sendSample('math')">Math (MathJax) *</button>
+      <button class="btn" onclick="sendSample('mermaid')">Diagram (Mermaid) *</button>
       <button class="btn" onclick="sendSample('table')">Table</button>
       <button class="btn" onclick="sendSample('mixed')">Mixed Content</button>
     </div>
@@ -113,24 +116,27 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   chatBox.messageAddNew(
-    "This demo uses the **full** build. Rich content like syntax-highlighted code blocks, " +
-    "tables, and formatted text render automatically.\n\n" +
-    "Try the sample buttons below the chat, or type your own markdown!",
+    "This demo uses **quikchat-md-full** — the batteries-included build.\n\n" +
+    "It dynamically loads renderers from CDN the first time they're needed:\n" +
+    "- **Syntax highlighting** — click *Syntax Highlighting* or *Multi-Language*\n" +
+    "- **Math equations** — click *Math (MathJax)*\n" +
+    "- **Diagrams** — click *Diagram (Mermaid)*\n\n" +
+    "Try the buttons below, or type your own markdown!",
     "bot", "left", "assistant"
   );
 });
 
 const samples = {
   code:
-`Here's a JavaScript function with syntax highlighting:
+`Here's a JavaScript function with **syntax highlighting** (highlight.js loads from CDN on first use):
 
 \`\`\`javascript
-async function streamChat(chat, prompt) {
+async function streamLLM(chat, prompt) {
   const id = chat.messageAddTypingIndicator('bot');
   const res = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt })
+    body: JSON.stringify({ model: 'llama3.1', prompt })
   });
 
   const reader = res.body.getReader();
@@ -142,51 +148,135 @@ async function streamChat(chat, prompt) {
     if (done) break;
     const token = decoder.decode(value);
     if (first) { chat.messageReplaceContent(id, token); first = false; }
-    else        { chat.messageAppendContent(id, token); }
+    else       { chat.messageAppendContent(id, token); }
   }
 }
+\`\`\``,
+
+  multiLang:
+`Multiple languages — each gets its own highlighting:
+
+**Python:**
+\`\`\`python
+import numpy as np
+
+def gradient_descent(f, grad_f, x0, lr=0.01, steps=1000):
+    x = np.array(x0, dtype=float)
+    for _ in range(steps):
+        x -= lr * grad_f(x)
+    return x, f(x)
 \`\`\`
 
-And here's some Python:
+**SQL:**
+\`\`\`sql
+SELECT users.name, COUNT(messages.id) AS msg_count
+FROM users
+LEFT JOIN messages ON messages.user_id = users.id
+WHERE messages.created_at > NOW() - INTERVAL '7 days'
+GROUP BY users.name
+ORDER BY msg_count DESC
+LIMIT 10;
+\`\`\`
 
-\`\`\`python
-def fibonacci(n: int) -> list[int]:
-    a, b = 0, 1
-    result = []
-    for _ in range(n):
-        result.append(a)
-        a, b = b, a + b
-    return result
+**CSS:**
+\`\`\`css
+.quikchat-theme-custom .quikchat-messages-area {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-radius: 1em;
+}
+\`\`\``,
+
+  math:
+`The quadratic formula solves any equation of the form $ax^2 + bx + c = 0$:
+
+$$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$
+
+**Euler's identity** — often called the most beautiful equation in mathematics:
+
+$$e^{i\\pi} + 1 = 0$$
+
+And here's the **Gaussian integral**:
+
+$$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
+
+Inline math works too: the area of a circle is $A = \\pi r^2$.`,
+
+  mermaid:
+`Here's a flowchart of the QuikChat message pipeline:
+
+\`\`\`mermaid
+graph TD
+    A[User types message] --> B[onSend callback]
+    B --> C{Process message}
+    C -->|Echo| D[messageAddNew]
+    C -->|LLM| E[Send to API]
+    E --> F[messageAddTypingIndicator]
+    F --> G[Stream response tokens]
+    G --> H[messageAppendContent]
+    H --> I[Message complete]
+    D --> I
+\`\`\`
+
+And a sequence diagram:
+
+\`\`\`mermaid
+sequenceDiagram
+    participant User
+    participant QuikChat
+    participant LLM API
+    User->>QuikChat: Type message + Send
+    QuikChat->>QuikChat: onSend callback
+    QuikChat->>LLM API: POST /chat
+    LLM API-->>QuikChat: Stream tokens
+    QuikChat->>QuikChat: appendContent()
+    QuikChat->>User: Rendered message
 \`\`\``,
 
   table:
-`## API Comparison
+`## Build Comparison
 
-| Feature | QuikChat | Others |
-|---------|----------|--------|
-| Dependencies | **Zero** | React, Vue, etc. |
-| Bundle size | **5-23 KB** | 100-500 KB |
-| LLM streaming | **Built in** | DIY |
-| Markdown | **Optional build** | Plugin or none |
-| Themes | **8 built-in** | 1-2 |
+| Build | File | Minified | Gzipped | Dynamic Loads |
+|-------|------|----------|---------|---------------|
+| Base | \`quikchat.umd.min.js\` | 17 KB | 5 KB | None |
+| Markdown | \`quikchat-md.umd.min.js\` | 27 KB | 9 KB | None |
+| **Full** | \`quikchat-md-full.umd.min.js\` | 87 KB | 23 KB | highlight.js, MathJax, Mermaid, Leaflet |
 
-> QuikChat is designed to be the simplest path from zero to a working chat UI.`,
+> All three builds use the **same API**. The full build just renders richer content automatically.
+
+Features loaded on demand:
+- **Syntax highlighting** — highlight.js (when fenced code has a language tag)
+- **Math** — MathJax (when \`$$\` or \`$\` math expressions are found)
+- **Diagrams** — Mermaid (when \`\`\`mermaid\` fences are used)
+- **Maps** — Leaflet (when GeoJSON fences are used)`,
 
   mixed:
-`## Quick Summary
+`## Why quikchat-md-full?
 
-Here's what makes this build special:
+Imagine your LLM returns this response:
 
-1. **Syntax highlighting** loads automatically for fenced code blocks
-2. **Tables** render with proper formatting
-3. **Blockquotes** work naturally
-4. Everything loads **on demand** from CDN
+The function uses **binary search** with time complexity $O(\\log n)$:
 
-Inline code like \`chat.messageAddNew()\` also renders nicely.
+\`\`\`python
+def binary_search(arr, target):
+    lo, hi = 0, len(arr) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return -1
+\`\`\`
 
----
+With \`quikchat-md-full\`, this renders with:
+1. **Bold** formatting
+2. **Inline math** ($O(\\log n)$) via MathJax
+3. **Syntax-highlighted Python** via highlight.js
 
-*All of this from a single \`<script>\` tag — no bundler, no framework, no config.*`
+All from a single \`<script>\` tag. No webpack. No React. No config.`
 };
 
 function sendSample(key) {

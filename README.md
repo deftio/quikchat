@@ -85,7 +85,7 @@ import quikchat from 'quikchat';
 <!-- Basic markdown (bold, italic, code, tables, lists) — ~9 KB gzip -->
 <script src="https://unpkg.com/quikchat/dist/quikchat-md.umd.min.js"></script>
 
-<!-- Full markdown (+ syntax highlighting, math, diagrams, maps) — ~23 KB gzip -->
+<!-- Full markdown (+ syntax highlighting, math, diagrams, maps) — ~14 KB gzip -->
 <script src="https://unpkg.com/quikchat/dist/quikchat-md-full.umd.min.js"></script>
 
 <link rel="stylesheet" href="https://unpkg.com/quikchat/dist/quikchat.css" />

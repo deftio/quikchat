@@ -29,7 +29,7 @@ const groups = [
     ],
   },
   {
-    name: 'quikchat-md-full (with quikdown edit — dynamic loading)',
+    name: 'quikchat-md-full (with quikdown bd + fence post-processing)',
     files: [
       { label: 'UMD', raw: 'quikchat-md-full.umd.js', min: 'quikchat-md-full.umd.min.js' },
       { label: 'CJS', raw: 'quikchat-md-full.cjs.js', min: 'quikchat-md-full.cjs.min.js' },

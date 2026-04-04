@@ -82,7 +82,7 @@ const chat = new quikchat('#chat', (chat, msg) =&gt; {
       <tr><th>Build</th><th>File</th><th>Gzipped</th><th>What you get</th></tr>
       <tr><td>Base</td><td><code>quikchat.umd.min.js</code></td><td>~5 KB</td><td>Chat widget, zero deps</td></tr>
       <tr><td>Markdown</td><td><code>quikchat-md.umd.min.js</code></td><td>~9 KB</td><td>+ basic markdown formatting</td></tr>
-      <tr><td>Full</td><td><code>quikchat-md-full.umd.min.js</code></td><td>~23 KB</td><td>+ syntax highlighting, math, maps, SVG (loaded on demand)</td></tr>
+      <tr><td>Full</td><td><code>quikchat-md-full.umd.min.js</code></td><td>~14 KB</td><td>+ syntax highlighting, math, maps, SVG (loaded on demand)</td></tr>
     </table>
   </section>
 
@@ -240,7 +240,7 @@ sequenceDiagram
 |-------|------|----------|---------|---------------|
 | Base | \`quikchat.umd.min.js\` | 17 KB | 5 KB | None |
 | Markdown | \`quikchat-md.umd.min.js\` | 27 KB | 9 KB | None |
-| **Full** | \`quikchat-md-full.umd.min.js\` | 87 KB | 23 KB | highlight.js, MathJax, Mermaid, Leaflet |
+| **Full** | \`quikchat-md-full.umd.min.js\` | 44 KB | 14 KB | highlight.js, MathJax, Mermaid, Leaflet |
 
 > All three builds use the **same API**. The full build just renders richer content automatically.
 

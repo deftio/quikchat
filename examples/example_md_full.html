@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — Full Markdown (Syntax Highlighting, Math, Maps)</title>
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="../site/site.css" rel="stylesheet">
+  <link href="../dist/quikchat.css" rel="stylesheet">
+  <script src="../dist/quikchat-md-full.umd.min.js"></script>
+  <style>
+    .parent { height: 60vh; width: 100%; }
+    .note { margin-top: 16px; font-size: 0.9rem; color: #666; }
+    .note code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; font-size: 0.86em; }
+    .sample-btns { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+  </style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a class="site-logo" href="../site/">QuikChat</a>
+    <span class="site-version" id="site-version"></span>
+    <a href="../site/#demo">Demo</a>
+    <a href="../site/doc.html">Docs</a>
+    <a href="./">Examples</a>
+    <a href="../site/theming.html">Theming</a>
+    <a href="https://github.com/deftio/quikchat">GitHub</a>
+    <a href="#" onclick="document.body.classList.toggle('site-dark');return false" style="margin-left:auto">Light/Dark</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <header style="padding: 32px 0 16px;">
+    <h1>Full Markdown Build</h1>
+    <p>The <code>quikchat-md-full</code> build uses <a href="https://github.com/deftio/quikdown">quikdown edit</a> which
+       dynamically loads syntax highlighting, math rendering, maps, and more from CDN on first use.</p>
+  </header>
+
+  <section style="padding-top: 12px;">
+    <div class="demo-controls">
+      <span class="btn-group">
+        <button class="btn active" id="themeBtn-light" onclick="setTheme('light')">Light</button>
+        <button class="btn" id="themeBtn-dark" onclick="setTheme('dark')">Dark</button>
+        <button class="btn" id="themeBtn-ocean" onclick="setTheme('ocean')">Ocean</button>
+        <button class="btn" id="themeBtn-modern" onclick="setTheme('modern')">Modern</button>
+      </span>
+    </div>
+    <div class="parent" id="chat-container"></div>
+
+    <p class="note">Click the sample buttons below to inject rich markdown content, or type your own.</p>
+    <div class="sample-btns">
+      <button class="btn" onclick="sendSample('code')">Code Block</button>
+      <button class="btn" onclick="sendSample('table')">Table</button>
+      <button class="btn" onclick="sendSample('mixed')">Mixed Content</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Usage</h2>
+    <p>One script tag — everything else loads on demand:</p>
+<pre><code>&lt;script src="https://unpkg.com/quikchat/dist/quikchat-md-full.umd.min.js"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" href="https://unpkg.com/quikchat/dist/quikchat.css"&gt;
+
+&lt;div id="chat" style="height: 400px;"&gt;&lt;/div&gt;
+&lt;script&gt;
+const chat = new quikchat('#chat', (chat, msg) =&gt; {
+  chat.messageAddNew(msg, 'me', 'right');
+});
+&lt;/script&gt;</code></pre>
+    <p>Same API as the base build. When the formatter encounters a fenced code block with a language tag,
+       highlight.js is loaded from CDN automatically. Same for math expressions, diagrams, etc.</p>
+  </section>
+
+  <section>
+    <h2>Three Build Tiers</h2>
+    <table class="api-table">
+      <tr><th>Build</th><th>File</th><th>Gzipped</th><th>What you get</th></tr>
+      <tr><td>Base</td><td><code>quikchat.umd.min.js</code></td><td>~5 KB</td><td>Chat widget, zero deps</td></tr>
+      <tr><td>Markdown</td><td><code>quikchat-md.umd.min.js</code></td><td>~9 KB</td><td>+ basic markdown formatting</td></tr>
+      <tr><td>Full</td><td><code>quikchat-md-full.umd.min.js</code></td><td>~23 KB</td><td>+ syntax highlighting, math, maps, SVG (loaded on demand)</td></tr>
+    </table>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <a href="https://github.com/deftio/quikchat">GitHub</a> &middot;
+    <a href="https://www.npmjs.com/package/quikchat">npm</a> &middot;
+    BSD-2-Clause License &middot;
+    &copy; <a href="https://github.com/deftio">deftio</a>
+  </div>
+</footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("site-version").textContent = "v" + quikchat.version().version;
+
+  window.chatBox = new quikchat("#chat-container",
+    (chat, msg) => {
+      chat.messageAddNew(msg, "you", "right", "user");
+      setTimeout(() => {
+        chat.messageAddNew("You said:\n\n" + msg, "echo", "left", "assistant");
+      }, 200);
+    },
+    {
+      theme: "quikchat-theme-light",
+      titleArea: { title: "Full Markdown Chat", align: "left", show: true },
+      messagesArea: { alternating: true }
+    }
+  );
+
+  chatBox.messageAddNew(
+    "This demo uses the **full** build. Rich content like syntax-highlighted code blocks, " +
+    "tables, and formatted text render automatically.\n\n" +
+    "Try the sample buttons below the chat, or type your own markdown!",
+    "bot", "left", "assistant"
+  );
+});
+
+const samples = {
+  code:
+`Here's a JavaScript function with syntax highlighting:
+
+\`\`\`javascript
+async function streamChat(chat, prompt) {
+  const id = chat.messageAddTypingIndicator('bot');
+  const res = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt })
+  });
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let first = true;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    const token = decoder.decode(value);
+    if (first) { chat.messageReplaceContent(id, token); first = false; }
+    else        { chat.messageAppendContent(id, token); }
+  }
+}
+\`\`\`
+
+And here's some Python:
+
+\`\`\`python
+def fibonacci(n: int) -> list[int]:
+    a, b = 0, 1
+    result = []
+    for _ in range(n):
+        result.append(a)
+        a, b = b, a + b
+    return result
+\`\`\``,
+
+  table:
+`## API Comparison
+
+| Feature | QuikChat | Others |
+|---------|----------|--------|
+| Dependencies | **Zero** | React, Vue, etc. |
+| Bundle size | **5-23 KB** | 100-500 KB |
+| LLM streaming | **Built in** | DIY |
+| Markdown | **Optional build** | Plugin or none |
+| Themes | **8 built-in** | 1-2 |
+
+> QuikChat is designed to be the simplest path from zero to a working chat UI.`,
+
+  mixed:
+`## Quick Summary
+
+Here's what makes this build special:
+
+1. **Syntax highlighting** loads automatically for fenced code blocks
+2. **Tables** render with proper formatting
+3. **Blockquotes** work naturally
+4. Everything loads **on demand** from CDN
+
+Inline code like \`chat.messageAddNew()\` also renders nicely.
+
+---
+
+*All of this from a single \`<script>\` tag — no bundler, no framework, no config.*`
+};
+
+function sendSample(key) {
+  chatBox.messageAddNew(samples[key], "bot", "left", "assistant");
+}
+
+function setTheme(name) {
+  chatBox.changeTheme("quikchat-theme-" + name);
+  document.querySelectorAll(".btn-group .btn").forEach(b => b.classList.remove("active"));
+  const el = document.getElementById("themeBtn-" + name);
+  if (el) el.classList.add("active");
+}
+</script>
+
+</body>
+</html>

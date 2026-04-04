@@ -13,19 +13,53 @@ class quikchatMDFull extends quikchat {
             document.body.appendChild(renderContainer);
 
             const editor = new QuikdownEditor(renderContainer, { mode: 'preview' });
+            let ready = false;
+
+            // Editor init is async (buildUI, loadPlugins, applyTheme).
+            // Track messages added before init so we can re-render them.
+            const pending = [];
+
+            editor.initPromise.then(() => {
+                ready = true;
+                for (const resolve of pending) {
+                    resolve();
+                }
+                pending.length = 0;
+            });
 
             options.messageFormatter = (content) => {
-                editor.updateFromMarkdown(content);
-                return editor.getHTML();
+                if (ready) {
+                    editor.updateFromMarkdown(content);
+                    return editor.getHTML();
+                }
+                // Not ready — return escaped content as placeholder
+                return content;
             };
 
-            // Store for cleanup and direct access
             options._quikdownEditor = editor;
             options._renderContainer = renderContainer;
+            options._editorReady = () => ready;
+            options._editorPending = pending;
         }
         super(parentElement, onSend, options);
         this._quikdownEditor = options._quikdownEditor || null;
         this._renderContainer = options._renderContainer || null;
+
+        // Re-render all messages once editor is ready
+        if (options._editorPending) {
+            const self = this;
+            options._editorPending.push(() => {
+                for (const item of self._history) {
+                    const el = self.messageGetDOMObject(item.msgid);
+                    if (el) {
+                        const contentDiv = el.querySelector('.quikchat-message-content');
+                        if (contentDiv) {
+                            contentDiv.innerHTML = self._processContent(item.content);
+                        }
+                    }
+                }
+            });
+        }
     }
 
     destroy() {

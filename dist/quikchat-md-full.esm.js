@@ -5228,18 +5228,62 @@ var quikchatMDFull = /*#__PURE__*/function (_quikchat) {
       var editor = new QuikdownEditor(renderContainer, {
         mode: 'preview'
       });
-      options.messageFormatter = function (content) {
-        editor.updateFromMarkdown(content);
-        return editor.getHTML();
-      };
+      var ready = false;
 
-      // Store for cleanup and direct access
+      // Editor init is async (buildUI, loadPlugins, applyTheme).
+      // Track messages added before init so we can re-render them.
+      var pending = [];
+      editor.initPromise.then(function () {
+        ready = true;
+        for (var _i = 0, _pending = pending; _i < _pending.length; _i++) {
+          var resolve = _pending[_i];
+          resolve();
+        }
+        pending.length = 0;
+      });
+      options.messageFormatter = function (content) {
+        if (ready) {
+          editor.updateFromMarkdown(content);
+          return editor.getHTML();
+        }
+        // Not ready — return escaped content as placeholder
+        return content;
+      };
       options._quikdownEditor = editor;
       options._renderContainer = renderContainer;
+      options._editorReady = function () {
+        return ready;
+      };
+      options._editorPending = pending;
     }
     _this = _callSuper(this, quikchatMDFull, [parentElement, onSend, options]);
     _this._quikdownEditor = options._quikdownEditor || null;
     _this._renderContainer = options._renderContainer || null;
+
+    // Re-render all messages once editor is ready
+    if (options._editorPending) {
+      var self = _this;
+      options._editorPending.push(function () {
+        var _iterator = _createForOfIteratorHelper(self._history),
+          _step;
+        try {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var item = _step.value;
+            var el = self.messageGetDOMObject(item.msgid);
+            if (el) {
+              var contentDiv = el.querySelector('.quikchat-message-content');
+              if (contentDiv) {
+                contentDiv.innerHTML = self._processContent(item.content);
+              }
+            }
+          }
+        } catch (err) {
+          _iterator.e(err);
+        } finally {
+          _iterator.f();
+        }
+      });
+    }
     return _this;
   }
   _inherits(quikchatMDFull, _quikchat);

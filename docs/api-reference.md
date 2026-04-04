@@ -33,6 +33,8 @@ const chat = new quikchat(parentElement, onSend, options);
 | `messagesArea.alternating` | `boolean` | `true` | Alternating row backgrounds |
 | `sanitize` | `boolean \| function` | `false` | `true` to escape HTML entities, or a `(content) => cleanedContent` function |
 | `messageFormatter` | `function \| null` | `null` | `(content) => html` — transforms content before display (e.g., markdown renderer) |
+| `showTimestamps` | `boolean` | `false` | Show timestamps on messages |
+| `direction` | `string` | `'ltr'` | Text direction: `'ltr'` or `'rtl'` |
 
 ---
 
@@ -231,6 +233,119 @@ Clear all messages from history and reset the message ID counter. Does **not** r
 chat.historyClear();
 ```
 
+### historyExport()
+
+Returns a serializable array of history entries (no DOM references). Safe for `JSON.stringify()`, localStorage, or sending to a server.
+
+```javascript
+const data = chat.historyExport();
+localStorage.setItem('chat-history', JSON.stringify(data));
+```
+
+### historyImport(data)
+
+Restore messages from previously exported data. **Clears existing messages first** (both DOM and history).
+
+```javascript
+const data = JSON.parse(localStorage.getItem('chat-history'));
+chat.historyImport(data);
+```
+
+Round-trip: `historyExport()` → `historyImport()` produces identical chat content, preserving visibility, tags, roles, and alignment.
+
+---
+
+## Message Visibility & Tagging
+
+Messages can be hidden from the DOM while remaining in history. This is useful for system prompts, tool-calling results, and debug messages that should be part of the conversation context but not visible to the user.
+
+### messageSetVisible(id, visible)
+
+```javascript
+chat.messageSetVisible(msgid, false);  // hide message
+chat.messageSetVisible(msgid, true);   // show message
+```
+
+Returns `true` on success, `false` if the message ID doesn't exist.
+
+### messageGetVisible(id)
+
+```javascript
+chat.messageGetVisible(msgid);  // true or false
+```
+
+### messageToggleVisible(id)
+
+```javascript
+chat.messageToggleVisible(msgid);
+```
+
+### messageSetVisibleByTag(tag, visible)
+
+Show or hide all messages that have a given tag. Returns the number of messages affected.
+
+```javascript
+// Hide all tool-call messages
+chat.messageSetVisibleByTag('tool-call', false);
+
+// Show debug messages
+chat.messageSetVisibleByTag('debug', true);
+```
+
+### messageGetTags(id) / messageSetTags(id, tags)
+
+```javascript
+chat.messageGetTags(msgid);              // ['tool-call', 'debug']
+chat.messageSetTags(msgid, ['important']);
+```
+
+### Adding tagged/hidden messages
+
+Use `messageAddFull()` with `visible` and `tags` options:
+
+```javascript
+// System prompt — in history for LLM context, but hidden in UI
+const sysId = chat.messageAddFull({
+  content: 'You are a helpful assistant.',
+  userString: 'system',
+  align: 'center',
+  role: 'system',
+  visible: false,
+  tags: ['system-prompt']
+});
+
+// Tool call result — hidden by default, can be shown for debugging
+chat.messageAddFull({
+  content: JSON.stringify(toolResult),
+  userString: 'tool',
+  align: 'left',
+  role: 'tool',
+  visible: false,
+  tags: ['tool-call', 'debug']
+});
+```
+
+---
+
+## Direction (RTL/LTR)
+
+### setDirection(dir)
+
+Set the widget text direction. Flips the input area layout for RTL languages.
+
+```javascript
+chat.setDirection('rtl');  // Arabic, Hebrew, etc.
+chat.setDirection('ltr');  // default
+```
+
+### getDirection()
+
+```javascript
+chat.getDirection();  // 'ltr' or 'rtl'
+```
+
+Can also be set via constructor options: `{ direction: 'rtl' }`.
+
 ---
 
 ## Title Area Methods
@@ -321,7 +436,7 @@ Returns `true` if alternating colors are currently enabled.
 
 ### changeTheme(newTheme)
 
-Switch the theme CSS class. Built-in themes: `'quikchat-theme-light'`, `'quikchat-theme-dark'`, `'quikchat-theme-debug'`.
+Switch the theme CSS class. Built-in themes: `light`, `dark`, `blue`, `warm`, `midnight`, `ocean`, `modern`, `debug` (all prefixed `quikchat-theme-`).
 
 ```javascript
 chat.changeTheme('quikchat-theme-dark');
@@ -357,9 +472,41 @@ chat.setCallbackonMessageAdded((chat, msgid) => {
 });
 ```
 
+### setCallbackonMessageAppend(callback)
+
+Fires when content is appended to a message (e.g., during streaming).
+
+```javascript
+chat.setCallbackonMessageAppend((chat, msgid, appendedContent) => {
+  console.log('Streaming:', appendedContent);
+});
+```
+
+### setCallbackonMessageReplace(callback)
+
+Fires when a message's content is replaced.
+
+```javascript
+chat.setCallbackonMessageReplace((chat, msgid, newContent) => {
+  console.log('Message updated:', msgid);
+});
+```
+
+### setCallbackonMessageDelete(callback)
+
+Fires when a message is removed.
+
+```javascript
+chat.setCallbackonMessageDelete((chat, msgid) => {
+  console.log('Message deleted:', msgid);
+});
+```
+
+All callbacks only fire on successful operations. They are not called when unset.
+
 ---
 
-## Static Methods
+## Content Processing
 
 ### setMessageFormatter(formatter)
 
@@ -388,7 +535,7 @@ chat.setSanitize(false);                               // disable
 
 ```javascript
 quikchat.version();
-// { version: "1.1.4", license: "BSD-2", url: "https://github/deftio/quikchat" }
+// { version: "1.2.4", license: "BSD-2", url: "https://github/deftio/quikchat" }
 ```
 
 ### quikchat.loremIpsum(numChars, startSpot, startWithCapitalLetter)

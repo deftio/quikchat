@@ -89,6 +89,8 @@ const chat = new quikchat('#chat', onSend, {
   },
   sanitize: true,                       // escape HTML in messages (true, false, or a function)
   messageFormatter: null,               // (content) => html — e.g., markdown renderer
+  showTimestamps: false,                // show timestamps on messages
+  direction: 'ltr',                     // 'ltr' or 'rtl' for right-to-left languages
 });
 ```
 

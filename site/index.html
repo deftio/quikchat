@@ -132,7 +132,13 @@ const response = await fetch("https://api.openai.com/v1/chat/completions", {
       <li>Append to messages (streaming / token completion)</li>
       <li>Replace or remove messages</li>
       <li>Per-message left / right / center alignment</li>
-      <li>Callbacks for send and message-added events</li>
+      <li>Message visibility and tagging (hide system/tool messages)</li>
+      <li>History export / import (save and restore sessions)</li>
+      <li>RTL / LTR text direction support</li>
+      <li>Built-in HTML sanitization and content formatting pipeline</li>
+      <li>Typing indicator with animated dots</li>
+      <li>Callbacks for send, add, append, replace, and delete events</li>
+      <li>Timestamps (show/hide)</li>
       <li>UMD, ESM, and CJS builds included</li>
     </ul>
   </section>
@@ -163,12 +169,24 @@ const response = await fetch("https://api.openai.com/v1/chat/completions", {
     <table class="api-table">
       <tr><th>Method</th><th>Description</th></tr>
       <tr><td><code>messageAddNew(content, user, align, role)</code></td><td>Add a message. Returns message ID. <code>align</code>: "left", "right", or "center".</td></tr>
-      <tr><td><code>messageAddFull({content, userString, align, role, userID})</code></td><td>Add a message with full options object.</td></tr>
+      <tr><td><code>messageAddFull({content, userString, align, role, userID, visible, tags})</code></td><td>Add a message with full options object. <code>visible: false</code> hides in DOM but keeps in history. <code>tags: ["debug"]</code> for group control.</td></tr>
       <tr><td><code>messageAppendContent(id, content)</code></td><td>Append to an existing message (streaming / token completion).</td></tr>
       <tr><td><code>messageReplaceContent(id, content)</code></td><td>Replace the content of an existing message.</td></tr>
       <tr><td><code>messageRemove(id)</code></td><td>Remove a message by ID.</td></tr>
       <tr><td><code>messageGetContent(id)</code></td><td>Get the content string of a message.</td></tr>
       <tr><td><code>messageGetDOMObject(id)</code></td><td>Get the DOM element of a message.</td></tr>
+      <tr><td><code>messageAddTypingIndicator(user, align)</code></td><td>Add animated "..." typing indicator. Auto-cleared on append/replace.</td></tr>
+    </table>
+
+    <h3>Visibility &amp; Tags</h3>
+    <table class="api-table">
+      <tr><th>Method</th><th>Description</th></tr>
+      <tr><td><code>messageSetVisible(id, bool)</code></td><td>Show or hide a message. Hidden messages stay in history.</td></tr>
+      <tr><td><code>messageGetVisible(id)</code></td><td>Returns true if message is visible.</td></tr>
+      <tr><td><code>messageToggleVisible(id)</code></td><td>Toggle message visibility.</td></tr>
+      <tr><td><code>messageSetVisibleByTag(tag, bool)</code></td><td>Show/hide all messages with a given tag. Returns count affected.</td></tr>
+      <tr><td><code>messageGetTags(id)</code></td><td>Get the tags array for a message.</td></tr>
+      <tr><td><code>messageSetTags(id, tags)</code></td><td>Set the tags array for a message.</td></tr>
     </table>
 
     <h3>History</h3>
@@ -177,6 +195,8 @@ const response = await fetch("https://api.openai.com/v1/chat/completions", {
       <tr><td><code>historyGet(n, m)</code></td><td>Get history entries. No args = all. <code>historyGet(3)</code> = entry 3. <code>historyGet(2, 5)</code> = entries 2–5.</td></tr>
       <tr><td><code>historyGetLength()</code></td><td>Number of messages in history.</td></tr>
       <tr><td><code>historyClear()</code></td><td>Clear all history and reset message IDs.</td></tr>
+      <tr><td><code>historyExport()</code></td><td>Returns serializable array (no DOM refs). Safe for JSON.stringify.</td></tr>
+      <tr><td><code>historyImport(data)</code></td><td>Restore messages from exported data. Clears existing messages first.</td></tr>
     </table>
 
     <h3>UI Controls</h3>
@@ -186,16 +206,31 @@ const response = await fetch("https://api.openai.com/v1/chat/completions", {
       <tr><td><code>titleAreaSetContents(html, align)</code></td><td>Set title area HTML and alignment.</td></tr>
       <tr><td><code>titleAreaGetContents()</code></td><td>Get the title area innerHTML.</td></tr>
       <tr><td><code>inputAreaShow()</code> / <code>inputAreaHide()</code> / <code>inputAreaToggle()</code></td><td>Show, hide, or toggle the input area.</td></tr>
+      <tr><td><code>inputAreaSetEnabled(bool)</code></td><td>Enable/disable the input field and send button.</td></tr>
+      <tr><td><code>inputAreaSetButtonText(text)</code></td><td>Change the send button label.</td></tr>
       <tr><td><code>changeTheme(themeName)</code></td><td>Switch CSS theme at runtime.</td></tr>
+      <tr><td><code>setDirection(dir)</code></td><td>Set text direction: <code>'ltr'</code> or <code>'rtl'</code>.</td></tr>
+      <tr><td><code>getDirection()</code></td><td>Get current text direction.</td></tr>
+      <tr><td><code>scrollToBottom()</code></td><td>Scroll messages area to the bottom.</td></tr>
       <tr><td><code>messagesAreaAlternateColors(bool)</code></td><td>Enable/disable alternating message row colors.</td></tr>
-      <tr><td><code>messagesAreaAlternateColorsToggle()</code></td><td>Toggle alternating colors.</td></tr>
+      <tr><td><code>messagesAreaShowTimestamps(bool)</code></td><td>Show/hide message timestamps.</td></tr>
+    </table>
+
+    <h3>Content Processing</h3>
+    <table class="api-table">
+      <tr><th>Method</th><th>Description</th></tr>
+      <tr><td><code>setMessageFormatter(fn)</code></td><td>Set a function to transform message content (e.g., markdown renderer).</td></tr>
+      <tr><td><code>setSanitize(val)</code></td><td><code>true</code> for built-in HTML escaping, or a <code>(content) =&gt; cleaned</code> function.</td></tr>
     </table>
 
     <h3>Callbacks</h3>
     <table class="api-table">
       <tr><th>Method</th><th>Description</th></tr>
       <tr><td><code>setCallbackOnSend(fn)</code></td><td>Set or replace the onSend callback.</td></tr>
-      <tr><td><code>setCallbackonMessageAdded(fn)</code></td><td>Set a listener called after every message is added. <code>(chat, msgId) =&gt; {}</code></td></tr>
+      <tr><td><code>setCallbackonMessageAdded(fn)</code></td><td>Fires after every message is added. <code>(chat, msgId) =&gt; {}</code></td></tr>
+      <tr><td><code>setCallbackonMessageAppend(fn)</code></td><td>Fires on messageAppendContent. <code>(chat, msgId, content) =&gt; {}</code></td></tr>
+      <tr><td><code>setCallbackonMessageReplace(fn)</code></td><td>Fires on messageReplaceContent. <code>(chat, msgId, content) =&gt; {}</code></td></tr>
+      <tr><td><code>setCallbackonMessageDelete(fn)</code></td><td>Fires on messageRemove. <code>(chat, msgId) =&gt; {}</code></td></tr>
     </table>
 
     <h3>Static</h3>

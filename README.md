@@ -48,9 +48,14 @@ That's a working streaming LLM chat in one file — no bundler, no framework, no
 - **Typing indicator** — animated "..." dots that auto-clear when streaming begins
 - **Markdown support** — optional `-md` build bundles [quikdown](https://github.com/deftio/quikdown) for markdown rendering, or bring your own formatter via the `messageFormatter` hook
 - **HTML sanitization** — built-in XSS protection or plug in your own sanitizer
-- **Themeable** — pure CSS themes (light, dark, modern bubbles, or write your own)
+- **Themeable** — 8 built-in CSS themes (light, dark, blue, warm, midnight, ocean, modern, debug) or write your own
 - **Multi-user** — multiple users per chat, multiple independent chats per page
-- **Zero runtime dependencies** — ~3 KB gzipped (base), ~7 KB with markdown
+- **Message visibility & tagging** — hide system prompts and tool-call results from the UI while keeping them in history for LLM context
+- **History export / import** — save and restore complete chat sessions (`historyExport()` / `historyImport()`)
+- **RTL support** — `setDirection('rtl')` for Arabic, Hebrew, and other right-to-left languages
+- **Event callbacks** — hooks for message add, append, replace, and delete events
+- **Timestamps** — optional per-message timestamps (show/hide)
+- **Zero runtime dependencies** — ~5 KB gzipped (base), ~8 KB with markdown
 - **Any environment** — works with CDN, npm, or local files; UMD, ESM, and CJS builds included
 - **Responsive** — fills its parent container and resizes automatically
 - **Accessible** — ARIA roles and labels on all interactive elements

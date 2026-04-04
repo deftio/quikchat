@@ -1,5 +1,10 @@
 'use strict';
 
+function _arrayLikeToArray(r, a) {
+  (null == a || a > r.length) && (a = r.length);
+  for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
+  return n;
+}
 function _classCallCheck(a, n) {
   if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function");
 }
@@ -13,6 +18,54 @@ function _createClass(e, r, t) {
   return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", {
     writable: false
   }), e;
+}
+function _createForOfIteratorHelper(r, e) {
+  var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
+  if (!t) {
+    if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e) {
+      t && (r = t);
+      var n = 0,
+        F = function () {};
+      return {
+        s: F,
+        n: function () {
+          return n >= r.length ? {
+            done: true
+          } : {
+            done: false,
+            value: r[n++]
+          };
+        },
+        e: function (r) {
+          throw r;
+        },
+        f: F
+      };
+    }
+    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+  var o,
+    a = true,
+    u = false;
+  return {
+    s: function () {
+      t = t.call(r);
+    },
+    n: function () {
+      var r = t.next();
+      return a = r.done, r;
+    },
+    e: function (r) {
+      u = true, o = r;
+    },
+    f: function () {
+      try {
+        a || null == t.return || t.return();
+      } finally {
+        if (u) throw o;
+      }
+    }
+  };
 }
 function _defineProperty(e, r, t) {
   return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
@@ -56,6 +109,13 @@ function _toPrimitive(t, r) {
 function _toPropertyKey(t) {
   var i = _toPrimitive(t, "string");
   return "symbol" == typeof i ? i : i + "";
+}
+function _unsupportedIterableToArray(r, a) {
+  if (r) {
+    if ("string" == typeof r) return _arrayLikeToArray(r, a);
+    var t = {}.toString.call(r).slice(8, -1);
+    return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0;
+  }
 }
 
 var quikchat = /*#__PURE__*/function () {
@@ -108,6 +168,10 @@ var quikchat = /*#__PURE__*/function () {
     // timestamps
     if (meta.showTimestamps) {
       this.messagesAreaShowTimestamps(true);
+    }
+    // direction (ltr/rtl)
+    if (meta.direction) {
+      this.setDirection(meta.direction);
     }
     // plumbing
     this._attachEventListeners();
@@ -200,6 +264,21 @@ var quikchat = /*#__PURE__*/function () {
     value: function setCallbackonMessageAdded(callback) {
       this._onMessageAdded = callback;
     }
+  }, {
+    key: "setCallbackonMessageAppend",
+    value: function setCallbackonMessageAppend(callback) {
+      this._onMessageAppend = callback;
+    }
+  }, {
+    key: "setCallbackonMessageReplace",
+    value: function setCallbackonMessageReplace(callback) {
+      this._onMessageReplace = callback;
+    }
+  }, {
+    key: "setCallbackonMessageDelete",
+    value: function setCallbackonMessageDelete(callback) {
+      this._onMessageDelete = callback;
+    }
 
     // Public methods
   }, {
@@ -267,6 +346,22 @@ var quikchat = /*#__PURE__*/function () {
     key: "inputAreaGetButtonText",
     value: function inputAreaGetButtonText() {
       return this._sendButton.textContent;
+    }
+  }, {
+    key: "setDirection",
+    value: function setDirection(dir) {
+      var d = dir === 'rtl' ? 'rtl' : 'ltr';
+      this._chatWidget.setAttribute('dir', d);
+      if (d === 'rtl') {
+        this._chatWidget.classList.add('quikchat-rtl');
+      } else {
+        this._chatWidget.classList.remove('quikchat-rtl');
+      }
+    }
+  }, {
+    key: "getDirection",
+    value: function getDirection() {
+      return this._chatWidget.getAttribute('dir') || 'ltr';
     }
   }, {
     key: "_handleContainerResize",
@@ -390,6 +485,15 @@ var quikchat = /*#__PURE__*/function () {
       messageDiv.classList.add('quikchat-align-' + (input.align || 'right'));
       this.msgid++;
       messageDiv.classList.add(this._messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
+
+      // Visibility: default true, hidden messages get display:none
+      var visible = input.visible !== false;
+      if (!visible) {
+        messageDiv.style.display = 'none';
+      }
+
+      // Tags: array of strings for group-based visibility control
+      var tags = Array.isArray(input.tags) ? input.tags.slice() : [];
       var userDiv = document.createElement('div');
       userDiv.classList.add('quikchat-user-label');
       userDiv.style.textAlign = input.align;
@@ -418,6 +522,8 @@ var quikchat = /*#__PURE__*/function () {
         this._history.push(_objectSpread2(_objectSpread2({
           msgid: msgid
         }, input), {}, {
+          visible: visible,
+          tags: tags,
           timestamp: timestamp,
           updatedtime: updatedtime,
           messageDiv: messageDiv
@@ -459,6 +565,9 @@ var quikchat = /*#__PURE__*/function () {
         this._history.splice(this._history.findIndex(function (item) {
           return item.msgid === n;
         }), 1);
+        if (this._onMessageDelete) {
+          this._onMessageDelete(this, n);
+        }
       }
       return success;
     }
@@ -490,6 +599,71 @@ var quikchat = /*#__PURE__*/function () {
       }
       return content;
     }
+  }, {
+    key: "messageSetVisible",
+    value: function messageSetVisible(n, visible) {
+      var msgEl = this.messageGetDOMObject(n);
+      if (!msgEl) return false;
+      msgEl.style.display = visible ? '' : 'none';
+      var item = this._history.find(function (entry) {
+        return entry.msgid === n;
+      });
+      if (item) item.visible = visible;
+      return true;
+    }
+  }, {
+    key: "messageGetVisible",
+    value: function messageGetVisible(n) {
+      var item = this._history.find(function (entry) {
+        return entry.msgid === n;
+      });
+      return item ? item.visible !== false : false;
+    }
+  }, {
+    key: "messageToggleVisible",
+    value: function messageToggleVisible(n) {
+      var current = this.messageGetVisible(n);
+      return this.messageSetVisible(n, !current);
+    }
+  }, {
+    key: "messageSetVisibleByTag",
+    value: function messageSetVisibleByTag(tag, visible) {
+      var count = 0;
+      var _iterator = _createForOfIteratorHelper(this._history),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var item = _step.value;
+          if (item.tags && item.tags.includes(tag)) {
+            this.messageSetVisible(item.msgid, visible);
+            count++;
+          }
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+      return count;
+    }
+  }, {
+    key: "messageGetTags",
+    value: function messageGetTags(n) {
+      var item = this._history.find(function (entry) {
+        return entry.msgid === n;
+      });
+      return item && item.tags ? item.tags.slice() : [];
+    }
+  }, {
+    key: "messageSetTags",
+    value: function messageSetTags(n, tags) {
+      var item = this._history.find(function (entry) {
+        return entry.msgid === n;
+      });
+      if (!item) return false;
+      item.tags = Array.isArray(tags) ? tags.slice() : [];
+      return true;
+    }
 
     /* append message to the message content
     */
@@ -509,6 +683,9 @@ var quikchat = /*#__PURE__*/function () {
         success = true;
         if (!this.userScrolledUp) {
           this._messagesArea.scrollTop = this._messagesArea.scrollHeight;
+        }
+        if (this._onMessageAppend) {
+          this._onMessageAppend(this, n, content);
         }
       } catch (_error) {
         // Message ID not found
@@ -534,6 +711,9 @@ var quikchat = /*#__PURE__*/function () {
         success = true;
         if (!this.userScrolledUp) {
           this._messagesArea.scrollTop = this._messagesArea.scrollHeight;
+        }
+        if (this._onMessageReplace) {
+          this._onMessageReplace(this, n, content);
         }
       } catch (_error) {
         // Message ID not found
@@ -617,6 +797,52 @@ var quikchat = /*#__PURE__*/function () {
       return "";
     }
   }, {
+    key: "historyExport",
+    value: function historyExport() {
+      return this._history.map(function (item) {
+        return {
+          msgid: item.msgid,
+          content: item.content,
+          userString: item.userString,
+          align: item.align,
+          role: item.role,
+          userID: item.userID,
+          visible: item.visible,
+          tags: item.tags ? item.tags.slice() : [],
+          timestamp: item.timestamp,
+          updatedtime: item.updatedtime
+        };
+      });
+    }
+  }, {
+    key: "historyImport",
+    value: function historyImport(data) {
+      // Clear existing messages from DOM and history
+      this._messagesArea.innerHTML = '';
+      this._history = [];
+      this.msgid = 0;
+      var _iterator2 = _createForOfIteratorHelper(data),
+        _step2;
+      try {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var entry = _step2.value;
+          this.messageAddFull({
+            content: entry.content || '',
+            userString: entry.userString || 'user',
+            align: entry.align || 'right',
+            role: entry.role || 'user',
+            userID: entry.userID,
+            visible: entry.visible,
+            tags: entry.tags
+          });
+        }
+      } catch (err) {
+        _iterator2.e(err);
+      } finally {
+        _iterator2.f();
+      }
+    }
+  }, {
     key: "changeTheme",
     value: function changeTheme(newTheme) {
       this._chatWidget.classList.remove(this._theme);
@@ -632,7 +858,7 @@ var quikchat = /*#__PURE__*/function () {
     key: "version",
     value: function version() {
       return {
-        "version": "1.2.0",
+        "version": "1.2.4",
         "license": "BSD-2",
         "url": "https://github/deftio/quikchat"
       };

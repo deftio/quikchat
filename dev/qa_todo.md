@@ -60,11 +60,9 @@ Rule: bump version +0.0.1 per feature, maintain 100% test coverage on new lines.
 - [x] `setCallbackonMessageDelete(fn)` — fires on messageRemove
 - [x] Tests: 7 new tests, all fire with correct args, no-op when unset
 
-### 5. Virtual scrolling — v1.2.5 (if needed)
-- [ ] Evaluate whether this is needed for the 1.2.x line
-- [ ] If yes: implement as opt-in (`virtualScroll: true` in options)
-- [ ] Must not break existing scroll behavior when disabled
-- [ ] Tests: large message volume rendering, scroll position preservation
+### 5. Virtual scrolling — DEFERRED to 1.3.0
+- [ ] Not needed for current use cases (sub-1000 messages per session)
+- [ ] Will implement as opt-in (`virtualScroll: true`) when real performance data demands it
 
 ## Build / QA gates (must pass before each version bump)
 

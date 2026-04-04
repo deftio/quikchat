@@ -839,7 +839,7 @@ describe('quikchat', () => {
     describe('static methods', () => {
         test('version should return version info', () => {
             const v = quikchat.version();
-            expect(v.version).toBe('1.2.1');
+            expect(v.version).toBe('1.2.2');
             expect(v.license).toBe('BSD-2');
             expect(v.url).toContain('quikchat');
         });
@@ -1461,6 +1461,14 @@ describe('quikchat', () => {
             expect(chatInstance.messageSetVisibleByTag('nonexistent', false)).toBe(0);
         });
 
+        test('tags with non-array value defaults to empty array', () => {
+            const id = chatInstance.messageAddFull({
+                content: 'Bad tags', userString: 'u', align: 'left', role: 'user',
+                tags: 'not-an-array'
+            });
+            expect(chatInstance.messageGetTags(id)).toEqual([]);
+        });
+
         test('tags array is a copy, not a reference', () => {
             const tags = ['a', 'b'];
             const id = chatInstance.messageAddFull({
@@ -1473,6 +1481,48 @@ describe('quikchat', () => {
             const retrieved = chatInstance.messageGetTags(id);
             retrieved.push('d');
             expect(chatInstance.messageGetTags(id)).toEqual(['a', 'b']);
+        });
+    });
+
+    // ==================== i18n / RTL ====================
+
+    describe('direction / RTL', () => {
+        test('default direction is ltr', () => {
+            expect(chatInstance.getDirection()).toBe('ltr');
+        });
+
+        test('setDirection to rtl sets dir attribute and adds class', () => {
+            chatInstance.setDirection('rtl');
+            expect(chatInstance.getDirection()).toBe('rtl');
+            expect(chatInstance._chatWidget.getAttribute('dir')).toBe('rtl');
+            expect(chatInstance._chatWidget.classList.contains('quikchat-rtl')).toBe(true);
+        });
+
+        test('setDirection to ltr removes rtl class', () => {
+            chatInstance.setDirection('rtl');
+            chatInstance.setDirection('ltr');
+            expect(chatInstance.getDirection()).toBe('ltr');
+            expect(chatInstance._chatWidget.classList.contains('quikchat-rtl')).toBe(false);
+        });
+
+        test('setDirection with invalid value defaults to ltr', () => {
+            chatInstance.setDirection('invalid');
+            expect(chatInstance.getDirection()).toBe('ltr');
+            expect(chatInstance._chatWidget.classList.contains('quikchat-rtl')).toBe(false);
+        });
+
+        test('constructor option direction sets rtl', () => {
+            const rtlDiv = document.createElement('div');
+            document.body.appendChild(rtlDiv);
+            const rtlChat = new quikchat(rtlDiv, () => {}, { direction: 'rtl' });
+            expect(rtlChat.getDirection()).toBe('rtl');
+            expect(rtlChat._chatWidget.classList.contains('quikchat-rtl')).toBe(true);
+            document.body.removeChild(rtlDiv);
+        });
+
+        test('constructor without direction option stays ltr', () => {
+            expect(chatInstance.getDirection()).toBe('ltr');
+            expect(chatInstance._chatWidget.classList.contains('quikchat-rtl')).toBe(false);
         });
     });
 });

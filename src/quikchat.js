@@ -41,6 +41,10 @@ class quikchat {
         if (meta.showTimestamps) {
             this.messagesAreaShowTimestamps(true);
         }
+        // direction (ltr/rtl)
+        if (meta.direction) {
+            this.setDirection(meta.direction);
+        }
         // plumbing
         this._attachEventListeners();
         this.trackHistory = meta.trackHistory !== false;
@@ -181,6 +185,20 @@ class quikchat {
 
     inputAreaGetButtonText() {
         return this._sendButton.textContent;
+    }
+
+    setDirection(dir) {
+        const d = dir === 'rtl' ? 'rtl' : 'ltr';
+        this._chatWidget.setAttribute('dir', d);
+        if (d === 'rtl') {
+            this._chatWidget.classList.add('quikchat-rtl');
+        } else {
+            this._chatWidget.classList.remove('quikchat-rtl');
+        }
+    }
+
+    getDirection() {
+        return this._chatWidget.getAttribute('dir') || 'ltr';
     }
 
     _handleContainerResize() {
@@ -540,7 +558,7 @@ class quikchat {
     }
 
     static version() {
-        return { "version": "1.2.1", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
+        return { "version": "1.2.2", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
     }
 
     /**

@@ -95,6 +95,19 @@
 }
 
 /* ================================== */
+/* Base — RTL support                 */
+/* ================================== */
+
+.quikchat-rtl .quikchat-input-area {
+    flex-direction: row-reverse;
+}
+
+.quikchat-rtl .quikchat-input-send-btn {
+    margin-left: 0;
+    margin-right: 8px;
+}
+
+/* ================================== */
 /* Base — disabled state              */
 /* ================================== */
 

@@ -30,14 +30,15 @@ Rule: bump version +0.0.1 per feature, maintain 100% test coverage on new lines.
 
 ## To implement — from 1.1.17 (re-implement from scratch)
 
-### 1. Message visibility & tagging — v1.2.1
-- [ ] `messageSetVisible(id, visible)` — show/hide a message in the DOM
-- [ ] `messageGetVisible(id)` — returns boolean
-- [ ] `messageToggleVisible(id)`
-- [ ] Hidden messages stay in history but are `display: none` in DOM
-- [ ] Tagged visibility: `messageSetVisibleByTag(tag, visible)` — group control
-- [ ] `messageAddFull` supports `visible` and `tags` options
-- [ ] Tests: all visibility methods, tag-based visibility, history integrity when hidden
+### 1. Message visibility & tagging — v1.2.1 ✅
+- [x] `messageSetVisible(id, visible)` — show/hide a message in the DOM
+- [x] `messageGetVisible(id)` — returns boolean
+- [x] `messageToggleVisible(id)`
+- [x] Hidden messages stay in history but are `display: none` in DOM
+- [x] Tagged visibility: `messageSetVisibleByTag(tag, visible)` — group control
+- [x] `messageGetTags(id)` / `messageSetTags(id, tags)`
+- [x] `messageAddFull` supports `visible` and `tags` options
+- [x] Tests: 18 new tests, all passing, 100% statement/line coverage
 
 ### 2. i18n / RTL support — v1.2.2
 - [ ] `setDirection(dir)` — sets `dir` attribute on widget root ('ltr' or 'rtl')

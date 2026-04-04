@@ -13,24 +13,68 @@
     .doc-content h1 { margin-top: 0; }
     .doc-content h2 { margin-top: 32px; }
     .doc-content table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin: 12px 0; }
-    .doc-content th { text-align: left; padding: 6px 8px; border-bottom: 2px solid #ddd; font-weight: 600; }
-    .doc-content td { padding: 6px 8px; border-bottom: 1px solid #eee; vertical-align: top; }
+    .doc-content th { text-align: left; padding: 8px 10px; border-bottom: 2px solid #ddd; font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.03em; color: #666; }
+    .doc-content td { padding: 8px 10px; border-bottom: 1px solid #eee; vertical-align: top; }
+    .doc-content tr:hover td { background: #f8f8fa; }
     .doc-content ul, .doc-content ol { padding-left: 24px; }
     .doc-content li { margin-bottom: 4px; }
     .doc-content strong { font-weight: 600; }
     .doc-content hr { border: none; border-top: 1px solid #e5e5e5; margin: 24px 0; }
 
-    .doc-sidebar { margin-bottom: 24px; }
-    .doc-sidebar a { display: inline-block; margin-right: 16px; margin-bottom: 4px; color: #0056b3; text-decoration: none; font-size: 0.9rem; }
-    .doc-sidebar a:hover { text-decoration: underline; }
-    .doc-sidebar a.active { font-weight: 600; color: #1a1a1a; }
+    /* sidebar as pill nav */
+    .doc-sidebar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #eaeaea;
+    }
+    .doc-sidebar a {
+      display: inline-block;
+      padding: 5px 12px;
+      font-size: 0.84rem;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      color: #555;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .doc-sidebar a:hover { background: #f5f5f5; border-color: #bbb; color: #333; }
+    .doc-sidebar a.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+
+    /* doc landing cards */
+    .doc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .doc-card {
+      border: 1px solid #e4e4e7;
+      border-radius: 8px;
+      padding: 16px 18px;
+      background: #fff;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .doc-card:hover { border-color: #bbb; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .doc-card h3 { margin: 0 0 6px; font-size: 0.95rem; }
+    .doc-card h3 a { color: #0066cc; text-decoration: none; }
+    .doc-card h3 a:hover { color: #004499; }
+    .doc-card p { margin: 0; font-size: 0.85rem; color: #666; line-height: 1.4; }
 
     /* dark overrides */
-    .site-dark .doc-content th { border-bottom-color: #444; }
-    .site-dark .doc-content td { border-bottom-color: #2a2a2a; }
+    .site-dark .doc-content th { border-bottom-color: #333; color: #888; }
+    .site-dark .doc-content td { border-bottom-color: #1e1e1e; }
+    .site-dark .doc-content tr:hover td { background: #1a1a1a; }
     .site-dark .doc-content hr { border-top-color: #333; }
-    .site-dark .doc-sidebar a { color: #5ea8d8; }
-    .site-dark .doc-sidebar a.active { color: #d8d8d8; }
+    .site-dark .doc-sidebar { border-bottom-color: #222; }
+    .site-dark .doc-sidebar a { color: #999; border-color: #3a3a3a; }
+    .site-dark .doc-sidebar a:hover { background: #2a2a2a; color: #ddd; border-color: #555; }
+    .site-dark .doc-sidebar a.active { background: #e0e0e0; color: #111; border-color: #e0e0e0; }
+    .site-dark .doc-card { background: #1a1a1a; border-color: #2a2a2a; }
+    .site-dark .doc-card:hover { border-color: #444; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    .site-dark .doc-card p { color: #888; }
   </style>
 </head>
 <body>
@@ -40,6 +84,7 @@
 
   <header class="site-header">
     <h1 id="doc-title">Documentation</h1>
+    <p class="tagline" id="doc-tagline">Guides and references for using QuikChat.</p>
   </header>
 
   <div class="doc-sidebar" id="doc-sidebar">
@@ -54,7 +99,37 @@
 
   <section style="padding-top: 0;">
     <div class="doc-content" id="doc-content">
-      <p>Select a guide from above, or start with <a href="?page=getting-started">Getting Started</a>.</p>
+      <!-- Landing state: card grid -->
+      <div class="doc-grid" id="doc-landing">
+        <div class="doc-card">
+          <h3><a href="?page=getting-started">Getting Started</a></h3>
+          <p>Installation (CDN, npm, local), minimal example, constructor options, content processing pipeline.</p>
+        </div>
+        <div class="doc-card">
+          <h3><a href="?page=api-reference">API Reference</a></h3>
+          <p>Every public method: messages, visibility, tags, history, UI controls, themes, direction, callbacks, static methods.</p>
+        </div>
+        <div class="doc-card">
+          <h3><a href="?page=streaming">Streaming</a></h3>
+          <p>Token-by-token LLM response display, typing indicators, SSE streams, input gating during responses.</p>
+        </div>
+        <div class="doc-card">
+          <h3><a href="?page=multi-user-chat">Multi-User Chat</a></h3>
+          <p>Multiple users per chat, dual instances, message routing between widgets, read-only display mode.</p>
+        </div>
+        <div class="doc-card">
+          <h3><a href="?page=llm-integration">LLM Integration</a></h3>
+          <p>Ollama, OpenAI, LM Studio, conversational memory, system prompts, tool calls, markdown rendering.</p>
+        </div>
+        <div class="doc-card">
+          <h3><a href="?page=theming">Theming</a></h3>
+          <p>8 built-in themes, custom theme creation, CSS architecture, role-based styling, alignment classes.</p>
+        </div>
+        <div class="doc-card">
+          <h3><a href="?page=css-architecture">CSS Architecture</a></h3>
+          <p>Base vs theme separation, structural properties, ARIA accessibility, focus indicators.</p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -62,7 +137,6 @@
 
 <script>
 const qd = quikchat.quikdown || (typeof quikdown !== 'undefined' ? quikdown : null);
-// quikchat-md exposes quikdown on the class
 const render = qd
   ? (md) => qd(md)
   : (md) => '<pre>' + md + '</pre>';
@@ -70,14 +144,15 @@ const render = qd
 const params = new URLSearchParams(window.location.search);
 const page = params.get('page') || '';
 
-document.getElementById("site-version").textContent = "v" + quikchat.version().version;
-
 // Highlight active sidebar link
 document.querySelectorAll('.doc-sidebar a').forEach(a => {
   if (a.dataset.page === page) a.classList.add('active');
 });
 
 if (page) {
+  // Hide landing tagline when viewing a doc page
+  document.getElementById('doc-tagline').style.display = 'none';
+
   fetch('../docs/' + page + '.md')
     .then(r => {
       if (!r.ok) throw new Error('Not found');
@@ -85,12 +160,11 @@ if (page) {
     })
     .then(md => {
       document.getElementById('doc-content').innerHTML = render(md);
-      // Set page title from first h1
       const h1 = document.querySelector('.doc-content h1');
       if (h1) {
         document.getElementById('doc-title').textContent = h1.textContent;
         document.title = h1.textContent + ' — QuikChat Docs';
-        h1.remove(); // avoid duplicate h1
+        h1.remove();
       }
     })
     .catch(() => {

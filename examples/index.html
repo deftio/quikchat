@@ -6,76 +6,140 @@
   <title>QuikChat — Examples</title>
   <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
   <link href="../site/site.css" rel="stylesheet">
+  <style>
+    .example-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+    .example-card {
+      border: 1px solid #e4e4e7;
+      border-radius: 8px;
+      padding: 16px 18px;
+      background: #fff;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .example-card:hover {
+      border-color: #bbb;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .example-card h3 {
+      margin: 0 0 6px;
+      font-size: 0.95rem;
+    }
+    .example-card h3 a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+    .example-card h3 a:hover {
+      color: #004499;
+    }
+    .example-card p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: #666;
+      line-height: 1.4;
+    }
+    .example-card .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: 500;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .badge-base { background: #e8f5e9; color: #2e7d32; }
+    .badge-md { background: #e3f2fd; color: #1565c0; }
+    .badge-full { background: #f3e5f5; color: #7b1fa2; }
+    .badge-llm { background: #fff3e0; color: #e65100; }
+
+    /* dark */
+    .site-dark .example-card { background: #1a1a1a; border-color: #2a2a2a; }
+    .site-dark .example-card:hover { border-color: #444; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    .site-dark .example-card p { color: #888; }
+    .site-dark .badge-base { background: #1a2e1a; color: #66bb6a; }
+    .site-dark .badge-md { background: #1a2a3a; color: #5ea8d8; }
+    .site-dark .badge-full { background: #2a1a2e; color: #ba68c8; }
+    .site-dark .badge-llm { background: #2e1a0a; color: #ffb74d; }
+  </style>
 </head>
 <body>
-
-<nav class="site-nav">
-  <div class="site-nav-inner">
-    <a class="site-logo" href="../site/">QuikChat</a>
-    <span class="site-version">v1.2.4</span>
-    <a href="../site/#demo">Demo</a>
-    <a href="../site/#install">Install</a>
-    <a href="../site/#api">API</a>
-    <a href="../site/doc.html">Docs</a>
-    <a href="./">Examples</a>
-    <a href="../site/theming.html">Theming</a>
-    <a href="../site/downloads.html">Downloads</a>
-    <a href="https://github.com/deftio/quikchat">GitHub</a>
-    <a href="#" onclick="document.body.classList.toggle('site-dark');return false" style="margin-left:auto">Light/Dark</a>
-  </div>
-</nav>
+<script src="../site/site-chrome.js" data-site-root="../site/"></script>
 
 <div class="wrap">
 
   <header class="site-header">
     <h1>Examples</h1>
-    <p>Working examples showing how to use QuikChat. Includes basic usage, theming, multiple chats, and LLM integrations.</p>
+    <p class="tagline">Working examples showing how to use QuikChat. Each example is a single HTML file — view source to see how it works.</p>
   </header>
 
   <section>
     <h2>Basic Usage</h2>
-    <ul class="example-list">
-      <li><a href="example_umd.html">UMD (script tag)</a> <span class="desc">— theme switching, toggle controls</span></li>
-      <li><a href="example_esm.html">ESM (module import)</a> <span class="desc">— ES module usage</span></li>
-      <li><a href="dual-chatrooms.html">Dual Chatrooms</a> <span class="desc">— two widgets that send messages to each other</span></li>
-    </ul>
+    <div class="example-grid">
+      <div class="example-card">
+        <h3><a href="example_umd.html">UMD (script tag)</a> <span class="badge badge-base">base</span></h3>
+        <p>Theme switching, toggle title/input, alternating colors. The simplest way to use QuikChat.</p>
+      </div>
+      <div class="example-card">
+        <h3><a href="example_esm.html">ESM (module import)</a> <span class="badge badge-base">base</span></h3>
+        <p>Using QuikChat as an ES module with <code>import</code>.</p>
+      </div>
+      <div class="example-card">
+        <h3><a href="dual-chatrooms.html">Dual Chatrooms</a> <span class="badge badge-base">base</span></h3>
+        <p>Two independent chat widgets that send messages to each other.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Markdown Rendering</h2>
+    <div class="example-grid">
+      <div class="example-card">
+        <h3><a href="example_markdown.html">Markdown (basic)</a> <span class="badge badge-md">md</span></h3>
+        <p>Bold, italic, code blocks, tables, lists, links. Uses <code>quikchat-md</code> build with quikdown. No network needed.</p>
+      </div>
+      <div class="example-card">
+        <h3><a href="example_md_full.html">Markdown (full)</a> <span class="badge badge-full">md-full</span></h3>
+        <p>Syntax highlighting, math (MathJax), diagrams (Mermaid), maps (Leaflet), SVG, CSV tables. Renderers load from CDN on demand.</p>
+      </div>
+    </div>
   </section>
 
   <section>
     <h2>LLM Integrations</h2>
-    <ul class="example-list">
-      <li><a href="simple_ollama.html">Ollama (simple)</a> <span class="desc">— local LLM chat with <a href="https://ollama.ai">Ollama</a></span></li>
-      <li><a href="ollama_with_memory.html">Ollama with Memory</a> <span class="desc">— conversational context via historyGet()</span></li>
-      <li><a href="lmstudio_with_memory.html">LM Studio with Memory</a> <span class="desc">— local LLM via <a href="https://lmstudio.ai/">LM Studio</a></span></li>
-      <li><a href="openai.html">OpenAI</a> <span class="desc">— GPT-4o with token streaming</span></li>
-    </ul>
-  </section>
-
-  <section>
-    <h2>Markdown</h2>
-    <ul class="example-list">
-      <li><a href="example_markdown.html">Markdown (basic)</a> <span class="desc">— <code>quikchat-md</code> build: bold, italic, code blocks, tables, lists (~9 KB gzip, no network needed)</span></li>
-      <li><a href="example_md_full.html">Markdown (full)</a> <span class="desc">— <code>quikchat-md-full</code> build: adds syntax highlighting, math, maps, SVG (~14 KB gzip, loads extras from CDN on demand)</span></li>
-    </ul>
+    <div class="example-grid">
+      <div class="example-card">
+        <h3><a href="simple_ollama.html">Ollama (simple)</a> <span class="badge badge-llm">LLM</span></h3>
+        <p>Local LLM chat using <a href="https://ollama.ai">Ollama</a>. Basic request/response pattern.</p>
+      </div>
+      <div class="example-card">
+        <h3><a href="ollama_with_memory.html">Ollama with Memory</a> <span class="badge badge-llm">LLM</span></h3>
+        <p>Conversational context via <code>historyGet()</code> — the LLM remembers what was discussed.</p>
+      </div>
+      <div class="example-card">
+        <h3><a href="lmstudio_with_memory.html">LM Studio</a> <span class="badge badge-llm">LLM</span></h3>
+        <p>Local LLM via <a href="https://lmstudio.ai/">LM Studio</a> with conversational memory.</p>
+      </div>
+      <div class="example-card">
+        <h3><a href="openai.html">OpenAI</a> <span class="badge badge-llm">LLM</span></h3>
+        <p>GPT-4o with token streaming. Works with any OpenAI-compatible API.</p>
+      </div>
+    </div>
   </section>
 
   <section>
     <h2>Framework Integration</h2>
-    <ul class="example-list">
-      <li><a href="quikchat-react.html">React</a> <span class="desc">— using quikchat inside a React component</span></li>
-    </ul>
+    <div class="example-grid">
+      <div class="example-card">
+        <h3><a href="quikchat-react.html">React</a> <span class="badge badge-base">base</span></h3>
+        <p>Using QuikChat inside a React component with hooks.</p>
+      </div>
+    </div>
   </section>
 
 </div>
-
-<footer class="site-footer">
-  <div class="site-footer-inner">
-    <a href="https://github.com/deftio/quikchat">GitHub</a> &middot;
-    <a href="https://www.npmjs.com/package/quikchat">npm</a> &middot;
-    BSD-2-Clause License &middot;
-    &copy; <a href="https://github.com/deftio">deftio</a>
-  </div>
-</footer>
 
 </body>
 </html>

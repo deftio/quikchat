@@ -46,7 +46,7 @@ That's a working streaming LLM chat in one file — no bundler, no framework, no
 - **LLM-ready** — `historyGet()` returns `{ role, content }` objects compatible with OpenAI, Ollama, Mistral, and Claude APIs
 - **Streaming built in** — `messageAddNew()` → `messageAppendContent()` for token-by-token display
 - **Typing indicator** — animated "..." dots that auto-clear when streaming begins
-- **Markdown support** — optional `-md` build bundles [quikdown](https://github.com/deftio/quikdown) for markdown rendering, or bring your own formatter via the `messageFormatter` hook
+- **Markdown support** — three tiers: base (no markdown), `-md` (basic markdown via [quikdown](https://github.com/deftio/quikdown)), `-md-full` (syntax highlighting, math, diagrams, maps — loaded on demand from CDN)
 - **HTML sanitization** — built-in XSS protection or plug in your own sanitizer
 - **Themeable** — 8 built-in CSS themes (light, dark, blue, warm, midnight, ocean, modern, debug) or write your own
 - **Multi-user** — multiple users per chat, multiple independent chats per page
@@ -55,7 +55,7 @@ That's a working streaming LLM chat in one file — no bundler, no framework, no
 - **RTL support** — `setDirection('rtl')` for Arabic, Hebrew, and other right-to-left languages
 - **Event callbacks** — hooks for message add, append, replace, and delete events
 - **Timestamps** — optional per-message timestamps (show/hide)
-- **Zero runtime dependencies** — ~5 KB gzipped (base), ~8 KB with markdown
+- **Zero runtime dependencies** — ~5 KB gzipped (base), ~9 KB with markdown, ~23 KB full
 - **Any environment** — works with CDN, npm, or local files; UMD, ESM, and CJS builds included
 - **Responsive** — fills its parent container and resizes automatically
 - **Accessible** — ARIA roles and labels on all interactive elements
@@ -79,20 +79,21 @@ npm install quikchat
 import quikchat from 'quikchat';
 ```
 
-### With Markdown (quikdown bundled)
+### With Markdown
 
 ```html
-<!-- UMD build with markdown support -->
+<!-- Basic markdown (bold, italic, code, tables, lists) — ~9 KB gzip -->
 <script src="https://unpkg.com/quikchat/dist/quikchat-md.umd.min.js"></script>
+
+<!-- Full markdown (+ syntax highlighting, math, diagrams, maps) — ~23 KB gzip -->
+<script src="https://unpkg.com/quikchat/dist/quikchat-md-full.umd.min.js"></script>
+
 <link rel="stylesheet" href="https://unpkg.com/quikchat/dist/quikchat.css" />
 ```
 
-Or with npm:
+The `-md-full` build uses [quikdown](https://github.com/deftio/quikdown)'s editor as a rendering engine. When your LLM returns a fenced code block with a language tag, highlight.js loads from CDN automatically. Same for math (MathJax), diagrams (Mermaid), and maps (Leaflet) — each loads on demand the first time it's encountered.
 
-```javascript
-import quikchat from 'quikchat/dist/quikchat-md.esm.min.js';
-// quikchat.quikdown is available for direct use
-```
+Same API across all three builds — just pick your script tag.
 
 ## Usage
 
@@ -149,7 +150,7 @@ chat.setSanitize((content) => DOMPurify.sanitize(content));
 
 The pipeline is: **sanitize → format → display**. Sanitize cleans untrusted input; the formatter's output is trusted.
 
-The `-md` build pre-wires [quikdown](https://github.com/deftio/quikdown) as the formatter — no configuration needed.
+The `-md` and `-md-full` builds pre-wire [quikdown](https://github.com/deftio/quikdown) as the formatter — no configuration needed. The `-md-full` build additionally renders syntax-highlighted code, math equations, Mermaid diagrams, and maps via dynamic CDN loading.
 
 ## Theming
 
@@ -189,26 +190,26 @@ Style messages by role with CSS hooks: `.quikchat-role-user`, `.quikchat-role-as
 | [Multi-User Chat](docs/multi-user-chat.md) | Multiple users, dual instances, message routing |
 | [LLM Integration](docs/llm-integration.md) | Ollama, OpenAI, LM Studio, tool calls, conversational memory |
 | [Theming](docs/theming.md) | Custom themes, CSS architecture, built-in themes |
+| [CSS Architecture](docs/css-architecture.md) | Base vs theme separation, ARIA accessibility |
 
 ## Demo & Examples
 
-[Live Demo](https://deftio.github.io/quikchat/examples/example_umd.html)
+[Live Demo](https://deftio.github.io/quikchat/site/) | [Examples](https://deftio.github.io/quikchat/examples/)
 
-Full examples in the [examples/](./examples/index.html) folder: ESM/UMD usage, theming, multiple chats on the same page, streaming with Ollama/OpenAI/LM Studio.
+Examples include: basic UMD/ESM usage, theme switching, dual chatrooms, markdown rendering ([basic](./examples/example_markdown.html) and [full with syntax highlighting + math + diagrams](./examples/example_md_full.html)), streaming with Ollama/OpenAI/LM Studio, and React integration.
 
 ## Build Variants
 
-| Build | Format | File | Gzipped |
+| Build | What you get | UMD (gzipped) | Network |
 |---|---|---|---|
-| Base | UMD | `quikchat.umd.min.js` | ~3.3 KB |
-| Base | ESM | `quikchat.esm.min.js` | ~3.3 KB |
-| Base | CJS | `quikchat.cjs.min.js` | ~3.3 KB |
-| With Markdown | UMD | `quikchat-md.umd.min.js` | ~7 KB |
-| With Markdown | ESM | `quikchat-md.esm.min.js` | ~7 KB |
-| With Markdown | CJS | `quikchat-md.cjs.min.js` | ~7 KB |
-| CSS | — | `quikchat.css` | ~1.7 KB |
+| **Base** | Chat widget, zero deps | `quikchat.umd.min.js` (~5 KB) | None |
+| **Markdown** | + bold, italic, code, tables, lists | `quikchat-md.umd.min.js` (~9 KB) | None |
+| **Full** | + syntax highlighting, math, diagrams, maps | `quikchat-md-full.umd.min.js` (~23 KB) | CDN on demand |
+| **CSS** | All themes (light, dark, blue, warm, midnight, ocean, modern, debug) | `quikchat.css` (~2.4 KB) | None |
 
-The `-md` builds bundle [quikdown](https://github.com/deftio/quikdown) for markdown rendering. The base builds have zero runtime dependencies.
+All builds are also available in ESM and CJS formats. Each has sourcemaps.
+
+The `-md` builds bundle [quikdown](https://github.com/deftio/quikdown). The `-md-full` build uses quikdown's editor as a rendering engine with fence plugins that dynamically load highlight.js, MathJax, Mermaid, and Leaflet from CDN when needed. The base builds have zero runtime dependencies.
 
 ## Building from Source
 

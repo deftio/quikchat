@@ -62,6 +62,13 @@ info "=== Running build ==="
 npm run build || die "Build failed. Fix errors before releasing."
 echo ""
 
+# Clean up any files dirtied by the preflight build (e.g. build-manifest.json)
+# The committed dist files on this branch are already up to date.
+if ! git diff --quiet; then
+  info "Cleaning up preflight build artifacts..."
+  git checkout -- .
+fi
+
 # --- show summary ------------------------------------------------------------
 
 COMMIT_COUNT=$(git rev-list --count main..HEAD 2>/dev/null || echo "?")

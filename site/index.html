@@ -20,6 +20,7 @@
       <a href="https://opensource.org/licenses/BSD-2-Clause"><img src="https://img.shields.io/badge/License-BSD%202--Clause-blue.svg" alt="License" style="vertical-align:middle;margin-left:10px"></a>
       <a href="https://www.npmjs.com/package/quikchat"><img src="https://img.shields.io/npm/v/quikchat.svg?style=flat-square" alt="npm" style="vertical-align:middle;margin-left:4px"></a>
       <a href="https://github.com/deftio/quikchat/actions/workflows/ci.yml"><img src="https://github.com/deftio/quikchat/actions/workflows/ci.yml/badge.svg" alt="CI" style="vertical-align:middle;margin-left:4px"></a>
+      <img id="coverage-badge" style="vertical-align:middle;margin-left:4px;display:none" alt="coverage">
     </h1>
     <p class="tagline">
       A vanilla JavaScript chat widget with zero runtime dependencies.<br>
@@ -264,6 +265,18 @@ document.addEventListener("DOMContentLoaded", () => {
   demoChat.messageAddNew("Use the buttons above to toggle UI elements and switch themes.", "bot", "left", "assistant");
   setTheme("light");
   document.getElementById("site-version").textContent = "v" + quikchat.version().version;
+
+  // Load coverage badge from build manifest
+  fetch("../dist/build-manifest.json")
+    .then(r => r.json())
+    .then(m => {
+      if (m.coverage && m.coverage.badge) {
+        const badge = document.getElementById("coverage-badge");
+        badge.src = m.coverage.badge;
+        badge.style.display = "";
+      }
+    })
+    .catch(() => {});
 });
 
 function setTheme(name) {

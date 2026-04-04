@@ -135,6 +135,27 @@ for (const group of groups) {
   console.log('');
 }
 
+// --- Coverage (read from jest json-summary if available) ---
+const coveragePath = path.join(__dirname, '..', 'coverage', 'coverage-summary.json');
+if (fs.existsSync(coveragePath)) {
+  const covSummary = JSON.parse(fs.readFileSync(coveragePath, 'utf8')).total;
+  const pct = Math.min(
+    covSummary.statements.pct,
+    covSummary.branches.pct,
+    covSummary.functions.pct,
+    covSummary.lines.pct
+  );
+  const color = pct >= 95 ? 'brightgreen' : pct >= 80 ? 'green' : pct >= 60 ? 'yellow' : 'red';
+  manifest.coverage = {
+    statements: covSummary.statements.pct,
+    branches: covSummary.branches.pct,
+    functions: covSummary.functions.pct,
+    lines: covSummary.lines.pct,
+    badge: 'https://img.shields.io/badge/coverage-' + encodeURIComponent(pct + '%') + '-' + color + '.svg',
+  };
+  console.log('Coverage: ' + pct + '% (badge: ' + color + ')');
+}
+
 // --- Write manifest ---
 const manifestPath = path.join(distDir, 'build-manifest.json');
 fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));

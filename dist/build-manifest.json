@@ -1,6 +1,6 @@
 {
   "version": "1.2.4",
-  "generated": "2026-04-04T19:22:00.861Z",
+  "generated": "2026-04-04T19:52:24.771Z",
   "builds": [
     {
       "id": "base",
@@ -146,5 +146,12 @@
         }
       ]
     }
-  ]
+  ],
+  "coverage": {
+    "statements": 100,
+    "branches": 98.75,
+    "functions": 97.46,
+    "lines": 100,
+    "badge": "https://img.shields.io/badge/coverage-97.46%25-brightgreen.svg"
+  }
 }

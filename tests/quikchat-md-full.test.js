@@ -1,3 +1,14 @@
+// Mock matchMedia for QuikdownEditor (not available in jsdom)
+Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation(query => ({
+        matches: false,
+        media: query,
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+    })),
+});
+
 import quikchatMDFull from '../src/quikchat-md-full.js';
 
 describe('quikchat-md-full', () => {
@@ -11,6 +22,7 @@ describe('quikchat-md-full', () => {
     });
 
     afterEach(() => {
+        if (chatInstance.destroy) chatInstance.destroy();
         document.body.removeChild(parentElement);
     });
 
@@ -20,14 +32,13 @@ describe('quikchat-md-full', () => {
         expect(typeof chatInstance.historyGet).toBe('function');
     });
 
-    test('exposes quikdown bd on the class', () => {
-        expect(typeof quikchatMDFull.quikdown).toBe('function');
+    test('exposes QuikdownEditor class', () => {
+        expect(typeof quikchatMDFull.QuikdownEditor).toBe('function');
     });
 
-    test('quikdown bd has extended methods', () => {
-        // bd export has emitStyles and configure at minimum
-        expect(typeof quikchatMDFull.quikdown.emitStyles).toBe('function');
-        expect(typeof quikchatMDFull.quikdown.configure).toBe('function');
+    test('creates a hidden render container', () => {
+        expect(chatInstance._renderContainer).not.toBeNull();
+        expect(chatInstance._renderContainer.style.overflow).toBe('hidden');
     });
 
     test('has a default messageFormatter', () => {
@@ -71,6 +82,8 @@ describe('quikchat-md-full', () => {
         const chat2 = new quikchatMDFull(document.createElement('div'), () => {}, {
             messageFormatter: custom
         });
+        // No hidden container created when custom formatter is provided
+        expect(chat2._renderContainer).toBeNull();
         expect(chat2._messageFormatter).toBe(custom);
     });
 
@@ -96,6 +109,13 @@ describe('quikchat-md-full', () => {
         const el = chatInstance.messageGetDOMObject(id);
         const content = el.querySelector('.quikchat-message-content').innerHTML;
         expect(content).toContain('quikdown-strong');
+    });
+
+    test('destroy cleans up render container', () => {
+        const container = chatInstance._renderContainer;
+        expect(document.body.contains(container)).toBe(true);
+        chatInstance.destroy();
+        expect(document.body.contains(container)).toBe(false);
     });
 
     test('version returns correct version info', () => {

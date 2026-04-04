@@ -839,7 +839,7 @@ describe('quikchat', () => {
     describe('static methods', () => {
         test('version should return version info', () => {
             const v = quikchat.version();
-            expect(v.version).toBe('1.2.0');
+            expect(v.version).toBe('1.2.1');
             expect(v.license).toBe('BSD-2');
             expect(v.url).toContain('quikchat');
         });
@@ -1316,6 +1316,163 @@ describe('quikchat', () => {
             // Call the resize observer callback stored on the instance
             expect(chatInstance._resizeObserver).toBeDefined();
             expect(() => chatInstance._resizeObserver._cb()).not.toThrow();
+        });
+    });
+
+    // ==================== Message Visibility & Tagging ====================
+
+    describe('message visibility', () => {
+        test('messages are visible by default', () => {
+            const id = chatInstance.messageAddNew('Visible msg', 'user', 'right');
+            expect(chatInstance.messageGetVisible(id)).toBe(true);
+            const el = chatInstance.messageGetDOMObject(id);
+            expect(el.style.display).not.toBe('none');
+        });
+
+        test('messageAddFull with visible:false hides the message', () => {
+            const id = chatInstance.messageAddFull({
+                content: 'Hidden system msg',
+                userString: 'system',
+                align: 'center',
+                role: 'system',
+                visible: false
+            });
+            expect(chatInstance.messageGetVisible(id)).toBe(false);
+            const el = chatInstance.messageGetDOMObject(id);
+            expect(el.style.display).toBe('none');
+        });
+
+        test('hidden messages remain in history', () => {
+            const id = chatInstance.messageAddFull({
+                content: 'Hidden',
+                userString: 'sys',
+                align: 'left',
+                role: 'system',
+                visible: false
+            });
+            expect(chatInstance.messageGetContent(id)).toBe('Hidden');
+            expect(chatInstance.historyGetLength()).toBeGreaterThan(0);
+        });
+
+        test('messageSetVisible shows a hidden message', () => {
+            const id = chatInstance.messageAddFull({
+                content: 'Initially hidden',
+                userString: 'sys',
+                align: 'left',
+                role: 'system',
+                visible: false
+            });
+            expect(chatInstance.messageSetVisible(id, true)).toBe(true);
+            expect(chatInstance.messageGetVisible(id)).toBe(true);
+            expect(chatInstance.messageGetDOMObject(id).style.display).toBe('');
+        });
+
+        test('messageSetVisible hides a visible message', () => {
+            const id = chatInstance.messageAddNew('Visible', 'user', 'right');
+            expect(chatInstance.messageSetVisible(id, false)).toBe(true);
+            expect(chatInstance.messageGetVisible(id)).toBe(false);
+            expect(chatInstance.messageGetDOMObject(id).style.display).toBe('none');
+        });
+
+        test('messageSetVisible returns false for non-existent id', () => {
+            expect(chatInstance.messageSetVisible(99999, true)).toBe(false);
+        });
+
+        test('messageGetVisible returns false for non-existent id', () => {
+            expect(chatInstance.messageGetVisible(99999)).toBe(false);
+        });
+
+        test('messageToggleVisible toggles visibility', () => {
+            const id = chatInstance.messageAddNew('Toggle me', 'user', 'right');
+            expect(chatInstance.messageGetVisible(id)).toBe(true);
+            chatInstance.messageToggleVisible(id);
+            expect(chatInstance.messageGetVisible(id)).toBe(false);
+            expect(chatInstance.messageGetDOMObject(id).style.display).toBe('none');
+            chatInstance.messageToggleVisible(id);
+            expect(chatInstance.messageGetVisible(id)).toBe(true);
+            expect(chatInstance.messageGetDOMObject(id).style.display).toBe('');
+        });
+
+        test('messageToggleVisible returns false for non-existent id', () => {
+            expect(chatInstance.messageToggleVisible(99999)).toBe(false);
+        });
+    });
+
+    describe('message tagging', () => {
+        test('messageAddFull with tags stores them in history', () => {
+            const id = chatInstance.messageAddFull({
+                content: 'Tagged msg',
+                userString: 'tool',
+                align: 'left',
+                role: 'tool',
+                tags: ['tool-call', 'debug']
+            });
+            expect(chatInstance.messageGetTags(id)).toEqual(['tool-call', 'debug']);
+        });
+
+        test('messages have empty tags by default', () => {
+            const id = chatInstance.messageAddNew('No tags', 'user', 'right');
+            expect(chatInstance.messageGetTags(id)).toEqual([]);
+        });
+
+        test('messageSetTags updates tags', () => {
+            const id = chatInstance.messageAddNew('Will be tagged', 'user', 'right');
+            expect(chatInstance.messageSetTags(id, ['important'])).toBe(true);
+            expect(chatInstance.messageGetTags(id)).toEqual(['important']);
+        });
+
+        test('messageSetTags returns false for non-existent id', () => {
+            expect(chatInstance.messageSetTags(99999, ['x'])).toBe(false);
+        });
+
+        test('messageGetTags returns empty array for non-existent id', () => {
+            expect(chatInstance.messageGetTags(99999)).toEqual([]);
+        });
+
+        test('messageSetVisibleByTag hides all messages with a tag', () => {
+            const id1 = chatInstance.messageAddFull({
+                content: 'Tool 1', userString: 'tool', align: 'left', role: 'tool',
+                tags: ['tool-call']
+            });
+            const id2 = chatInstance.messageAddFull({
+                content: 'Tool 2', userString: 'tool', align: 'left', role: 'tool',
+                tags: ['tool-call']
+            });
+            const id3 = chatInstance.messageAddNew('Regular msg', 'user', 'right');
+
+            const count = chatInstance.messageSetVisibleByTag('tool-call', false);
+            expect(count).toBe(2);
+            expect(chatInstance.messageGetVisible(id1)).toBe(false);
+            expect(chatInstance.messageGetVisible(id2)).toBe(false);
+            expect(chatInstance.messageGetVisible(id3)).toBe(true);
+        });
+
+        test('messageSetVisibleByTag shows hidden messages', () => {
+            const id1 = chatInstance.messageAddFull({
+                content: 'Hidden tool', userString: 'tool', align: 'left', role: 'tool',
+                tags: ['debug'], visible: false
+            });
+            chatInstance.messageSetVisibleByTag('debug', true);
+            expect(chatInstance.messageGetVisible(id1)).toBe(true);
+        });
+
+        test('messageSetVisibleByTag returns 0 for unused tag', () => {
+            chatInstance.messageAddNew('Normal', 'user', 'right');
+            expect(chatInstance.messageSetVisibleByTag('nonexistent', false)).toBe(0);
+        });
+
+        test('tags array is a copy, not a reference', () => {
+            const tags = ['a', 'b'];
+            const id = chatInstance.messageAddFull({
+                content: 'Copy test', userString: 'u', align: 'left', role: 'user',
+                tags: tags
+            });
+            tags.push('c');
+            expect(chatInstance.messageGetTags(id)).toEqual(['a', 'b']);
+
+            const retrieved = chatInstance.messageGetTags(id);
+            retrieved.push('d');
+            expect(chatInstance.messageGetTags(id)).toEqual(['a', 'b']);
         });
     });
 });

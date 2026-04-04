@@ -280,6 +280,15 @@ class quikchat {
         this.msgid++;
         messageDiv.classList.add(this._messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
 
+        // Visibility: default true, hidden messages get display:none
+        const visible = input.visible !== false;
+        if (!visible) {
+            messageDiv.style.display = 'none';
+        }
+
+        // Tags: array of strings for group-based visibility control
+        const tags = Array.isArray(input.tags) ? input.tags.slice() : [];
+
         const userDiv = document.createElement('div');
         userDiv.classList.add('quikchat-user-label');
         userDiv.style.textAlign = input.align;
@@ -310,7 +319,7 @@ class quikchat {
         const updatedtime = timestamp;
 
         if (this.trackHistory) {
-            this._history.push({ msgid, ...input, timestamp, updatedtime, messageDiv });
+            this._history.push({ msgid, ...input, visible, tags, timestamp, updatedtime, messageDiv });
             if (this._history.length > this._historyLimit) {
                 this._history.shift();
             }
@@ -366,6 +375,48 @@ class quikchat {
             // Message ID not found
         }
         return content;
+    }
+
+    messageSetVisible(n, visible) {
+        const msgEl = this.messageGetDOMObject(n);
+        if (!msgEl) return false;
+        msgEl.style.display = visible ? '' : 'none';
+        const item = this._history.find((entry) => entry.msgid === n);
+        if (item) item.visible = visible;
+        return true;
+    }
+
+    messageGetVisible(n) {
+        const item = this._history.find((entry) => entry.msgid === n);
+        return item ? item.visible !== false : false;
+    }
+
+    messageToggleVisible(n) {
+        const current = this.messageGetVisible(n);
+        return this.messageSetVisible(n, !current);
+    }
+
+    messageSetVisibleByTag(tag, visible) {
+        let count = 0;
+        for (const item of this._history) {
+            if (item.tags && item.tags.includes(tag)) {
+                this.messageSetVisible(item.msgid, visible);
+                count++;
+            }
+        }
+        return count;
+    }
+
+    messageGetTags(n) {
+        const item = this._history.find((entry) => entry.msgid === n);
+        return item && item.tags ? item.tags.slice() : [];
+    }
+
+    messageSetTags(n, tags) {
+        const item = this._history.find((entry) => entry.msgid === n);
+        if (!item) return false;
+        item.tags = Array.isArray(tags) ? tags.slice() : [];
+        return true;
     }
 
     /* append message to the message content
@@ -489,7 +540,7 @@ class quikchat {
     }
 
     static version() {
-        return { "version": "1.2.0", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
+        return { "version": "1.2.1", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
     }
 
     /**

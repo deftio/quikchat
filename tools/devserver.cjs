@@ -22,8 +22,11 @@ const MIME = {
   '.txt':  'text/plain',
 };
 
+const url = require('url');
+
 http.createServer((req, res) => {
-  let filePath = path.join(ROOT, req.url === '/' ? 'index.html' : req.url);
+  const pathname = url.parse(req.url).pathname;
+  let filePath = path.join(ROOT, pathname === '/' ? 'index.html' : pathname);
 
   if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
     filePath = path.join(filePath, 'index.html');

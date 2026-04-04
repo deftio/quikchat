@@ -4,21 +4,39 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
-    # Group all dev-dep updates into a single PR
+    # Group ALL dev-dep updates into a single PR (minor + patch + major)
     groups:
       dev-dependencies:
         dependency-type: "development"
         update-types:
+          - "major"
           - "minor"
           - "patch"
-    # Only open 1 PR at a time
+    # Only open 1 PR at a time — keeps the noise down
     open-pull-requests-limit: 1
-    # No runtime deps — ignore everything except devDependencies
+    # quikchat has zero runtime deps — only watch devDependencies
     allow:
       - dependency-type: "development"
+    # Ignore patch/minor bumps for stable tooling that rarely matters
+    # (dependabot will still flag major version bumps)
+    ignore:
+      - dependency-name: "@babel/*"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "rollup"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "@rollup/*"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "jest"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "jest-environment-jsdom"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "babel-jest"
+        update-types: ["version-update:semver-patch"]
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-patch"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "quarterly"
     open-pull-requests-limit: 1

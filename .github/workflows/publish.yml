@@ -68,18 +68,6 @@ jobs:
               dist/quikchat.min.css
           fi
 
-      - name: Debug OIDC token claims
-        if: steps.check_npm.outputs.published == 'false'
-        run: |
-          echo "=== npm config ==="
-          npm config list
-          echo ""
-          echo "=== npm whoami ==="
-          npm whoami 2>&1 || echo "(not logged in — expected for OIDC)"
-          echo ""
-          echo "=== publish dry run ==="
-          npm publish --provenance --access public --dry-run 2>&1 || true
-
-      - name: Publish to npm
+      - name: Publish to npm (OIDC provenance)
         if: steps.check_npm.outputs.published == 'false'
         run: npm publish --provenance --access public

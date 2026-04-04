@@ -37,17 +37,24 @@
     '</div>';
   document.body.insertBefore(nav, document.body.firstChild);
 
-  // --- Footer ---
-  const footer = document.createElement('footer');
-  footer.className = 'site-footer';
-  footer.innerHTML =
-    '<div class="site-footer-inner">' +
-      '<a href="https://github.com/deftio/quikchat">GitHub</a> &middot; ' +
-      '<a href="https://www.npmjs.com/package/quikchat">npm</a> &middot; ' +
-      'BSD-2-Clause License &middot; ' +
-      '&copy; <a href="https://github.com/deftio">deftio</a>' +
-    '</div>';
-  document.body.appendChild(footer);
+  // --- Footer (deferred until DOM is ready so it lands at the bottom) ---
+  function addFooter() {
+    const footer = document.createElement('footer');
+    footer.className = 'site-footer';
+    footer.innerHTML =
+      '<div class="site-footer-inner">' +
+        '<a href="https://github.com/deftio/quikchat">GitHub</a> &middot; ' +
+        '<a href="https://www.npmjs.com/package/quikchat">npm</a> &middot; ' +
+        'BSD-2-Clause License &middot; ' +
+        '&copy; <a href="https://github.com/deftio">deftio</a>' +
+      '</div>';
+    document.body.appendChild(footer);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addFooter);
+  } else {
+    addFooter();
+  }
 
   // --- Version badge (from quikchat if loaded, or manifest) ---
   function setVersion(v) {

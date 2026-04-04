@@ -62,11 +62,9 @@ info "=== Running build ==="
 npm run build || die "Build failed. Fix errors before releasing."
 echo ""
 
-# Clean up any files dirtied by the preflight build (e.g. build-manifest.json)
-# The committed dist files on this branch are already up to date.
-if ! git diff --quiet; then
-  info "Cleaning up preflight build artifacts..."
-  git checkout -- .
+# Clean up build-manifest.json if dirtied by preflight build
+if ! git diff --quiet -- dist/build-manifest.json; then
+  git checkout -- dist/build-manifest.json
 fi
 
 # --- show summary ------------------------------------------------------------

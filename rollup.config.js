@@ -132,5 +132,62 @@ export default [
       }
     ],
     plugins: [...basePlugins]
+  },
+  // ===== quikchat-md-full builds (with quikdown edit — dynamic loading) =====
+  // UMD
+  {
+    input: 'src/quikchat-md-full.js',
+    output: [
+      {
+        file: 'dist/quikchat-md-full.umd.js',
+        format: 'umd',
+        name: 'quikchat',
+        sourcemap: true,
+      },
+      {
+        file: 'dist/quikchat-md-full.umd.min.js',
+        format: 'umd',
+        name: 'quikchat',
+        sourcemap: true,
+        plugins: [terser()],
+      }
+    ],
+    plugins: [...basePlugins]
+  },
+  // CJS
+  {
+    input: 'src/quikchat-md-full.js',
+    output: [
+      {
+        file: 'dist/quikchat-md-full.cjs.js',
+        format: 'cjs',
+        sourcemap: true,
+      },
+      {
+        file: 'dist/quikchat-md-full.cjs.min.js',
+        format: 'cjs',
+        sourcemap: true,
+        plugins: [terser()],
+      }
+    ],
+    plugins: [...basePlugins]
+  },
+  // ESM
+  {
+    input: 'src/quikchat-md-full.js',
+    output: [
+      {
+        file: 'dist/quikchat-md-full.esm.js',
+        format: 'es',
+        sourcemap: true,
+      },
+      {
+        file: 'dist/quikchat-md-full.esm.min.js',
+        format: 'es',
+        sourcemap: true,
+        plugins: [terser()],
+      }
+    ],
+    plugins: [...basePlugins]
   }
 ];

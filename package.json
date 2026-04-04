@@ -22,6 +22,16 @@
       "require": "./dist/quikchat.cjs.min.js",
       "default": "./dist/quikchat.umd.min.js"
     },
+    "./md": {
+      "import": "./dist/quikchat-md.esm.min.js",
+      "require": "./dist/quikchat-md.cjs.min.js",
+      "default": "./dist/quikchat-md.umd.min.js"
+    },
+    "./md-full": {
+      "import": "./dist/quikchat-md-full.esm.min.js",
+      "require": "./dist/quikchat-md-full.cjs.min.js",
+      "default": "./dist/quikchat-md-full.umd.min.js"
+    },
     "./dist/*": "./dist/*"
   },
   "files": [

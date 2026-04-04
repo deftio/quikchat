@@ -28,6 +28,14 @@ const groups = [
       { label: 'CSS', raw: 'quikchat-md.css',     min: 'quikchat-md.min.css' },
     ],
   },
+  {
+    name: 'quikchat-md-full (with quikdown edit — dynamic loading)',
+    files: [
+      { label: 'UMD', raw: 'quikchat-md-full.umd.js', min: 'quikchat-md-full.umd.min.js' },
+      { label: 'CJS', raw: 'quikchat-md-full.cjs.js', min: 'quikchat-md-full.cjs.min.js' },
+      { label: 'ESM', raw: 'quikchat-md-full.esm.js', min: 'quikchat-md-full.esm.min.js' },
+    ],
+  },
 ];
 
 function formatBytes(bytes) {

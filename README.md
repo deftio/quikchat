@@ -200,16 +200,16 @@ Examples include: basic UMD/ESM usage, theme switching, dual chatrooms, markdown
 
 ## Build Variants
 
-| Build | What you get | UMD (gzipped) | Network |
-|---|---|---|---|
-| **Base** | Chat widget, zero deps | `quikchat.umd.min.js` (~5 KB) | None |
-| **Markdown** | + bold, italic, code, tables, lists | `quikchat-md.umd.min.js` (~9 KB) | None |
-| **Full** | + syntax highlighting, math, diagrams, maps | `quikchat-md-full.umd.min.js` (~14 KB) | CDN on demand |
-| **CSS** | All themes (light, dark, blue, warm, midnight, ocean, modern, debug) | `quikchat.css` (~2.4 KB) | None |
+| Build | What you get | Network |
+|---|---|---|
+| **Base** (`quikchat.umd.min.js`) | Chat widget, zero deps | None |
+| **Markdown** (`quikchat-md.umd.min.js`) | + bold, italic, code, tables, lists | None |
+| **Full** (`quikchat-md-full.umd.min.js`) | + syntax highlighting, math, diagrams, maps | CDN on demand |
+| **CSS** (`quikchat.css`) | All 8 themes | None |
 
-All builds are also available in ESM and CJS formats. Each has sourcemaps.
+All builds are also available in ESM and CJS formats with sourcemaps. See the [downloads page](https://deftio.github.io/quikchat/site/downloads.html) for exact sizes, SRI hashes, and CDN links.
 
-The `-md` builds bundle [quikdown](https://github.com/deftio/quikdown). The `-md-full` build uses quikdown's editor as a rendering engine with fence plugins that dynamically load highlight.js, MathJax, Mermaid, and Leaflet from CDN when needed. The base builds have zero runtime dependencies.
+The `-md` builds bundle [quikdown](https://github.com/deftio/quikdown). The `-md-full` build post-processes fence blocks with dynamically loaded renderers (highlight.js, MathJax, Mermaid, Leaflet). The base builds have zero runtime dependencies.
 
 ## Building from Source
 

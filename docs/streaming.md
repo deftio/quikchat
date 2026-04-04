@@ -21,6 +21,22 @@ chat.messageAppendContent(id, anotherToken);
 
 QuikChat handles scrolling automatically — as tokens are appended, the messages area scrolls to show the latest content (unless the user has manually scrolled up).
 
+## Typing Indicator
+
+Show animated "..." dots while waiting for the first token:
+
+```javascript
+const id = chat.messageAddTypingIndicator('bot', 'left');
+
+// When the first token arrives, the dots auto-clear:
+chat.messageReplaceContent(id, firstToken);
+
+// Subsequent tokens append normally:
+chat.messageAppendContent(id, nextToken);
+```
+
+The `quikchat-typing` CSS class is automatically removed by `messageReplaceContent()` and `messageAppendContent()`. No manual cleanup needed.
+
 ## Complete Example with fetch + ReadableStream
 
 This is the core streaming pattern used by all the LLM examples. It works with any API that returns a streaming response (Ollama, OpenAI, Mistral, LM Studio, etc.).
@@ -28,9 +44,13 @@ This is the core streaming pattern used by all the LLM examples. It works with a
 ```javascript
 const chat = new quikchat('#chat', async (chat, userInput) => {
   // 1. Echo the user's message
-  chat.messageAddNew(userInput, 'user', 'right');
+  chat.messageAddNew(userInput, 'user', 'right', 'user');
 
-  // 2. Call the API with streaming enabled
+  // 2. Show typing indicator and disable input
+  const id = chat.messageAddTypingIndicator('bot');
+  chat.inputAreaSetEnabled(false);
+
+  // 3. Call the API with streaming enabled
   const response = await fetch('http://localhost:11434/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -41,9 +61,8 @@ const chat = new quikchat('#chat', async (chat, userInput) => {
     })
   });
 
-  // 3. Read the stream token by token
+  // 4. Read the stream token by token
   const reader = response.body.getReader();
-  let id;
   let first = true;
 
   while (true) {
@@ -54,12 +73,14 @@ const chat = new quikchat('#chat', async (chat, userInput) => {
     const token = JSON.parse(text.trim()).message.content;
 
     if (first) {
-      id = chat.messageAddNew(token, 'bot', 'left');  // create message
+      chat.messageReplaceContent(id, token);  // clears typing dots
       first = false;
     } else {
-      chat.messageAppendContent(id, token);            // append to it
+      chat.messageAppendContent(id, token);   // append to it
     }
   }
+
+  chat.inputAreaSetEnabled(true);
 });
 ```
 
@@ -157,8 +178,25 @@ const id = chat.messageAddNew('Thinking...', 'bot', 'left');
 chat.messageReplaceContent(id, 'Here is the actual answer.');
 ```
 
+## Disabling Input While Streaming
+
+Use `inputAreaSetEnabled()` to prevent the user from sending while the bot is responding:
+
+```javascript
+const chat = new quikchat('#chat', async (chat, msg) => {
+    chat.messageAddNew(msg, 'user', 'right');
+    chat.inputAreaSetEnabled(false);
+    chat.inputAreaSetButtonText('Thinking...');
+
+    // ... stream response ...
+
+    chat.inputAreaSetEnabled(true);
+    chat.inputAreaSetButtonText('Send');
+});
+```
+
 ## Tips
 
-- **The `role` parameter matters.** When you pass `chat.historyGet()` to an LLM API, the `role` field maps directly to the API's role system (`'user'`, `'assistant'`, `'system'`). Use `'assistant'` for bot messages if you're sending history to an LLM.
+- **The `role` parameter matters.** When you pass `chat.historyGet()` to an LLM API, the `role` field maps directly to the API's role system (`'user'`, `'assistant'`, `'system'`). Use `'assistant'` for bot messages if you're sending history to an LLM. Each message also gets a CSS class (`quikchat-role-assistant`, etc.) for role-based styling.
 - **History includes timestamps.** Each message has `timestamp` (created) and `updatedtime` (last appended). Useful for logging or display.
 - **Scroll behavior is automatic.** QuikChat scrolls to the bottom on each append — unless the user has scrolled up, in which case it leaves them where they are.

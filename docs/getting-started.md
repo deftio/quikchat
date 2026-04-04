@@ -77,7 +77,7 @@ The widget fills 100% of its parent container. **You must set a width and height
 
 ```javascript
 const chat = new quikchat('#chat', onSend, {
-  theme: 'quikchat-theme-light',       // 'quikchat-theme-light', 'quikchat-theme-dark', or your own
+  theme: 'quikchat-theme-light',       // 'quikchat-theme-light', 'quikchat-theme-dark', 'quikchat-theme-modern', or your own
   trackHistory: true,                   // store messages in history array
   titleArea: {
     title: 'My Chat',                   // title text (supports HTML)
@@ -86,11 +86,23 @@ const chat = new quikchat('#chat', onSend, {
   },
   messagesArea: {
     alternating: true                   // alternating row background colors
-  }
+  },
+  sanitize: true,                       // escape HTML in messages (true, false, or a function)
+  messageFormatter: null,               // (content) => html — e.g., markdown renderer
 });
 ```
 
-All options are optional. The defaults give you a light-themed chat with no title bar, history tracking on, and alternating message colors.
+All options are optional. The defaults give you a light-themed chat with no title bar, history tracking on, alternating message colors, and no sanitization or formatting.
+
+### Content Processing Pipeline
+
+When `sanitize` and/or `messageFormatter` are set, message content is processed as: **sanitize → format → display**.
+
+- `sanitize: true` escapes HTML entities (`<`, `>`, `&`, etc.) to prevent XSS
+- `sanitize: (content) => cleanedContent` lets you use a custom sanitizer (e.g., DOMPurify)
+- `messageFormatter: (content) => html` transforms content (e.g., markdown → HTML)
+
+The formatter's output is trusted and set as innerHTML. Sanitize untrusted input _before_ formatting.
 
 ## The onSend Callback
 
@@ -111,10 +123,27 @@ const chat = new quikchat('#chat', (chat, msg) => {
 
 This design means quikchat works for any use case — simple echo chat, LLM integration, multi-user routing, or read-only message display.
 
+## Markdown Build
+
+The `-md` build bundles [quikdown](https://github.com/deftio/quikdown) as the default `messageFormatter`:
+
+```html
+<script src="https://unpkg.com/quikchat/dist/quikchat-md.umd.min.js"></script>
+```
+
+```javascript
+// Markdown rendering is automatic — no configuration needed
+const chat = new quikchat('#chat', onSend);
+chat.messageAddNew('**bold** and *italic*', 'bot', 'left');
+// renders as formatted HTML
+```
+
+You can override the formatter at any time with `chat.setMessageFormatter(myFn)`.
+
 ## What's Next
 
 - [API Reference](api-reference.md) — every public method and property
-- [Streaming](streaming.md) — token-by-token LLM response display
+- [Streaming](streaming.md) — token-by-token LLM response display, typing indicators
 - [Multi-User Chat](multi-user-chat.md) — multiple users, dual instances, message routing
 - [LLM Integration](llm-integration.md) — connect to Ollama, OpenAI, or any LLM
-- [Theming](theming.md) — custom themes, CSS architecture, built-in themes
+- [Theming](theming.md) — custom themes, modern bubble theme, CSS architecture

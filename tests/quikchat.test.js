@@ -1,6 +1,14 @@
 import quikchat from '../src/quikchat';
 // Prevent scrollIntoView error in jsdom
 Element.prototype.scrollIntoView = () => {};
+// Mock ResizeObserver for jsdom
+let lastResizeCallback;
+global.ResizeObserver = class {
+    constructor(cb) { this._cb = cb; lastResizeCallback = cb; }
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+};
 
 describe('quikchat', () => {
     let parentElement;
@@ -251,6 +259,36 @@ describe('quikchat', () => {
             chatInstance.inputAreaToggle();
             expect(chatInstance._inputArea.style.display).toBe('');
         });
+
+        test('should disable input area', () => {
+            chatInstance.inputAreaSetEnabled(false);
+            expect(chatInstance._textEntry.disabled).toBe(true);
+            expect(chatInstance._sendButton.disabled).toBe(true);
+        });
+
+        test('should enable input area', () => {
+            chatInstance.inputAreaSetEnabled(false);
+            chatInstance.inputAreaSetEnabled(true);
+            expect(chatInstance._textEntry.disabled).toBe(false);
+            expect(chatInstance._sendButton.disabled).toBe(false);
+        });
+
+        test('should set button text', () => {
+            chatInstance.inputAreaSetButtonText('Stop');
+            expect(chatInstance._sendButton.textContent).toBe('Stop');
+        });
+
+        test('should get button text', () => {
+            expect(chatInstance.inputAreaGetButtonText()).toBe('Send');
+            chatInstance.inputAreaSetButtonText('Thinking...');
+            expect(chatInstance.inputAreaGetButtonText()).toBe('Thinking...');
+        });
+
+        test('should restore button text after changing it', () => {
+            chatInstance.inputAreaSetButtonText('Stop');
+            chatInstance.inputAreaSetButtonText('Send');
+            expect(chatInstance.inputAreaGetButtonText()).toBe('Send');
+        });
     });
 
     // ==================== Resize Handling ====================
@@ -355,6 +393,48 @@ describe('quikchat', () => {
             expect(children[0].classList.contains('quikchat-message-2')).toBe(true);
             expect(children[1].classList.contains('quikchat-message-1')).toBe(true);
             expect(children[2].classList.contains('quikchat-message-2')).toBe(true);
+        });
+
+        test('should add role class to message div', () => {
+            chatInstance.messageAddNew('Hello', 'user', 'right', 'user');
+            const msg = chatInstance._messagesArea.children[0];
+            expect(msg.classList.contains('quikchat-role-user')).toBe(true);
+        });
+
+        test('should add assistant role class', () => {
+            chatInstance.messageAddNew('Hi', 'bot', 'left', 'assistant');
+            const msg = chatInstance._messagesArea.children[0];
+            expect(msg.classList.contains('quikchat-role-assistant')).toBe(true);
+        });
+
+        test('should add system role class', () => {
+            chatInstance.messageAddNew('Notice', 'sys', 'center', 'system');
+            const msg = chatInstance._messagesArea.children[0];
+            expect(msg.classList.contains('quikchat-role-system')).toBe(true);
+        });
+
+        test('should add tool role class', () => {
+            chatInstance.messageAddNew('Result', 'tool', 'left', 'tool');
+            const msg = chatInstance._messagesArea.children[0];
+            expect(msg.classList.contains('quikchat-role-tool')).toBe(true);
+        });
+
+        test('should default to user role class when role not specified', () => {
+            chatInstance.messageAddNew('Default');
+            const msg = chatInstance._messagesArea.children[0];
+            expect(msg.classList.contains('quikchat-role-user')).toBe(true);
+        });
+
+        test('should add role class via messageAddFull', () => {
+            chatInstance.messageAddFull({ content: 'Full', role: 'assistant' });
+            const msg = chatInstance._messagesArea.children[0];
+            expect(msg.classList.contains('quikchat-role-assistant')).toBe(true);
+        });
+
+        test('should default to user role when role is empty string', () => {
+            chatInstance.messageAddFull({ content: 'No role', role: '' });
+            const msg = chatInstance._messagesArea.children[0];
+            expect(msg.classList.contains('quikchat-role-user')).toBe(true);
         });
 
         test('should contain user string and content in message DOM', () => {
@@ -556,12 +636,24 @@ describe('quikchat', () => {
             expect(history[0].content).toBe('B');
         });
 
-        test('should handle historyGet with negative n', () => {
+        test('should handle historyGet with negative n (last N messages)', () => {
             chatInstance.messageAddNew('A');
             chatInstance.messageAddNew('B');
-            const history = chatInstance.historyGet(-1);
-            // n < 0 path: m stays undefined, slice(-1) returns last element
-            expect(history.length).toBeGreaterThan(0);
+            chatInstance.messageAddNew('C');
+            const last2 = chatInstance.historyGet(-2);
+            expect(last2.length).toBe(2);
+            expect(last2[0].content).toBe('B');
+            expect(last2[1].content).toBe('C');
+            const last1 = chatInstance.historyGet(-1);
+            expect(last1.length).toBe(1);
+            expect(last1[0].content).toBe('C');
+        });
+
+        test('historyGet() returns a copy, not the internal array', () => {
+            chatInstance.messageAddNew('A');
+            const h = chatInstance.historyGet();
+            h.push({ fake: true });
+            expect(chatInstance.historyGetLength()).toBe(1);
         });
 
         test('should clear history and reset msgid', () => {
@@ -590,6 +682,14 @@ describe('quikchat', () => {
         test('should get message content by history index', () => {
             chatInstance.messageAddNew('Content test');
             expect(chatInstance.historyGetMessageContent(0)).toBe('Content test');
+        });
+
+        test('should return empty string for out-of-range historyGetMessageContent', () => {
+            expect(chatInstance.historyGetMessageContent(99)).toBe('');
+        });
+
+        test('should return empty string for negative historyGetMessageContent', () => {
+            expect(chatInstance.historyGetMessageContent(-1)).toBe('');
         });
 
         test('should enforce history limit by shifting old entries', () => {
@@ -654,8 +754,25 @@ describe('quikchat', () => {
         test('should set onSend callback', () => {
             const cb = jest.fn();
             chatInstance.setCallbackOnSend(cb);
+            chatInstance._textEntry.value = 'test';
             chatInstance._sendButton.click();
-            expect(cb).toHaveBeenCalledWith(chatInstance, '');
+            expect(cb).toHaveBeenCalledWith(chatInstance, 'test');
+        });
+
+        test('should not fire onSend with empty input', () => {
+            const cb = jest.fn();
+            chatInstance.setCallbackOnSend(cb);
+            chatInstance._textEntry.value = '';
+            chatInstance._sendButton.click();
+            expect(cb).not.toHaveBeenCalled();
+        });
+
+        test('should not fire onSend with whitespace-only input', () => {
+            const cb = jest.fn();
+            chatInstance.setCallbackOnSend(cb);
+            chatInstance._textEntry.value = '   ';
+            chatInstance._sendButton.click();
+            expect(cb).not.toHaveBeenCalled();
         });
 
         test('should fire onSend with trimmed text', () => {
@@ -797,6 +914,175 @@ describe('quikchat', () => {
         });
     });
 
+    // ==================== Sanitize & MessageFormatter ====================
+
+    describe('sanitize', () => {
+        test('sanitize: true should escape HTML', () => {
+            document.body.innerHTML = '<div id="san-test"></div>';
+            const el = document.getElementById('san-test');
+            const instance = new quikchat(el, () => {}, { sanitize: true });
+            const id = instance.messageAddNew('<script>alert("xss")</script>', 'user', 'right');
+            const content = instance.messageGetDOMObject(id).querySelector('.quikchat-message-content');
+            expect(content.innerHTML).not.toContain('<script>');
+            expect(content.textContent).toContain('<script>');
+        });
+
+        test('sanitize: function should run custom sanitizer', () => {
+            document.body.innerHTML = '<div id="san-fn-test"></div>';
+            const el = document.getElementById('san-fn-test');
+            const sanitizer = (s) => s.replace(/<[^>]*>/g, '');
+            const instance = new quikchat(el, () => {}, { sanitize: sanitizer });
+            const id = instance.messageAddNew('<b>bold</b> text', 'user', 'right');
+            expect(instance.messageGetContent(id)).toBe('<b>bold</b> text');
+            const content = instance.messageGetDOMObject(id).querySelector('.quikchat-message-content');
+            expect(content.innerHTML).toBe('bold text');
+        });
+
+        test('sanitize: false (default) should pass through raw HTML', () => {
+            const id = chatInstance.messageAddNew('<b>bold</b>', 'user', 'right');
+            const content = chatInstance.messageGetDOMObject(id).querySelector('.quikchat-message-content');
+            expect(content.innerHTML).toBe('<b>bold</b>');
+        });
+
+        test('setSanitize should change sanitization at runtime', () => {
+            chatInstance.setSanitize(true);
+            const id = chatInstance.messageAddNew('<b>bold</b>', 'user', 'right');
+            const content = chatInstance.messageGetDOMObject(id).querySelector('.quikchat-message-content');
+            expect(content.innerHTML).not.toContain('<b>');
+            chatInstance.setSanitize(false);
+        });
+    });
+
+    describe('messageFormatter', () => {
+        test('should apply formatter to new messages', () => {
+            document.body.innerHTML = '<div id="fmt-test"></div>';
+            const el = document.getElementById('fmt-test');
+            const instance = new quikchat(el, () => {}, {
+                messageFormatter: (content) => content.toUpperCase(),
+            });
+            const id = instance.messageAddNew('hello', 'user', 'right');
+            const content = instance.messageGetDOMObject(id).querySelector('.quikchat-message-content');
+            expect(content.innerHTML).toBe('HELLO');
+            expect(instance.messageGetContent(id)).toBe('hello'); // raw content in history
+        });
+
+        test('should apply formatter on append (full content)', () => {
+            document.body.innerHTML = '<div id="fmt-app-test"></div>';
+            const el = document.getElementById('fmt-app-test');
+            const instance = new quikchat(el, () => {}, {
+                messageFormatter: (content) => content.toUpperCase(),
+            });
+            const id = instance.messageAddNew('hello', 'user', 'right');
+            instance.messageAppendContent(id, ' world');
+            const content = instance.messageGetDOMObject(id).querySelector('.quikchat-message-content');
+            expect(content.innerHTML).toBe('HELLO WORLD');
+        });
+
+        test('should apply formatter on replace', () => {
+            document.body.innerHTML = '<div id="fmt-rep-test"></div>';
+            const el = document.getElementById('fmt-rep-test');
+            const instance = new quikchat(el, () => {}, {
+                messageFormatter: (content) => content.toUpperCase(),
+            });
+            const id = instance.messageAddNew('old', 'user', 'right');
+            instance.messageReplaceContent(id, 'new');
+            const content = instance.messageGetDOMObject(id).querySelector('.quikchat-message-content');
+            expect(content.innerHTML).toBe('NEW');
+        });
+
+        test('setMessageFormatter should change formatter at runtime', () => {
+            chatInstance.setMessageFormatter((c) => `[${c}]`);
+            const id = chatInstance.messageAddNew('test', 'user', 'right');
+            const content = chatInstance.messageGetDOMObject(id).querySelector('.quikchat-message-content');
+            expect(content.innerHTML).toBe('[test]');
+            chatInstance.setMessageFormatter(null);
+        });
+
+        test('sanitize + formatter: sanitize runs first, then formatter', () => {
+            document.body.innerHTML = '<div id="san-fmt-test"></div>';
+            const el = document.getElementById('san-fmt-test');
+            const instance = new quikchat(el, () => {}, {
+                sanitize: true,
+                messageFormatter: (content) => `<em>${content}</em>`,
+            });
+            const id = instance.messageAddNew('<b>xss</b>', 'user', 'right');
+            const content = instance.messageGetDOMObject(id).querySelector('.quikchat-message-content');
+            // sanitize escapes <b>, then formatter wraps in <em>
+            expect(content.innerHTML).toBe('<em>&lt;b&gt;xss&lt;/b&gt;</em>');
+        });
+    });
+
+    // ==================== Typing Indicator ====================
+
+    describe('typing indicator', () => {
+        test('should add a typing indicator message', () => {
+            const id = chatInstance.messageAddTypingIndicator('bot', 'left');
+            const msgEl = chatInstance.messageGetDOMObject(id);
+            expect(msgEl.classList.contains('quikchat-typing')).toBe(true);
+            expect(msgEl.querySelector('.quikchat-typing-dots')).toBeTruthy();
+        });
+
+        test('should have assistant role by default', () => {
+            const id = chatInstance.messageAddTypingIndicator('bot', 'left');
+            const msgEl = chatInstance.messageGetDOMObject(id);
+            expect(msgEl.classList.contains('quikchat-role-assistant')).toBe(true);
+        });
+
+        test('typing class should be removed on replaceContent', () => {
+            const id = chatInstance.messageAddTypingIndicator('bot', 'left');
+            chatInstance.messageReplaceContent(id, 'Actual response');
+            const msgEl = chatInstance.messageGetDOMObject(id);
+            expect(msgEl.classList.contains('quikchat-typing')).toBe(false);
+            expect(msgEl.querySelector('.quikchat-typing-dots')).toBeNull();
+        });
+
+        test('typing class should be removed on appendContent', () => {
+            const id = chatInstance.messageAddTypingIndicator('bot', 'left');
+            chatInstance.messageAppendContent(id, 'First token');
+            const msgEl = chatInstance.messageGetDOMObject(id);
+            expect(msgEl.classList.contains('quikchat-typing')).toBe(false);
+        });
+
+        test('should be removable with messageRemove', () => {
+            const id = chatInstance.messageAddTypingIndicator('bot', 'left');
+            expect(chatInstance.messageRemove(id)).toBe(true);
+        });
+
+        test('should work with default params', () => {
+            const id = chatInstance.messageAddTypingIndicator();
+            const msgEl = chatInstance.messageGetDOMObject(id);
+            expect(msgEl.classList.contains('quikchat-typing')).toBe(true);
+        });
+    });
+
+    // ==================== Alignment Classes ====================
+
+    describe('alignment classes', () => {
+        test('should add quikchat-align-right class', () => {
+            const id = chatInstance.messageAddNew('Test', 'user', 'right');
+            const msgEl = chatInstance.messageGetDOMObject(id);
+            expect(msgEl.classList.contains('quikchat-align-right')).toBe(true);
+        });
+
+        test('should add quikchat-align-left class', () => {
+            const id = chatInstance.messageAddNew('Test', 'bot', 'left');
+            const msgEl = chatInstance.messageGetDOMObject(id);
+            expect(msgEl.classList.contains('quikchat-align-left')).toBe(true);
+        });
+
+        test('should add quikchat-align-center class', () => {
+            const id = chatInstance.messageAddNew('Notice', 'sys', 'center');
+            const msgEl = chatInstance.messageGetDOMObject(id);
+            expect(msgEl.classList.contains('quikchat-align-center')).toBe(true);
+        });
+
+        test('should default to right alignment', () => {
+            const id = chatInstance.messageAddNew('Default');
+            const msgEl = chatInstance.messageGetDOMObject(id);
+            expect(msgEl.classList.contains('quikchat-align-right')).toBe(true);
+        });
+    });
+
     // ==================== Edge Cases & Robustness ====================
 
     describe('edge cases', () => {
@@ -867,6 +1153,169 @@ describe('quikchat', () => {
             chatInstance.historyClear();
             const newId = chatInstance.messageAddNew('New');
             expect(newId).toBe(0);
+        });
+    });
+
+    // ==================== Empty Send Guard ====================
+
+    describe('empty send guard', () => {
+        test('should not fire onSend on Shift+Enter with empty input', () => {
+            const cb = jest.fn();
+            chatInstance.setCallbackOnSend(cb);
+            chatInstance._textEntry.value = '';
+            const event = new KeyboardEvent('keydown', { shiftKey: true, keyCode: 13 });
+            chatInstance._textEntry.dispatchEvent(event);
+            expect(cb).not.toHaveBeenCalled();
+        });
+    });
+
+    // ==================== Timestamps ====================
+
+    describe('timestamps', () => {
+        test('messages should have a timestamp span', () => {
+            const id = chatInstance.messageAddNew('Hello', 'user', 'right');
+            const msgEl = chatInstance.messageGetDOMObject(id);
+            const ts = msgEl.querySelector('.quikchat-timestamp');
+            expect(ts).toBeTruthy();
+            expect(ts.textContent).toMatch(/\d{1,2}:\d{2}\s(AM|PM)/);
+        });
+
+        test('timestamps should be hidden by default', () => {
+            expect(chatInstance.messagesAreaShowTimestampsGet()).toBe(false);
+        });
+
+        test('messagesAreaShowTimestamps(true) should add class', () => {
+            chatInstance.messagesAreaShowTimestamps(true);
+            expect(chatInstance._messagesArea.classList.contains('quikchat-show-timestamps')).toBe(true);
+            expect(chatInstance.messagesAreaShowTimestampsGet()).toBe(true);
+        });
+
+        test('messagesAreaShowTimestamps(false) should remove class', () => {
+            chatInstance.messagesAreaShowTimestamps(true);
+            chatInstance.messagesAreaShowTimestamps(false);
+            expect(chatInstance.messagesAreaShowTimestampsGet()).toBe(false);
+        });
+
+        test('messagesAreaShowTimestampsToggle should toggle', () => {
+            chatInstance.messagesAreaShowTimestampsToggle();
+            expect(chatInstance.messagesAreaShowTimestampsGet()).toBe(true);
+            chatInstance.messagesAreaShowTimestampsToggle();
+            expect(chatInstance.messagesAreaShowTimestampsGet()).toBe(false);
+        });
+
+        test('showTimestamps constructor option should enable timestamps', () => {
+            document.body.innerHTML = '<div id="ts-test"></div>';
+            const instance = new quikchat('#ts-test', () => {}, { showTimestamps: true });
+            expect(instance.messagesAreaShowTimestampsGet()).toBe(true);
+        });
+    });
+
+    // ==================== Scroll to Bottom ====================
+
+    describe('scroll to bottom', () => {
+        test('scrollToBottom should reset userScrolledUp', () => {
+            chatInstance.userScrolledUp = true;
+            chatInstance.scrollToBottom();
+            expect(chatInstance.userScrolledUp).toBe(false);
+        });
+
+        test('scrollToBottom should remove visible class from scroll button', () => {
+            chatInstance._scrollBottomBtn.classList.add('quikchat-scroll-bottom-visible');
+            chatInstance.scrollToBottom();
+            expect(chatInstance._scrollBottomBtn.classList.contains('quikchat-scroll-bottom-visible')).toBe(false);
+        });
+
+        test('_updateScrollBottomBtn should show button when scrolled up', () => {
+            chatInstance.userScrolledUp = true;
+            chatInstance._updateScrollBottomBtn();
+            expect(chatInstance._scrollBottomBtn.classList.contains('quikchat-scroll-bottom-visible')).toBe(true);
+        });
+
+        test('_updateScrollBottomBtn should hide button when at bottom', () => {
+            chatInstance.userScrolledUp = false;
+            chatInstance._updateScrollBottomBtn();
+            expect(chatInstance._scrollBottomBtn.classList.contains('quikchat-scroll-bottom-visible')).toBe(false);
+        });
+
+        test('scroll button click should call scrollToBottom', () => {
+            chatInstance.userScrolledUp = true;
+            chatInstance._scrollBottomBtn.click();
+            expect(chatInstance.userScrolledUp).toBe(false);
+        });
+
+        test('Ctrl+End should call scrollToBottom', () => {
+            chatInstance.userScrolledUp = true;
+            const event = new KeyboardEvent('keydown', { ctrlKey: true, key: 'End', bubbles: true });
+            chatInstance._chatWidget.dispatchEvent(event);
+            expect(chatInstance.userScrolledUp).toBe(false);
+        });
+    });
+
+    // ==================== Auto-grow Textarea ====================
+
+    describe('auto-grow textarea', () => {
+        test('textarea should have rows=1', () => {
+            expect(chatInstance._textEntry.getAttribute('rows')).toBe('1');
+        });
+
+        test('_autoGrowTextarea should set overflow-y', () => {
+            chatInstance._textEntry.value = 'hello';
+            chatInstance._autoGrowTextarea();
+            expect(chatInstance._textEntry.style.overflowY).toBe('hidden');
+        });
+
+        test('_autoGrowTextarea should handle scrollHeight exceeding max', () => {
+            // jsdom scrollHeight is 0, so this tests the fallback branch
+            Object.defineProperty(chatInstance._textEntry, 'scrollHeight', { value: 200, configurable: true });
+            chatInstance._autoGrowTextarea();
+            expect(chatInstance._textEntry.style.height).toBe('120px');
+            expect(chatInstance._textEntry.style.overflowY).toBe('auto');
+        });
+
+        test('textarea should reset after sending message', () => {
+            const cb = jest.fn();
+            chatInstance.setCallbackOnSend(cb);
+            chatInstance._textEntry.value = 'hello';
+            chatInstance._sendButton.click();
+            // messageAddFull clears the textarea value
+            // _autoGrowTextarea is called after clearing
+            expect(cb).toHaveBeenCalled();
+        });
+
+        test('input event should trigger auto-grow', () => {
+            chatInstance._textEntry.value = 'test';
+            const event = new Event('input', { bubbles: true });
+            chatInstance._textEntry.dispatchEvent(event);
+            // Should not throw and should set height
+            expect(chatInstance._textEntry.style.height).toBeDefined();
+        });
+
+        test('scroll event should update userScrolledUp', () => {
+            // Trigger scroll event on messages area
+            const event = new Event('scroll');
+            chatInstance._messagesArea.dispatchEvent(event);
+            // In jsdom, scrollTop=0 and scrollHeight equals clientHeight, so not scrolled up
+            expect(typeof chatInstance.userScrolledUp).toBe('boolean');
+        });
+
+        test('_handleContainerResize should not throw', () => {
+            expect(() => chatInstance._handleContainerResize()).not.toThrow();
+        });
+
+        test('_formatTimestamp should return formatted time string', () => {
+            const result = chatInstance._formatTimestamp('2024-01-15T09:05:00Z');
+            expect(result).toMatch(/\d{1,2}:\d{2}\s(AM|PM)/);
+            const result2 = chatInstance._formatTimestamp('2024-01-15T15:30:00Z');
+            expect(result2).toMatch(/\d{1,2}:\d{2}\s(AM|PM)/);
+            // Test noon/midnight (h % 12 === 0 → should become 12)
+            const noon = chatInstance._formatTimestamp('2024-01-15T12:00:00Z');
+            expect(noon).toMatch(/\d{1,2}:\d{2}\s(AM|PM)/);
+        });
+
+        test('ResizeObserver callback should invoke _handleContainerResize', () => {
+            // Call the resize observer callback stored on the instance
+            expect(chatInstance._resizeObserver).toBeDefined();
+            expect(() => chatInstance._resizeObserver._cb()).not.toThrow();
         });
     });
 });

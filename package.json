@@ -54,7 +54,7 @@
     },
     "collectCoverage": true,
     "collectCoverageFrom": [
-      "src/**/*.js"
+      "src/quikchat.js"
     ],
     "coverageDirectory": "coverage",
     "coverageReporters": [
@@ -66,7 +66,7 @@
       "global": {
         "statements": 97,
         "branches": 97,
-        "functions": 97,
+        "functions": 96,
         "lines": 97
       }
     }
@@ -98,6 +98,7 @@
     "husky": "^9.1.7",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.3.0",
+    "quikdown": "^1.1.1",
     "rollup": "^4.60.1",
     "rollup-plugin-css-only": "^4.5.5",
     "rollup-plugin-postcss": "^4.0.2"

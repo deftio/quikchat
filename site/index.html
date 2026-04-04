@@ -15,9 +15,11 @@
 <nav class="site-nav">
   <div class="site-nav-inner">
     <a class="site-logo" href="./">QuikChat</a>
+    <span class="site-version" id="site-version"></span>
     <a href="#demo">Demo</a>
     <a href="#install">Install</a>
     <a href="#api">API</a>
+    <a href="doc.html">Docs</a>
     <a href="../examples/">Examples</a>
     <a href="theming.html">Theming</a>
     <a href="https://github.com/deftio/quikchat">GitHub</a>
@@ -49,9 +51,13 @@
       <button class="btn" onclick="demoChat.messagesAreaAlternateColorsToggle()">Alternating</button>
       <span class="sep"></span>
       <span class="btn-group">
-        <button class="btn" id="themeBtnLight" onclick="setTheme('quikchat-theme-light')">Light</button>
-        <button class="btn" id="themeBtnDark" onclick="setTheme('quikchat-theme-dark')">Dark</button>
-        <button class="btn" id="themeBtnDebug" onclick="setTheme('quikchat-theme-debug')">Debug</button>
+        <button class="btn" id="themeBtn-light" onclick="setTheme('light')">Light</button>
+        <button class="btn" id="themeBtn-blue" onclick="setTheme('blue')">Blue</button>
+        <button class="btn" id="themeBtn-warm" onclick="setTheme('warm')">Warm</button>
+        <button class="btn" id="themeBtn-dark" onclick="setTheme('dark')">Dark</button>
+        <button class="btn" id="themeBtn-midnight" onclick="setTheme('midnight')">Midnight</button>
+        <button class="btn" id="themeBtn-ocean" onclick="setTheme('ocean')">Ocean</button>
+        <button class="btn" id="themeBtn-debug" onclick="setTheme('debug')">Debug</button>
       </span>
     </div>
     <div class="demo-row">
@@ -135,8 +141,9 @@ const response = await fetch("https://api.openai.com/v1/chat/completions", {
     <h2>Theming</h2>
     <p>Themes are CSS classes applied to the widget root. Switch themes at runtime:</p>
     <pre><code>chat.changeTheme("quikchat-theme-dark");</code></pre>
-    <p>Three themes are included: <code>quikchat-theme-light</code>,
-       <code>quikchat-theme-dark</code>, and <code>quikchat-theme-debug</code>.
+    <p>Seven themes are included: <code>light</code>, <code>blue</code>, <code>warm</code>,
+       <code>dark</code>, <code>midnight</code>, <code>ocean</code>, and <code>debug</code>
+       (all prefixed <code>quikchat-theme-</code>).
        To create a custom theme, see the <a href="theming.html">Theming Guide</a>.</p>
   </section>
 
@@ -209,6 +216,7 @@ const response = await fetch("https://api.openai.com/v1/chat/completions", {
       <li><a href="../examples/ollama_with_memory.html">Ollama with Memory</a> <span class="desc">— conversational context via historyGet()</span></li>
       <li><a href="../examples/lmstudio_with_memory.html">LM Studio with Memory</a> <span class="desc">— local LLM via LM Studio</span></li>
       <li><a href="../examples/openai.html">OpenAI</a> <span class="desc">— GPT-4o with streaming</span></li>
+      <li><a href="../examples/example_markdown.html">Markdown Rendering</a> <span class="desc">— quikchat-md build with quikdown</span></li>
       <li><a href="../examples/quikchat-react.html">React Integration</a> <span class="desc">— using quikchat inside React</span></li>
     </ul>
   </section>
@@ -242,18 +250,15 @@ document.addEventListener("DOMContentLoaded", () => {
   );
   demoChat.messageAddNew("Hello! Try sending a message.", "bot", "left", "assistant");
   demoChat.messageAddNew("Use the buttons above to toggle UI elements and switch themes.", "bot", "left", "assistant");
-  setTheme("quikchat-theme-light");
+  setTheme("light");
+  document.getElementById("site-version").textContent = "v" + quikchat.version().version;
 });
 
-function setTheme(theme) {
-  demoChat.changeTheme(theme);
-  document.querySelectorAll("#themeBtnLight, #themeBtnDark, #themeBtnDebug").forEach(b => b.classList.remove("active"));
-  const id = {
-    "quikchat-theme-light": "themeBtnLight",
-    "quikchat-theme-dark": "themeBtnDark",
-    "quikchat-theme-debug": "themeBtnDebug"
-  }[theme];
-  if (id) document.getElementById(id).classList.add("active");
+function setTheme(name) {
+  demoChat.changeTheme("quikchat-theme-" + name);
+  document.querySelectorAll(".btn-group .btn").forEach(b => b.classList.remove("active"));
+  const el = document.getElementById("themeBtn-" + name);
+  if (el) el.classList.add("active");
 }
 </script>
 

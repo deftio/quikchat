@@ -71,6 +71,7 @@ var quikchat = /*#__PURE__*/function () {
     var defaultOpts = {
       theme: 'quikchat-theme-light',
       trackHistory: true,
+      showTimestamps: false,
       titleArea: {
         title: "Chat",
         show: false,
@@ -88,6 +89,8 @@ var quikchat = /*#__PURE__*/function () {
     this._parentElement = parentElement;
     this._theme = meta.theme;
     this._onSend = onSend ? onSend : function () {}; // call back function for onSend
+    this._messageFormatter = meta.messageFormatter || null;
+    this._sanitize = meta.sanitize || false;
     this._createWidget();
     // title area
     if (meta.titleArea) {
@@ -102,6 +105,10 @@ var quikchat = /*#__PURE__*/function () {
     if (meta.messagesArea) {
       this.messagesAreaAlternateColors(meta.messagesArea.alternating);
     }
+    // timestamps
+    if (meta.showTimestamps) {
+      this.messagesAreaShowTimestamps(true);
+    }
     // plumbing
     this._attachEventListeners();
     this.trackHistory = meta.trackHistory !== false;
@@ -111,11 +118,13 @@ var quikchat = /*#__PURE__*/function () {
   return _createClass(quikchat, [{
     key: "_createWidget",
     value: function _createWidget() {
-      var widgetHTML = "\n            <div class=\"quikchat-base ".concat(this.theme, "\">\n                <div class=\"quikchat-title-area\"></div>\n                <div class=\"quikchat-messages-area\" role=\"log\" aria-live=\"polite\" aria-label=\"Chat messages\"></div>\n                <div class=\"quikchat-input-area\">\n                    <textarea class=\"quikchat-input-textbox\" aria-label=\"Type a message\"></textarea>\n                    <button class=\"quikchat-input-send-btn\">Send</button>\n                </div>\n            </div>\n            ");
+      var widgetHTML = "\n            <div class=\"quikchat-base ".concat(this.theme, "\">\n                <div class=\"quikchat-title-area\"></div>\n                <div class=\"quikchat-messages-wrapper\"><div class=\"quikchat-messages-area\" role=\"log\" aria-live=\"polite\" aria-label=\"Chat messages\"></div><button class=\"quikchat-scroll-bottom\" aria-label=\"Scroll to bottom\"></button></div>\n                <div class=\"quikchat-input-area\">\n                    <textarea class=\"quikchat-input-textbox\" rows=\"1\" aria-label=\"Type a message\"></textarea>\n                    <button class=\"quikchat-input-send-btn\">Send</button>\n                </div>\n            </div>\n            ");
       this._parentElement.innerHTML = widgetHTML;
       this._chatWidget = this._parentElement.querySelector('.quikchat-base');
       this._titleArea = this._chatWidget.querySelector('.quikchat-title-area');
+      this._messagesWrapper = this._chatWidget.querySelector('.quikchat-messages-wrapper');
       this._messagesArea = this._chatWidget.querySelector('.quikchat-messages-area');
+      this._scrollBottomBtn = this._messagesWrapper.querySelector('.quikchat-scroll-bottom');
       this._inputArea = this._chatWidget.querySelector('.quikchat-input-area');
       this._textEntry = this._inputArea.querySelector('.quikchat-input-textbox');
       this._sendButton = this._inputArea.querySelector('.quikchat-input-send-btn');
@@ -130,22 +139,44 @@ var quikchat = /*#__PURE__*/function () {
     value: function _attachEventListeners() {
       var _this = this;
       this._sendButton.addEventListener('click', function () {
-        return _this._onSend(_this, _this._textEntry.value.trim());
+        var text = _this._textEntry.value.trim();
+        if (text === '') return;
+        _this._onSend(_this, text);
       });
       this._textEntry.addEventListener('keydown', function (event) {
         // Check if Shift + Enter is pressed
         if (event.shiftKey && event.keyCode === 13) {
-          // Prevent default behavior (adding new line)
           event.preventDefault();
-          _this._onSend(_this, _this._textEntry.value.trim());
+          var text = _this._textEntry.value.trim();
+          if (text === '') return;
+          _this._onSend(_this, text);
         }
+      });
+
+      // Auto-grow textarea
+      this._textEntry.addEventListener('input', function () {
+        return _this._autoGrowTextarea();
       });
       this._messagesArea.addEventListener('scroll', function () {
         var _this$_messagesArea = _this._messagesArea,
           scrollTop = _this$_messagesArea.scrollTop,
           scrollHeight = _this$_messagesArea.scrollHeight,
           clientHeight = _this$_messagesArea.clientHeight;
-        _this.userScrolledUp = scrollTop + clientHeight < scrollHeight;
+        _this.userScrolledUp = scrollTop + clientHeight < scrollHeight - 1;
+        _this._updateScrollBottomBtn();
+      });
+
+      // Scroll-to-bottom button
+      this._scrollBottomBtn.addEventListener('click', function () {
+        return _this.scrollToBottom();
+      });
+
+      // Ctrl+End to scroll to bottom
+      this._chatWidget.addEventListener('keydown', function (event) {
+        if (event.ctrlKey && event.key === 'End') {
+          event.preventDefault();
+          _this.scrollToBottom();
+        }
       });
 
       // Use ResizeObserver to detect parent container resize
@@ -222,10 +253,100 @@ var quikchat = /*#__PURE__*/function () {
       this._inputArea.style.display = 'none';
     }
   }, {
+    key: "inputAreaSetEnabled",
+    value: function inputAreaSetEnabled(enabled) {
+      this._textEntry.disabled = !enabled;
+      this._sendButton.disabled = !enabled;
+    }
+  }, {
+    key: "inputAreaSetButtonText",
+    value: function inputAreaSetButtonText(text) {
+      this._sendButton.textContent = text;
+    }
+  }, {
+    key: "inputAreaGetButtonText",
+    value: function inputAreaGetButtonText() {
+      return this._sendButton.textContent;
+    }
+  }, {
     key: "_handleContainerResize",
     value: function _handleContainerResize() {
       // Layout is handled by CSS flexbox — no JS height calculation needed.
       // This hook exists for future use or custom resize callbacks.
+    }
+  }, {
+    key: "scrollToBottom",
+    value: function scrollToBottom() {
+      this._messagesArea.scrollTop = this._messagesArea.scrollHeight;
+      this.userScrolledUp = false;
+      this._updateScrollBottomBtn();
+    }
+  }, {
+    key: "_updateScrollBottomBtn",
+    value: function _updateScrollBottomBtn() {
+      if (this.userScrolledUp) {
+        this._scrollBottomBtn.classList.add('quikchat-scroll-bottom-visible');
+      } else {
+        this._scrollBottomBtn.classList.remove('quikchat-scroll-bottom-visible');
+      }
+    }
+  }, {
+    key: "_autoGrowTextarea",
+    value: function _autoGrowTextarea() {
+      var el = this._textEntry;
+      el.style.height = 'auto';
+      var maxHeight = parseInt(getComputedStyle(el).getPropertyValue('--quikchat-input-max-height')) || 120;
+      el.style.height = Math.min(el.scrollHeight, maxHeight) + 'px';
+      el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
+    }
+  }, {
+    key: "_formatTimestamp",
+    value: function _formatTimestamp(isoString) {
+      var d = new Date(isoString);
+      var h = d.getHours();
+      var m = String(d.getMinutes()).padStart(2, '0');
+      var ampm = h >= 12 ? 'PM' : 'AM';
+      var h12 = h % 12 || 12;
+      return h12 + ':' + m + ' ' + ampm;
+    }
+  }, {
+    key: "messagesAreaShowTimestamps",
+    value: function messagesAreaShowTimestamps(show) {
+      if (show) {
+        this._messagesArea.classList.add('quikchat-show-timestamps');
+      } else {
+        this._messagesArea.classList.remove('quikchat-show-timestamps');
+      }
+    }
+  }, {
+    key: "messagesAreaShowTimestampsGet",
+    value: function messagesAreaShowTimestampsGet() {
+      return this._messagesArea.classList.contains('quikchat-show-timestamps');
+    }
+  }, {
+    key: "messagesAreaShowTimestampsToggle",
+    value: function messagesAreaShowTimestampsToggle() {
+      this._messagesArea.classList.toggle('quikchat-show-timestamps');
+    }
+  }, {
+    key: "_escapeHTML",
+    value: function _escapeHTML(str) {
+      var div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  }, {
+    key: "_processContent",
+    value: function _processContent(content) {
+      if (this._sanitize === true) {
+        content = this._escapeHTML(content);
+      } else if (typeof this._sanitize === 'function') {
+        content = this._sanitize(content);
+      }
+      if (this._messageFormatter) {
+        content = this._messageFormatter(content);
+      }
+      return content;
     }
 
     //messagesArea functions
@@ -265,6 +386,8 @@ var quikchat = /*#__PURE__*/function () {
       var messageDiv = document.createElement('div');
       var msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
       messageDiv.classList.add('quikchat-message', msgidClass);
+      messageDiv.classList.add('quikchat-role-' + (input.role || 'user'));
+      messageDiv.classList.add('quikchat-align-' + (input.align || 'right'));
       this.msgid++;
       messageDiv.classList.add(this._messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
       var userDiv = document.createElement('div');
@@ -274,9 +397,14 @@ var quikchat = /*#__PURE__*/function () {
       var contentDiv = document.createElement('div');
       contentDiv.classList.add('quikchat-message-content');
       contentDiv.style.textAlign = input.align;
-      contentDiv.innerHTML = input.content;
+      contentDiv.innerHTML = this._processContent(input.content);
+      var timestamp = new Date().toISOString();
+      var timestampSpan = document.createElement('span');
+      timestampSpan.classList.add('quikchat-timestamp');
+      timestampSpan.textContent = this._formatTimestamp(timestamp);
       messageDiv.appendChild(userDiv);
       messageDiv.appendChild(contentDiv);
+      messageDiv.appendChild(timestampSpan);
       this._messagesArea.appendChild(messageDiv);
 
       // Scroll to the last message only if the user is not actively scrolling up
@@ -284,7 +412,7 @@ var quikchat = /*#__PURE__*/function () {
         this._messagesArea.scrollTop = this._messagesArea.scrollHeight;
       }
       this._textEntry.value = '';
-      var timestamp = new Date().toISOString();
+      this._autoGrowTextarea();
       var updatedtime = timestamp;
       if (this.trackHistory) {
         this._history.push(_objectSpread2(_objectSpread2({
@@ -370,12 +498,14 @@ var quikchat = /*#__PURE__*/function () {
     value: function messageAppendContent(n, content) {
       var success = false;
       try {
-        this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0'))).lastChild.innerHTML += content;
+        var msgEl = this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0')));
         var item = this._history.filter(function (entry) {
           return entry.msgid === n;
         })[0];
         item.content += content;
         item.updatedtime = new Date().toISOString();
+        msgEl.querySelector('.quikchat-message-content').innerHTML = this._processContent(item.content);
+        msgEl.classList.remove('quikchat-typing');
         success = true;
         if (!this.userScrolledUp) {
           this._messagesArea.scrollTop = this._messagesArea.scrollHeight;
@@ -393,12 +523,14 @@ var quikchat = /*#__PURE__*/function () {
     value: function messageReplaceContent(n, content) {
       var success = false;
       try {
-        this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0'))).lastChild.innerHTML = content;
+        var msgEl = this._messagesArea.querySelector(".quikchat-msgid-".concat(String(n).padStart(10, '0')));
         var item = this._history.filter(function (entry) {
           return entry.msgid === n;
         })[0];
         item.content = content;
         item.updatedtime = new Date().toISOString();
+        msgEl.querySelector('.quikchat-message-content').innerHTML = this._processContent(content);
+        msgEl.classList.remove('quikchat-typing');
         success = true;
         if (!this.userScrolledUp) {
           this._messagesArea.scrollTop = this._messagesArea.scrollHeight;
@@ -407,6 +539,33 @@ var quikchat = /*#__PURE__*/function () {
         // Message ID not found
       }
       return success;
+    }
+  }, {
+    key: "messageAddTypingIndicator",
+    value: function messageAddTypingIndicator() {
+      var userString = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+      var align = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'left';
+      var msgid = this.messageAddFull({
+        content: '',
+        userString: userString,
+        align: align,
+        role: 'assistant'
+      });
+      var msgEl = this.messageGetDOMObject(msgid);
+      msgEl.classList.add('quikchat-typing');
+      var contentDiv = msgEl.querySelector('.quikchat-message-content');
+      contentDiv.innerHTML = '<span class="quikchat-typing-dots"><span>.</span><span>.</span><span>.</span></span>';
+      return msgid;
+    }
+  }, {
+    key: "setMessageFormatter",
+    value: function setMessageFormatter(formatter) {
+      this._messageFormatter = formatter;
+    }
+  }, {
+    key: "setSanitize",
+    value: function setSanitize(sanitize) {
+      this._sanitize = sanitize;
     }
 
     // history functions
@@ -420,11 +579,13 @@ var quikchat = /*#__PURE__*/function () {
     key: "historyGet",
     value: function historyGet(n, m) {
       if (n === undefined) {
-        n = 0;
-        m = this._history.length;
+        return this._history.slice();
       }
       if (m === undefined) {
-        m = n < 0 ? m : n + 1;
+        if (n < 0) {
+          return this._history.slice(n);
+        }
+        return this._history.slice(n, n + 1);
       }
       return this._history.slice(n, m);
     }
@@ -450,7 +611,10 @@ var quikchat = /*#__PURE__*/function () {
   }, {
     key: "historyGetMessageContent",
     value: function historyGetMessageContent(n) {
-      return this._history[n].content;
+      if (n >= 0 && n < this._history.length) {
+        return this._history[n].content;
+      }
+      return "";
     }
   }, {
     key: "changeTheme",

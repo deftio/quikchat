@@ -6,19 +6,26 @@ QuikChat is designed to work with any LLM API — local or cloud, streaming or n
 
 1. **History format matches LLM APIs.** `historyGet()` returns objects with `role` and `content` fields — the same shape OpenAI, Ollama, Mistral, and Claude expect.
 2. **Streaming is built in.** `messageAddNew()` + `messageAppendContent()` handles token-by-token display.
-3. **The onSend callback is async-friendly.** Return a Promise or use `async/await` — quikchat doesn't care.
-4. **Zero dependencies.** No SDK conflicts, no bundler configuration, no version mismatches.
+3. **Typing indicator.** `messageAddTypingIndicator()` shows animated dots that auto-clear when streaming starts.
+4. **Input gating.** `inputAreaSetEnabled(false)` disables the textarea and button while the bot responds.
+5. **Markdown rendering.** Use the `-md` build for automatic markdown formatting, or set a custom `messageFormatter`.
+6. **The onSend callback is async-friendly.** Return a Promise or use `async/await` — quikchat doesn't care.
+7. **Zero dependencies.** No SDK conflicts, no bundler configuration, no version mismatches.
 
 ## General Pattern
 
-Every LLM integration follows the same three steps:
+Every LLM integration follows the same steps:
 
 ```javascript
 const chat = new quikchat('#chat', async (chat, userInput) => {
   // 1. Echo user message
-  chat.messageAddNew(userInput, 'user', 'right');
+  chat.messageAddNew(userInput, 'user', 'right', 'user');
 
-  // 2. Call the API (pass history for conversational memory)
+  // 2. Show typing indicator, disable input
+  const id = chat.messageAddTypingIndicator('bot');
+  chat.inputAreaSetEnabled(false);
+
+  // 3. Call the API (pass history for conversational memory)
   const response = await fetch(apiUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -32,10 +39,13 @@ const chat = new quikchat('#chat', async (chat, userInput) => {
     })
   });
 
-  // 3. Stream tokens into the chat
+  // 4. Stream tokens into the chat
   const reader = response.body.getReader();
-  let id, first = true;
-  // ... read loop, append tokens ...
+  let first = true;
+  // ... read loop: replaceContent on first token (clears dots), appendContent after ...
+
+  // 5. Re-enable input
+  chat.inputAreaSetEnabled(true);
 });
 ```
 
@@ -215,31 +225,84 @@ const chat = new quikchat('#chat', async (chat, userInput) => {
 });
 ```
 
+## Disabling Input During Responses
+
+Use `inputAreaSetEnabled()` and `inputAreaSetButtonText()` to give users feedback while the bot is responding:
+
+```javascript
+const chat = new quikchat('#chat', async (chat, msg) => {
+    chat.messageAddNew(msg, 'user', 'right');
+    chat.inputAreaSetEnabled(false);
+    chat.inputAreaSetButtonText('Thinking...');
+
+    await streamLLMResponse(chat, msg);
+
+    chat.inputAreaSetEnabled(true);
+    chat.inputAreaSetButtonText('Send');
+});
+```
+
 ## Tool Calls / Function Calling
 
-QuikChat doesn't impose any message structure — you can display tool call results however you like:
+QuikChat doesn't impose any message structure — you can display tool call results however you like. Use the `'tool'` role so messages get a `quikchat-role-tool` CSS class for distinct styling:
 
 ```javascript
 // Show the tool being called
-const toolMsgId = chat.messageAddNew('Calling weather API...', 'system', 'center');
+const toolMsgId = chat.messageAddNew('Calling weather API...', 'system', 'center', 'system');
 
 // Execute the tool
 const weather = await getWeather(location);
 
-// Replace the placeholder with the result
-chat.messageReplaceContent(toolMsgId, `Weather in ${location}: ${weather.temp}F, ${weather.conditions}`);
+// Show the result with the 'tool' role for distinct styling
+chat.messageAddNew(
+    `Weather in ${location}: ${weather.temp}F, ${weather.conditions}`,
+    'weather-tool', 'left', 'tool'
+);
 ```
 
-Or display tool calls inline in the bot response:
+Or use `messageReplaceContent()` to update a placeholder:
 
 ```javascript
 // Bot says it's calling a tool
-const id = chat.messageAddNew('Let me look that up...', 'bot', 'left');
+const id = chat.messageAddNew('Looking that up...', 'bot', 'left', 'assistant');
 
 // After the tool returns, replace with the answer
 const result = await callTool(toolName, toolArgs);
 chat.messageReplaceContent(id, `Based on the data: ${result}`);
 ```
+
+Style tool messages in your theme CSS:
+
+```css
+.my-theme .quikchat-role-tool .quikchat-message-content {
+    border-left: 3px solid #ff9800;
+    color: #666;
+}
+
+.my-theme .quikchat-role-system .quikchat-message-content {
+    font-style: italic;
+    color: #999;
+}
+```
+
+## Markdown Rendering
+
+LLM responses often contain markdown. Use the `-md` build for automatic rendering:
+
+```html
+<script src="https://unpkg.com/quikchat/dist/quikchat-md.umd.min.js"></script>
+```
+
+Or set a custom formatter with the base build:
+
+```javascript
+const chat = new quikchat('#chat', onSend, {
+    messageFormatter: (content) => marked.parse(content),  // or any markdown lib
+    sanitize: true,  // escape HTML before formatting
+});
+```
+
+The pipeline is: sanitize → format → display. This means user input gets cleaned before the formatter runs, and the formatter's HTML output is trusted.
 
 ## Working Examples
 

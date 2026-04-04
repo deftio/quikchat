@@ -2,24 +2,177 @@
 [![NPM version](https://img.shields.io/npm/v/quikchat.svg?style=flat-square)](https://www.npmjs.com/package/quikchat)
 ![CI](https://github.com/deftio/quikchat/actions/workflows/ci.yml/badge.svg)
 
-# QuikChat (js)
+# QuikChat
 
-Quikchat is a vanilla (no dependancies) JavaScript chat control that can be easily integrated into web applications. It provides a customizable chat interface with support for hiding and showing a title area and the input area.
+A lightweight, zero-dependency vanilla JavaScript chat widget. Drop it into any page — no React, no Vue, no build step required — and connect it to any LLM, WebSocket, or message source with plain `fetch()`.
+
+```html
+<script src="https://unpkg.com/quikchat"></script>
+<link rel="stylesheet" href="https://unpkg.com/quikchat/dist/quikchat.css" />
+```
+
+```javascript
+const chat = new quikchat('#chat', async (chat, msg) => {
+    chat.messageAddNew(msg, 'me', 'right', 'user');
+
+    // Stream a response from any LLM
+    const id = chat.messageAddTypingIndicator('bot');
+    const response = await fetch('http://localhost:11434/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            model: 'llama3.1',
+            messages: chat.historyGet(),   // full conversation context
+            stream: true
+        })
+    });
+
+    const reader = response.body.getReader();
+    let first = true;
+    while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        const token = JSON.parse(new TextDecoder().decode(value).trim()).message.content;
+        if (first) { chat.messageReplaceContent(id, token); first = false; }
+        else       { chat.messageAppendContent(id, token); }
+    }
+});
+```
+
+That's a working streaming LLM chat in one file — no bundler, no framework, no SDK.
 
 ## Features
 
-* Themeable with CSS (examples for light and dark)
-* Responsive design for various screen sizes and resizes with parent container
-* Hideable/Showable Title and Text Entry areas allows flexibility of usage
-* Full message history storage and retrieval
-* History can be fed directly to OpenAI / Mistral / Ollama compatible APIs for context aware chats
-* Available via NPM, CDN or source via github
-* Provided in UMD and ESM formats (minified)
-* Multiple separate instances can run on a single page
-* Multiple users can be in a chat
-* Messages can be searched, appended to (streamed token completion), replaced, or removed.
-* Left / Right / Center support of individual users
-* Callback for all message events (to monitor chat)
+- **LLM-ready** — `historyGet()` returns `{ role, content }` objects compatible with OpenAI, Ollama, Mistral, and Claude APIs
+- **Streaming built in** — `messageAddNew()` → `messageAppendContent()` for token-by-token display
+- **Typing indicator** — animated "..." dots that auto-clear when streaming begins
+- **Markdown support** — optional `-md` build bundles [quikdown](https://github.com/deftio/quikdown) for markdown rendering, or bring your own formatter via the `messageFormatter` hook
+- **HTML sanitization** — built-in XSS protection or plug in your own sanitizer
+- **Themeable** — pure CSS themes (light, dark, modern bubbles, or write your own)
+- **Multi-user** — multiple users per chat, multiple independent chats per page
+- **Zero runtime dependencies** — ~3 KB gzipped (base), ~7 KB with markdown
+- **Any environment** — works with CDN, npm, or local files; UMD, ESM, and CJS builds included
+- **Responsive** — fills its parent container and resizes automatically
+- **Accessible** — ARIA roles and labels on all interactive elements
+
+## Quick Start
+
+### CDN
+
+```html
+<script src="https://unpkg.com/quikchat"></script>
+<link rel="stylesheet" href="https://unpkg.com/quikchat/dist/quikchat.css" />
+```
+
+### npm
+
+```bash
+npm install quikchat
+```
+
+```javascript
+import quikchat from 'quikchat';
+```
+
+### With Markdown (quikdown bundled)
+
+```html
+<!-- UMD build with markdown support -->
+<script src="https://unpkg.com/quikchat/dist/quikchat-md.umd.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/quikchat/dist/quikchat.css" />
+```
+
+Or with npm:
+
+```javascript
+import quikchat from 'quikchat/dist/quikchat-md.esm.min.js';
+// quikchat.quikdown is available for direct use
+```
+
+## Usage
+
+```javascript
+const chat = new quikchat(
+    '#chat-container',           // CSS selector or DOM element
+    (chat, msg) => {             // onSend callback
+        chat.messageAddNew(msg, 'me', 'right');
+    },
+    {
+        theme: 'quikchat-theme-light',
+        titleArea: { title: 'My Chat', align: 'left', show: true },
+    }
+);
+
+// Add messages programmatically
+chat.messageAddNew('Hello!', 'Alice', 'left', 'user');
+chat.messageAddNew('Hi there!', 'Bot', 'left', 'assistant');
+chat.messageAddNew('System notice', 'system', 'center', 'system');
+
+// Streaming pattern
+const id = chat.messageAddTypingIndicator('bot');     // show "..." dots
+chat.messageReplaceContent(id, firstToken);            // first token clears dots
+chat.messageAppendContent(id, nextToken);              // append subsequent tokens
+
+// Disable input while bot is responding
+chat.inputAreaSetEnabled(false);
+chat.inputAreaSetButtonText('Thinking...');
+// ... after response completes ...
+chat.inputAreaSetEnabled(true);
+chat.inputAreaSetButtonText('Send');
+
+// History is LLM-API compatible
+const history = chat.historyGet();  // [{ role: "user", content: "..." }, ...]
+```
+
+## Message Formatter & Sanitization
+
+Process message content before display — render markdown, sanitize HTML, or both:
+
+```javascript
+const chat = new quikchat('#chat', onSend, {
+    // Sanitize user input (true = escape HTML entities, or pass a function)
+    sanitize: true,
+
+    // Format content (e.g., markdown → HTML)
+    messageFormatter: (content) => myMarkdownParser(content),
+});
+
+// Change at runtime
+chat.setMessageFormatter((content) => marked.parse(content));
+chat.setSanitize((content) => DOMPurify.sanitize(content));
+```
+
+The pipeline is: **sanitize → format → display**. Sanitize cleans untrusted input; the formatter's output is trusted.
+
+The `-md` build pre-wires [quikdown](https://github.com/deftio/quikdown) as the formatter — no configuration needed.
+
+## Theming
+
+Themes are pure CSS — colors, borders, and shadows only. The base CSS handles all layout.
+
+```javascript
+// Built-in themes
+chat.changeTheme('quikchat-theme-light');
+chat.changeTheme('quikchat-theme-dark');
+chat.changeTheme('quikchat-theme-modern');   // chat-bubble style
+
+// Or write your own — just color overrides
+```
+
+```css
+.my-theme {
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}
+.my-theme .quikchat-title-area { color: #333; }
+.my-theme .quikchat-messages-area { background-color: #fff; color: #333; }
+.my-theme .quikchat-input-send-btn { background-color: #4caf50; color: white; border: none; border-radius: 4px; }
+```
+
+The **modern bubble theme** uses alignment classes (`quikchat-align-left`, `quikchat-align-right`) to position messages as chat bubbles with colored backgrounds — left-aligned messages appear as grey bubbles, right-aligned as blue.
+
+Style messages by role with CSS hooks: `.quikchat-role-user`, `.quikchat-role-assistant`, `.quikchat-role-system`, `.quikchat-role-tool`.
 
 ## Documentation
 
@@ -31,151 +184,49 @@ Quikchat is a vanilla (no dependancies) JavaScript chat control that can be easi
 | [Multi-User Chat](docs/multi-user-chat.md) | Multiple users, dual instances, message routing |
 | [LLM Integration](docs/llm-integration.md) | Ollama, OpenAI, LM Studio, tool calls, conversational memory |
 | [Theming](docs/theming.md) | Custom themes, CSS architecture, built-in themes |
-| [CSS Architecture](docs/css-architecture.md) | Base vs theme separation, ARIA accessibility |
 
 ## Demo & Examples
-[Simple Demo](https://deftio.github.io/quikchat/examples/example_umd.html)
 
-Full examples are in the [examples/](./examples/index.html) folder, including ESM/UMD usage, theming, running multiple chats on the same page, and integration with LLM providers (Ollama, LM Studio, OpenAI).
+[Live Demo](https://deftio.github.io/quikchat/examples/example_umd.html)
 
-## Installation
+Full examples in the [examples/](./examples/index.html) folder: ESM/UMD usage, theming, multiple chats on the same page, streaming with Ollama/OpenAI/LM Studio.
 
-To use quikchat in your project, follow these steps:
+## Build Variants
 
-Include the quikchat.js JavaScript file in your project.
-Link the quikchat.css stylesheet to style the chat interface.
-html
+| Build | Format | File | Gzipped |
+|---|---|---|---|
+| Base | UMD | `quikchat.umd.min.js` | ~3.3 KB |
+| Base | ESM | `quikchat.esm.min.js` | ~3.3 KB |
+| Base | CJS | `quikchat.cjs.min.js` | ~3.3 KB |
+| With Markdown | UMD | `quikchat-md.umd.min.js` | ~7 KB |
+| With Markdown | ESM | `quikchat-md.esm.min.js` | ~7 KB |
+| With Markdown | CJS | `quikchat-md.cjs.min.js` | ~7 KB |
+| CSS | — | `quikchat.css` | ~1.7 KB |
 
-```html
-<script src="./path/to/quikchat.umd.min.js"></script>
-<link rel="stylesheet" href="./path/to/quikchat.css">
-```
-
-### use quikchat Via CDN
-
-```html
-<script src="https://unpkg.com/quikchat"></script>
-<link rel="stylesheet" href="https://unpkg.com/quikchat/dist/quikchat.css" />
-```
-
-Create a container element in your HTML where you want the chat interface to appear.  The quikchat widget will take 100% of the paretn container height and width.  If the parent container width or height is not specified the quikchat widget may grow as content is added.  If the parent container is resized, quikchat will resize with the parent container.
-
-```html
-<style>
-#chat-container {width: 100%; height: 50vh;}  /* use any width / height as appropriate for your app */
-</style>
-<div id="chat-container"></div>
-```
-
-Initialize quikchat in your JavaScript code by providing the container element and a callback function for message events:
-
-See /examples for full working code.
-
-```javascript
-const chat = new quikchat(
-      "#chat-container",   // CSS selector or DOM element
-      (chat, msg) => {     // callback triggered when user clicks Send or Shift+Enter
-            // messages are not automatically echoed — you decide what to do
-            chat.messageAddNew(msg, 'me', 'right'); // echo msg to chat area
-
-            // now call an LLM or do other actions with msg
-            // callLLM(msg);
-            // callLLM(chat.historyGet());  // pass full history for conversational memory
-      },
-      {
-        theme: 'quikchat-theme-light',
-        titleArea: { title: 'My Chat', align: 'left', show: true },
-      });
-
-// Add a message at any point not just from callback
-chat.messageAddNew('Hello!', 'You', 'left');  // user should appear left or right justified
-chat.messageAddNew('Hello!', 'Them', 'right');  // user should appear left or right justified
-
-
-//... other logic
-let messageHistory = chat.historyGet(); // get all the messages (see docs for filters)
-console.log(messageHistory); // do something with messages
-
-// show / hide the title area
-chat.titleAreaHide();  // hides the title area for a bare chat
-
-// hide the input area
-chat.inputAreaHide(); // hides the input area so chat is now just a message stream.
-
-// change themes at any time
-chat.changeTheme("quikchat-theme-dark"); // change theme on the fly (see quikchat.css for examples)
-```
-
-## Theming
-
-QuikChat themes are pure appearance — colors, borders, border-radius, and shadows. The base CSS handles all layout and sizing. To create a custom theme, copy the light theme and change the colors. See [Theming Guide](docs/theming.md) for full details.
-
-Themes can be changed at any time: `chat.changeTheme('my-theme')`. Multiple widgets on the same page can each have a different theme.
-
-```css
-/* Example: custom theme (appearance only — no padding, font-size, etc.) */
-.my-theme {
-  border: 1px solid #cccccc;
-  border-radius: 10px;
-  background-color: #f9f9f9;
-}
-
-.my-theme .quikchat-title-area {
-  color: #333;
-}
-
-.my-theme .quikchat-messages-area {
-  background-color: #ffffffe2;
-  color: #333;
-}
-
-.my-theme .quikchat-input-area {
-  background-color: #f9f9f9;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-}
-
-.my-theme .quikchat-input-textbox {
-  background-color: #ffffff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  color: #333;
-}
-
-.my-theme .quikchat-input-send-btn {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-}
-```
+The `-md` builds bundle [quikdown](https://github.com/deftio/quikdown) for markdown rendering. The base builds have zero runtime dependencies.
 
 ## Building from Source
-
-quikchat is built with [rollup.js](https://rollupjs.org/).
 
 ```bash
 npm install
 npm run build    # lint, build all formats, report bundle sizes
+npm test         # jest unit tests with coverage
 ```
 
-Note that at run time quikchat has zero dependencies.  Build-time tooling (rollup, babel, eslint, jest, etc.) is all in devDependencies.
+Build-time tooling (rollup, babel, eslint, jest) is all in devDependencies — zero runtime dependencies.
 
 ## Testing
 
-quikchat is tested with the jest framework.  To run unit tests and see coverage run:
-
 ```bash
-npm test
+npm test                # unit tests (jest, 100% coverage)
+npm run test:e2e        # browser tests (playwright)
 ```
 
 ## Development
 
-To start a new feature branch with an automatic patch version bump:
-
 ```bash
-npm run feature my-feature-name        # creates feature/my-feature-name, bumps 0.0.1
-npm run feature my-feature-name minor  # bumps 0.x.0
+npm run feature my-feature-name        # creates feature/my-feature-name, bumps patch
+npm run feature my-feature-name minor  # bumps minor
 ```
 
 A pre-commit hook runs lint and tests automatically before each commit.
@@ -184,11 +235,8 @@ See [RELEASE-PROCEDURE.md](RELEASE-PROCEDURE.md) for the full release workflow.
 
 ## License
 
-quikchat is licensed under the BSD-2 License.
+BSD-2-Clause
 
 ## Home Page
 
-[quikchat homepage and source code](https://github.com/deftio/quikchat)
-
- 
-
+[github.com/deftio/quikchat](https://github.com/deftio/quikchat)

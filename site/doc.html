@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — Docs</title>
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="site.css" rel="stylesheet">
+  <link href="../dist/quikchat.css" rel="stylesheet">
+  <script src="../dist/quikchat-md.umd.min.js"></script>
+  <style>
+    /* doc content styling */
+    .doc-content h1 { margin-top: 0; }
+    .doc-content h2 { margin-top: 32px; }
+    .doc-content table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin: 12px 0; }
+    .doc-content th { text-align: left; padding: 6px 8px; border-bottom: 2px solid #ddd; font-weight: 600; }
+    .doc-content td { padding: 6px 8px; border-bottom: 1px solid #eee; vertical-align: top; }
+    .doc-content ul, .doc-content ol { padding-left: 24px; }
+    .doc-content li { margin-bottom: 4px; }
+    .doc-content strong { font-weight: 600; }
+    .doc-content hr { border: none; border-top: 1px solid #e5e5e5; margin: 24px 0; }
+
+    .doc-sidebar { margin-bottom: 24px; }
+    .doc-sidebar a { display: inline-block; margin-right: 16px; margin-bottom: 4px; color: #0056b3; text-decoration: none; font-size: 0.9rem; }
+    .doc-sidebar a:hover { text-decoration: underline; }
+    .doc-sidebar a.active { font-weight: 600; color: #1a1a1a; }
+
+    /* dark overrides */
+    .site-dark .doc-content th { border-bottom-color: #444; }
+    .site-dark .doc-content td { border-bottom-color: #2a2a2a; }
+    .site-dark .doc-content hr { border-top-color: #333; }
+    .site-dark .doc-sidebar a { color: #5ea8d8; }
+    .site-dark .doc-sidebar a.active { color: #d8d8d8; }
+  </style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a class="site-logo" href="./">QuikChat</a>
+    <span class="site-version" id="site-version"></span>
+    <a href="./#demo">Demo</a>
+    <a href="./#install">Install</a>
+    <a href="doc.html">Docs</a>
+    <a href="../examples/">Examples</a>
+    <a href="theming.html">Theming</a>
+    <a href="https://github.com/deftio/quikchat">GitHub</a>
+    <a href="#" onclick="document.body.classList.toggle('site-dark');return false" style="margin-left:auto">Light/Dark</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <header style="padding: 32px 0 16px;">
+    <h1 id="doc-title">Documentation</h1>
+  </header>
+
+  <div class="doc-sidebar" id="doc-sidebar">
+    <a href="?page=getting-started" data-page="getting-started">Getting Started</a>
+    <a href="?page=api-reference" data-page="api-reference">API Reference</a>
+    <a href="?page=streaming" data-page="streaming">Streaming</a>
+    <a href="?page=multi-user-chat" data-page="multi-user-chat">Multi-User Chat</a>
+    <a href="?page=llm-integration" data-page="llm-integration">LLM Integration</a>
+    <a href="?page=theming" data-page="theming">Theming</a>
+    <a href="?page=css-architecture" data-page="css-architecture">CSS Architecture</a>
+  </div>
+
+  <section style="padding-top: 0;">
+    <div class="doc-content" id="doc-content">
+      <p>Select a guide from above, or start with <a href="?page=getting-started">Getting Started</a>.</p>
+    </div>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <a href="https://github.com/deftio/quikchat">GitHub</a> &middot;
+    <a href="https://www.npmjs.com/package/quikchat">npm</a> &middot;
+    BSD-2-Clause License &middot;
+    &copy; <a href="https://github.com/deftio">deftio</a>
+  </div>
+</footer>
+
+<script>
+const qd = quikchat.quikdown || (typeof quikdown !== 'undefined' ? quikdown : null);
+// quikchat-md exposes quikdown on the class
+const render = qd
+  ? (md) => qd(md)
+  : (md) => '<pre>' + md + '</pre>';
+
+const params = new URLSearchParams(window.location.search);
+const page = params.get('page') || '';
+
+document.getElementById("site-version").textContent = "v" + quikchat.version().version;
+
+// Highlight active sidebar link
+document.querySelectorAll('.doc-sidebar a').forEach(a => {
+  if (a.dataset.page === page) a.classList.add('active');
+});
+
+if (page) {
+  fetch('../docs/' + page + '.md')
+    .then(r => {
+      if (!r.ok) throw new Error('Not found');
+      return r.text();
+    })
+    .then(md => {
+      document.getElementById('doc-content').innerHTML = render(md);
+      // Set page title from first h1
+      const h1 = document.querySelector('.doc-content h1');
+      if (h1) {
+        document.getElementById('doc-title').textContent = h1.textContent;
+        document.title = h1.textContent + ' — QuikChat Docs';
+        h1.remove(); // avoid duplicate h1
+      }
+    })
+    .catch(() => {
+      document.getElementById('doc-content').innerHTML = '<p>Page not found.</p>';
+    });
+}
+</script>
+
+</body>
+</html>

@@ -7,6 +7,17 @@ import css from 'rollup-plugin-css-only'
 
 const extensions = ['.js', '.jsx'];
 
+const basePlugins = [
+  resolve({ extensions }),
+  commonjs(),
+  babel({
+    extensions,
+    exclude: 'node_modules/**',
+    babelHelpers: 'bundled',
+    presets: ['@babel/preset-env']
+  })
+];
+
 // Rollup configuration for the quikchat project
 export default [
   // UMD Configurations
@@ -27,43 +38,25 @@ export default [
         plugins: [terser()], // Apply terser only to this output
       }
     ],
-    plugins: [
-      resolve({ extensions }),
-      commonjs(),
-      babel({
-        extensions,
-        exclude: 'node_modules/**',
-        babelHelpers: 'bundled',
-        presets: ['@babel/preset-env']
-      })
-    ]
+    plugins: [...basePlugins]
   },
   // CJS Configurations
   {
     input: 'src/quikchat.js',
     output: [
       {
-        file: 'dist/quikchat.cjs.js', // Unminified CJS build
+        file: 'dist/quikchat.cjs.js',
         format: 'cjs',
         sourcemap: true,
       },
       {
-        file: 'dist/quikchat.cjs.min.js', // Minified CJS build
+        file: 'dist/quikchat.cjs.min.js',
         format: 'cjs',
         sourcemap: true,
-        plugins: [terser()], // Apply terser only to this output
+        plugins: [terser()],
       }
     ],
-    plugins: [
-      resolve({ extensions }),
-      commonjs(),
-      babel({
-        extensions,
-        exclude: 'node_modules/**',
-        babelHelpers: 'bundled',
-        presets: ['@babel/preset-env']
-      })
-    ]
+    plugins: [...basePlugins]
   },
   // ESM Configurations
   {
@@ -81,15 +74,63 @@ export default [
         plugins: [terser()], // Apply terser only to this output
       }
     ],
-    plugins: [
-      resolve({ extensions }),
-      commonjs(),
-      babel({
-        extensions,
-        exclude: 'node_modules/**',
-        babelHelpers: 'bundled',
-        presets: ['@babel/preset-env']
-      })
-    ]
+    plugins: [...basePlugins]
+  },
+  // ===== quikchat-md builds (with quikdown bundled) =====
+  // UMD
+  {
+    input: 'src/quikchat-md.js',
+    output: [
+      {
+        file: 'dist/quikchat-md.umd.js',
+        format: 'umd',
+        name: 'quikchat',
+        sourcemap: true,
+      },
+      {
+        file: 'dist/quikchat-md.umd.min.js',
+        format: 'umd',
+        name: 'quikchat',
+        sourcemap: true,
+        plugins: [terser()],
+      }
+    ],
+    plugins: [...basePlugins]
+  },
+  // CJS
+  {
+    input: 'src/quikchat-md.js',
+    output: [
+      {
+        file: 'dist/quikchat-md.cjs.js',
+        format: 'cjs',
+        sourcemap: true,
+      },
+      {
+        file: 'dist/quikchat-md.cjs.min.js',
+        format: 'cjs',
+        sourcemap: true,
+        plugins: [terser()],
+      }
+    ],
+    plugins: [...basePlugins]
+  },
+  // ESM
+  {
+    input: 'src/quikchat-md.js',
+    output: [
+      {
+        file: 'dist/quikchat-md.esm.js',
+        format: 'es',
+        sourcemap: true,
+      },
+      {
+        file: 'dist/quikchat-md.esm.min.js',
+        format: 'es',
+        sourcemap: true,
+        plugins: [terser()],
+      }
+    ],
+    plugins: [...basePlugins]
   }
 ];

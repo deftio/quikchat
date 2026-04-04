@@ -31,6 +31,8 @@ const chat = new quikchat(parentElement, onSend, options);
 | `titleArea.show` | `boolean` | `false` | Show title area on init |
 | `titleArea.align` | `string` | `"center"` | `'left'`, `'center'`, or `'right'` |
 | `messagesArea.alternating` | `boolean` | `true` | Alternating row backgrounds |
+| `sanitize` | `boolean \| function` | `false` | `true` to escape HTML entities, or a `(content) => cleanedContent` function |
+| `messageFormatter` | `function \| null` | `null` | `(content) => html` — transforms content before display (e.g., markdown renderer) |
 
 ---
 
@@ -49,7 +51,7 @@ const id = chat.messageAddNew('Hello!', 'Alice', 'left', 'user');
 | `content` | `string` | `""` | Message text or HTML |
 | `userString` | `string` | `"user"` | Display name shown above the message |
 | `align` | `string` | `"right"` | `'left'`, `'right'`, or `'center'` |
-| `role` | `string` | `"user"` | Role tag stored in history (e.g., `'user'`, `'assistant'`, `'system'`) |
+| `role` | `string` | `"user"` | Role tag — stored in history and added as a CSS class (see [Message Role Classes](#message-role-classes)) |
 
 ### messageAddFull(input)
 
@@ -97,6 +99,25 @@ Get the content string of a message by its ID. Returns `""` if not found.
 const text = chat.messageGetContent(id);
 ```
 
+### messageAddTypingIndicator(userString, align)
+
+Show an animated "..." typing indicator. Returns the message ID. The dots auto-clear when you call `messageAppendContent()` or `messageReplaceContent()` on the same ID.
+
+```javascript
+const id = chat.messageAddTypingIndicator('bot', 'left');
+
+// Later, when streaming starts:
+chat.messageReplaceContent(id, firstToken);   // clears dots, shows first token
+chat.messageAppendContent(id, nextToken);     // appends subsequent tokens
+```
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `userString` | `string` | `""` | Display name |
+| `align` | `string` | `"left"` | `'left'`, `'right'`, or `'center'` |
+
+The indicator uses a CSS animation (pulsing dots). The message gets the `quikchat-typing` class, which is removed automatically by `messageAppendContent()` and `messageReplaceContent()`.
+
 ### messageGetDOMObject(msgid)
 
 Get the DOM element of a message by its ID. Returns `null` if not found.
@@ -113,6 +134,38 @@ Remove a message from the display and history. Returns `true` on success.
 ```javascript
 chat.messageRemove(id);
 ```
+
+---
+
+## Message Role Classes
+
+Every message div gets a CSS class based on its `role` parameter: `quikchat-role-{role}`. This lets you style messages differently by type.
+
+| Role | CSS Class | Typical Use |
+|---|---|---|
+| `'user'` | `.quikchat-role-user` | Human user messages (default) |
+| `'assistant'` | `.quikchat-role-assistant` | LLM/bot responses |
+| `'system'` | `.quikchat-role-system` | System notices, status messages |
+| `'tool'` | `.quikchat-role-tool` | Tool call results, function outputs |
+
+If `role` is empty or not provided, it defaults to `'user'`.
+
+These classes are CSS hooks only — no default styling is applied. Use them in your theme or custom CSS:
+
+```css
+/* Style system messages differently */
+.my-theme .quikchat-role-system .quikchat-message-content {
+    color: #888;
+    font-style: italic;
+}
+
+/* Highlight tool call results */
+.my-theme .quikchat-role-tool .quikchat-message-content {
+    border-left: 3px solid #ff9800;
+}
+```
+
+The `role` value also maps directly to LLM API role fields (`'user'`, `'assistant'`, `'system'`), so `historyGet()` output is API-compatible.
 
 ---
 
@@ -135,13 +188,16 @@ QuikChat stores every message in an internal array (when `trackHistory` is `true
 
 The `role` and `content` fields are directly compatible with OpenAI/Ollama/Mistral chat completion APIs — you can pass `historyGet()` straight into an API call.
 
+**Important: index vs ID.** History methods take an **array index** (position in the history array). Message methods like `messageGetContent()`, `messageAppendContent()`, `messageRemove()` take a **message ID** (the integer returned by `messageAddNew`/`messageAddFull`). The message ID is stable — it doesn't change when other messages are removed. The array index shifts as messages are added or removed.
+
 ### historyGet(n, m)
 
-Get a slice of the history array.
+Get a slice of the history array. Returns a copy (modifications don't affect internal state).
 
 ```javascript
-chat.historyGet();        // all messages
-chat.historyGet(0, 5);    // first 5 messages
+chat.historyGet();        // all messages (copy of the full array)
+chat.historyGet(0, 5);    // first 5 messages (indices 0–4)
+chat.historyGet(3);       // single message at index 3
 chat.historyGet(-3);      // last 3 messages
 ```
 
@@ -153,7 +209,7 @@ const count = chat.historyGetLength();
 
 ### historyGetMessage(n)
 
-Get a single history entry by index. Returns `{}` if out of bounds.
+Get a single history entry by array index. Returns `{}` if out of bounds.
 
 ```javascript
 const msg = chat.historyGetMessage(0); // first message
@@ -161,7 +217,7 @@ const msg = chat.historyGetMessage(0); // first message
 
 ### historyGetMessageContent(n)
 
-Get just the content string of a history entry by index.
+Get just the content string of a history entry by array index. Returns `""` if out of bounds.
 
 ```javascript
 const text = chat.historyGetMessageContent(0);
@@ -211,6 +267,32 @@ Show, hide, or toggle the text input area. Hiding the input area turns the widge
 ```javascript
 chat.inputAreaHide();  // read-only mode
 chat.inputAreaShow();  // re-enable input
+```
+
+### inputAreaSetEnabled(enabled)
+
+Enable or disable the textarea and send button. When disabled, both controls are greyed out and non-interactive. Useful for disabling input while an LLM is responding.
+
+```javascript
+chat.inputAreaSetEnabled(false);  // disable while bot is thinking
+chat.inputAreaSetEnabled(true);   // re-enable when response is complete
+```
+
+### inputAreaSetButtonText(text)
+
+Change the send button's text. Useful for showing state ("Thinking...", "Stop", etc.).
+
+```javascript
+chat.inputAreaSetButtonText('Stop');
+chat.inputAreaSetButtonText('Send');  // restore default
+```
+
+### inputAreaGetButtonText()
+
+Returns the current button text.
+
+```javascript
+chat.inputAreaGetButtonText(); // 'Send'
 ```
 
 ---
@@ -273,6 +355,29 @@ Set a listener called every time a message is added (by any method). Useful for 
 chat.setCallbackonMessageAdded((chat, msgid) => {
   console.log('New message:', msgid, chat.messageGetContent(msgid));
 });
+```
+
+---
+
+## Static Methods
+
+### setMessageFormatter(formatter)
+
+Set or replace the message formatting function at runtime.
+
+```javascript
+chat.setMessageFormatter((content) => marked.parse(content));
+chat.setMessageFormatter(null);  // remove formatter
+```
+
+### setSanitize(sanitize)
+
+Set or replace the sanitization behavior at runtime.
+
+```javascript
+chat.setSanitize(true);                                // built-in HTML escaping
+chat.setSanitize((content) => DOMPurify.sanitize(content));  // custom
+chat.setSanitize(false);                               // disable
 ```
 
 ---

@@ -22,8 +22,8 @@ body {
 
 /* ── Site nav ─────────────────────────────────────────── */
 .site-nav {
-  border-bottom: 1px solid #e0e0e0;
-  background: #fafafa;
+  border-bottom: 1px solid #d0d0d0;
+  background: #f0f0f0;
   font-size: 0.95rem;
 }
 .site-nav-inner {
@@ -38,6 +38,12 @@ body {
   font-size: 1rem;
   color: #1a1a1a;
   text-decoration: none;
+  margin-right: 4px;
+}
+.site-nav .site-version {
+  font-size: 0.78rem;
+  color: #888;
+  margin-left: -16px;
   margin-right: 4px;
 }
 .site-nav a {
@@ -166,9 +172,10 @@ p code, li code, td code {
 }
 
 .site-dark .site-nav {
-  background: #1e1e1e;
-  border-bottom-color: #333;
+  background: #222;
+  border-bottom-color: #3a3a3a;
 }
+.site-dark .site-nav .site-version { color: #666; }
 .site-dark .site-nav .site-logo { color: #d8d8d8; }
 .site-dark .site-nav a { color: #aaa; }
 .site-dark .site-nav a:hover { color: #fff; }

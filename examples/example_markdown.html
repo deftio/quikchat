@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — Markdown Example</title>
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="../site/site.css" rel="stylesheet">
+  <link href="../dist/quikchat.css" rel="stylesheet">
+  <script src="../dist/quikchat-md.umd.min.js"></script>
+  <style>
+    .parent { height: 55vh; width: 100%; }
+    .note { margin-top: 16px; font-size: 0.9rem; color: #666; }
+    .note code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; font-size: 0.86em; }
+  </style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a class="site-logo" href="../site/">QuikChat</a>
+    <span class="site-version" id="site-version"></span>
+    <a href="../site/#demo">Demo</a>
+    <a href="../site/doc.html">Docs</a>
+    <a href="./">Examples</a>
+    <a href="../site/theming.html">Theming</a>
+    <a href="https://github.com/deftio/quikchat">GitHub</a>
+    <a href="#" onclick="document.body.classList.toggle('site-dark');return false" style="margin-left:auto">Light/Dark</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <header style="padding: 32px 0 16px;">
+    <h1>Markdown Support</h1>
+    <p>The <code>quikchat-md</code> build bundles <a href="https://github.com/deftio/quikdown">quikdown</a> as the default message formatter.
+       Markdown in messages is automatically rendered as HTML.</p>
+  </header>
+
+  <section style="padding-top: 12px;">
+    <div class="demo-controls">
+      <span class="btn-group">
+        <button class="btn active" id="themeBtn-light" onclick="setTheme('light')">Light</button>
+        <button class="btn" id="themeBtn-dark" onclick="setTheme('dark')">Dark</button>
+        <button class="btn" id="themeBtn-modern" onclick="setTheme('modern')">Modern</button>
+        <button class="btn" id="themeBtn-ocean" onclick="setTheme('ocean')">Ocean</button>
+      </span>
+    </div>
+    <div class="parent" id="chat-container"></div>
+
+    <p class="note">
+      Try typing markdown: <code>**bold**</code>, <code>*italic*</code>, <code>`code`</code>,
+      <code>## heading</code>, <code>- list item</code>, or fenced code blocks with <code>```</code>.
+    </p>
+  </section>
+
+  <section>
+    <h2>Usage</h2>
+    <p>Just use <code>quikchat-md.umd.min.js</code> instead of <code>quikchat.umd.min.js</code>:</p>
+<pre><code>&lt;script src="https://unpkg.com/quikchat/dist/quikchat-md.umd.min.js"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" href="https://unpkg.com/quikchat/dist/quikchat.css"&gt;
+
+&lt;div id="chat" style="height: 400px;"&gt;&lt;/div&gt;
+&lt;script&gt;
+// Markdown rendering is automatic — same API, no extra config
+const chat = new quikchat('#chat', (chat, msg) =&gt; {
+  chat.messageAddNew(msg, 'me', 'right');
+});
+&lt;/script&gt;</code></pre>
+    <p>The <code>-md</code> build extends the base <code>quikchat</code> class and pre-wires quikdown
+       as the <code>messageFormatter</code>. All other API methods work identically.</p>
+  </section>
+
+  <section>
+    <h2>Custom Formatter</h2>
+    <p>You can override the formatter at any time:</p>
+<pre><code>// Use a different markdown library
+chat.setMessageFormatter((content) =&gt; myMarkdownLib(content));
+
+// Or disable formatting
+chat.setMessageFormatter(null);</code></pre>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">
+    <a href="https://github.com/deftio/quikchat">GitHub</a> &middot;
+    <a href="https://www.npmjs.com/package/quikchat">npm</a> &middot;
+    BSD-2-Clause License &middot;
+    &copy; <a href="https://github.com/deftio">deftio</a>
+  </div>
+</footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("site-version").textContent = "v" + quikchat.version().version;
+
+  window.chatBox = new quikchat("#chat-container",
+    (chat, msg) => {
+      chat.messageAddNew(msg, "you", "right", "user");
+      // Echo back the raw markdown so they can see input vs rendered output
+      setTimeout(() => {
+        chat.messageAddNew("You said:\n\n" + msg, "echo", "left", "assistant");
+      }, 200);
+    },
+    {
+      theme: "quikchat-theme-light",
+      titleArea: { title: "Markdown Chat", align: "left", show: true },
+      messagesArea: { alternating: true }
+    }
+  );
+
+  // Seed with markdown examples
+  chatBox.messageAddNew(
+    "**Markdown** is supported! Here are some examples:\n\n" +
+    "- **Bold** text with `**bold**`\n" +
+    "- *Italic* text with `*italic*`\n" +
+    "- `inline code` with backticks\n" +
+    "- [Links](https://github.com/deftio/quikchat)",
+    "bot", "left", "assistant"
+  );
+
+  chatBox.messageAddNew(
+    "Code blocks work too:\n\n```javascript\nconst chat = new quikchat('#app', (c, msg) => {\n  c.messageAddNew(msg, 'me', 'right');\n});\n```",
+    "bot", "left", "assistant"
+  );
+
+  chatBox.messageAddNew(
+    "Try typing some markdown below!",
+    "bot", "left", "assistant"
+  );
+});
+
+function setTheme(name) {
+  chatBox.changeTheme("quikchat-theme-" + name);
+  document.querySelectorAll(".btn-group .btn").forEach(b => b.classList.remove("active"));
+  const el = document.getElementById("themeBtn-" + name);
+  if (el) el.classList.add("active");
+}
+</script>
+
+</body>
+</html>

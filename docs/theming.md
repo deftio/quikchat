@@ -8,6 +8,7 @@ QuikChat separates structure from appearance. Base CSS handles layout (flexbox, 
 |---|---|
 | `quikchat-theme-light` | Light background, green send button, subtle borders |
 | `quikchat-theme-dark` | Dark background, dark green button, material-inspired |
+| `quikchat-theme-modern` | Chat-bubble style — user messages in blue bubbles (right), assistant messages in grey bubbles (left) |
 | `quikchat-theme-debug` | Vivid colors (orchid, salmon, seagreen) for visual debugging |
 
 Set the theme at construction or switch at runtime:
@@ -170,6 +171,84 @@ QuikChat includes ARIA attributes on the widget:
 | Text input | `aria-label` | `Type a message` |
 
 These work with any theme — no additional ARIA setup needed.
+
+## Styling by Message Role
+
+Every message gets a CSS class based on its `role` parameter: `quikchat-role-user`, `quikchat-role-assistant`, `quikchat-role-system`, `quikchat-role-tool`. Use these to style messages by type:
+
+```css
+/* Dim system messages */
+.my-theme .quikchat-role-system .quikchat-message-content {
+    color: #999;
+    font-style: italic;
+}
+
+/* Color the bot's name differently */
+.my-theme .quikchat-role-assistant .quikchat-user-label {
+    color: #1976d2;
+}
+
+/* Highlight tool call results */
+.my-theme .quikchat-role-tool .quikchat-message-content {
+    border-left: 3px solid #ff9800;
+}
+```
+
+No default styles are applied to role classes — they're pure hooks for your theme.
+
+## Alignment Classes
+
+Every message div gets an alignment class: `quikchat-align-left`, `quikchat-align-right`, or `quikchat-align-center`. These are used by the modern bubble theme to position messages, and you can use them in your own themes:
+
+```css
+/* Chat bubble layout */
+.my-theme .quikchat-align-left .quikchat-message-content {
+    background-color: #e5e5ea;
+    margin-right: auto;
+    max-width: 80%;
+    border-radius: 16px;
+    padding: 8px 12px;
+}
+.my-theme .quikchat-align-right .quikchat-message-content {
+    background-color: #007aff;
+    color: white;
+    margin-left: auto;
+    max-width: 80%;
+    border-radius: 16px;
+    padding: 8px 12px;
+}
+```
+
+## Typing Indicator Styling
+
+The typing indicator uses a CSS-only pulsing dot animation. The message gets a `quikchat-typing` class and the dots are inside a `quikchat-typing-dots` span. Override the animation in your theme:
+
+```css
+.my-theme .quikchat-typing-dots span {
+    color: #999;
+    font-size: 1.6em;
+}
+```
+
+## Disabled Input Styling
+
+When input is disabled via `inputAreaSetEnabled(false)`, the base CSS applies:
+
+```css
+.quikchat-input-textbox:disabled,
+.quikchat-input-send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+```
+
+Themes can override the disabled appearance:
+
+```css
+.my-theme .quikchat-input-send-btn:disabled {
+    background-color: #999;
+}
+```
 
 ## CSS Architecture Details
 

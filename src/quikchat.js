@@ -9,6 +9,7 @@ class quikchat {
         const defaultOpts = {
             theme: 'quikchat-theme-light',
             trackHistory: true,
+            showTimestamps: false,
             titleArea: { title: "Chat", show: false, align: "center" },
             messagesArea: { alternating: true },
         };
@@ -20,6 +21,8 @@ class quikchat {
         this._parentElement = parentElement;
         this._theme = meta.theme;
         this._onSend = onSend ? onSend : () => { }; // call back function for onSend
+        this._messageFormatter = meta.messageFormatter || null;
+        this._sanitize = meta.sanitize || false;
         this._createWidget();
         // title area
         if (meta.titleArea) {
@@ -34,6 +37,10 @@ class quikchat {
         if (meta.messagesArea) {
             this.messagesAreaAlternateColors(meta.messagesArea.alternating);
         }
+        // timestamps
+        if (meta.showTimestamps) {
+            this.messagesAreaShowTimestamps(true);
+        }
         // plumbing
         this._attachEventListeners();
         this.trackHistory = meta.trackHistory !== false;
@@ -46,9 +53,9 @@ class quikchat {
             `
             <div class="quikchat-base ${this.theme}">
                 <div class="quikchat-title-area"></div>
-                <div class="quikchat-messages-area" role="log" aria-live="polite" aria-label="Chat messages"></div>
+                <div class="quikchat-messages-wrapper"><div class="quikchat-messages-area" role="log" aria-live="polite" aria-label="Chat messages"></div><button class="quikchat-scroll-bottom" aria-label="Scroll to bottom"></button></div>
                 <div class="quikchat-input-area">
-                    <textarea class="quikchat-input-textbox" aria-label="Type a message"></textarea>
+                    <textarea class="quikchat-input-textbox" rows="1" aria-label="Type a message"></textarea>
                     <button class="quikchat-input-send-btn">Send</button>
                 </div>
             </div>
@@ -57,7 +64,9 @@ class quikchat {
         this._parentElement.innerHTML = widgetHTML;
         this._chatWidget = this._parentElement.querySelector('.quikchat-base');
         this._titleArea = this._chatWidget.querySelector('.quikchat-title-area');
+        this._messagesWrapper = this._chatWidget.querySelector('.quikchat-messages-wrapper');
         this._messagesArea = this._chatWidget.querySelector('.quikchat-messages-area');
+        this._scrollBottomBtn = this._messagesWrapper.querySelector('.quikchat-scroll-bottom');
         this._inputArea = this._chatWidget.querySelector('.quikchat-input-area');
         this._textEntry = this._inputArea.querySelector('.quikchat-input-textbox');
         this._sendButton = this._inputArea.querySelector('.quikchat-input-send-btn');
@@ -68,19 +77,39 @@ class quikchat {
      * Attach event listeners to the widget
      */
     _attachEventListeners() {
-        this._sendButton.addEventListener('click', () => this._onSend(this, this._textEntry.value.trim()));
+        this._sendButton.addEventListener('click', () => {
+            const text = this._textEntry.value.trim();
+            if (text === '') return;
+            this._onSend(this, text);
+        });
         this._textEntry.addEventListener('keydown', (event) => {
             // Check if Shift + Enter is pressed
             if (event.shiftKey && event.keyCode === 13) {
-                // Prevent default behavior (adding new line)
                 event.preventDefault();
-                this._onSend(this, this._textEntry.value.trim());
+                const text = this._textEntry.value.trim();
+                if (text === '') return;
+                this._onSend(this, text);
             }
         });
 
+        // Auto-grow textarea
+        this._textEntry.addEventListener('input', () => this._autoGrowTextarea());
+
         this._messagesArea.addEventListener('scroll', () => {
             const { scrollTop, scrollHeight, clientHeight } = this._messagesArea;
-            this.userScrolledUp = scrollTop + clientHeight < scrollHeight;
+            this.userScrolledUp = scrollTop + clientHeight < scrollHeight - 1;
+            this._updateScrollBottomBtn();
+        });
+
+        // Scroll-to-bottom button
+        this._scrollBottomBtn.addEventListener('click', () => this.scrollToBottom());
+
+        // Ctrl+End to scroll to bottom
+        this._chatWidget.addEventListener('keydown', (event) => {
+            if (event.ctrlKey && event.key === 'End') {
+                event.preventDefault();
+                this.scrollToBottom();
+            }
         });
 
         // Use ResizeObserver to detect parent container resize
@@ -141,9 +170,87 @@ class quikchat {
         this._inputArea.style.display = 'none';
     }
 
+    inputAreaSetEnabled(enabled) {
+        this._textEntry.disabled = !enabled;
+        this._sendButton.disabled = !enabled;
+    }
+
+    inputAreaSetButtonText(text) {
+        this._sendButton.textContent = text;
+    }
+
+    inputAreaGetButtonText() {
+        return this._sendButton.textContent;
+    }
+
     _handleContainerResize() {
         // Layout is handled by CSS flexbox — no JS height calculation needed.
         // This hook exists for future use or custom resize callbacks.
+    }
+
+    scrollToBottom() {
+        this._messagesArea.scrollTop = this._messagesArea.scrollHeight;
+        this.userScrolledUp = false;
+        this._updateScrollBottomBtn();
+    }
+
+    _updateScrollBottomBtn() {
+        if (this.userScrolledUp) {
+            this._scrollBottomBtn.classList.add('quikchat-scroll-bottom-visible');
+        } else {
+            this._scrollBottomBtn.classList.remove('quikchat-scroll-bottom-visible');
+        }
+    }
+
+    _autoGrowTextarea() {
+        const el = this._textEntry;
+        el.style.height = 'auto';
+        const maxHeight = parseInt(getComputedStyle(el).getPropertyValue('--quikchat-input-max-height')) || 120;
+        el.style.height = Math.min(el.scrollHeight, maxHeight) + 'px';
+        el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
+    }
+
+    _formatTimestamp(isoString) {
+        const d = new Date(isoString);
+        const h = d.getHours();
+        const m = String(d.getMinutes()).padStart(2, '0');
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12 = h % 12 || 12;
+        return h12 + ':' + m + ' ' + ampm;
+    }
+
+    messagesAreaShowTimestamps(show) {
+        if (show) {
+            this._messagesArea.classList.add('quikchat-show-timestamps');
+        } else {
+            this._messagesArea.classList.remove('quikchat-show-timestamps');
+        }
+    }
+
+    messagesAreaShowTimestampsGet() {
+        return this._messagesArea.classList.contains('quikchat-show-timestamps');
+    }
+
+    messagesAreaShowTimestampsToggle() {
+        this._messagesArea.classList.toggle('quikchat-show-timestamps');
+    }
+
+    _escapeHTML(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    _processContent(content) {
+        if (this._sanitize === true) {
+            content = this._escapeHTML(content);
+        } else if (typeof this._sanitize === 'function') {
+            content = this._sanitize(content);
+        }
+        if (this._messageFormatter) {
+            content = this._messageFormatter(content);
+        }
+        return content;
     }
 
     //messagesArea functions
@@ -168,6 +275,8 @@ class quikchat {
         const messageDiv = document.createElement('div');
         const msgidClass = 'quikchat-msgid-' + String(msgid).padStart(10, '0');
         messageDiv.classList.add('quikchat-message', msgidClass);
+        messageDiv.classList.add('quikchat-role-' + (input.role || 'user'));
+        messageDiv.classList.add('quikchat-align-' + (input.align || 'right'));
         this.msgid++;
         messageDiv.classList.add(this._messagesArea.children.length % 2 === 1 ? 'quikchat-message-1' : 'quikchat-message-2');
 
@@ -179,10 +288,16 @@ class quikchat {
         const contentDiv = document.createElement('div');
         contentDiv.classList.add('quikchat-message-content');
         contentDiv.style.textAlign = input.align;
-        contentDiv.innerHTML = input.content;
+        contentDiv.innerHTML = this._processContent(input.content);
+
+        const timestamp = new Date().toISOString();
+        const timestampSpan = document.createElement('span');
+        timestampSpan.classList.add('quikchat-timestamp');
+        timestampSpan.textContent = this._formatTimestamp(timestamp);
 
         messageDiv.appendChild(userDiv);
         messageDiv.appendChild(contentDiv);
+        messageDiv.appendChild(timestampSpan);
         this._messagesArea.appendChild(messageDiv);
 
         // Scroll to the last message only if the user is not actively scrolling up
@@ -191,7 +306,7 @@ class quikchat {
         }
 
         this._textEntry.value = '';
-        const timestamp = new Date().toISOString();
+        this._autoGrowTextarea();
         const updatedtime = timestamp;
 
         if (this.trackHistory) {
@@ -258,10 +373,12 @@ class quikchat {
     messageAppendContent(n, content) {
         let success = false;
         try {
-            this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML += content;
+            const msgEl = this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`);
             const item = this._history.filter((entry) => entry.msgid === n)[0];
             item.content += content;
             item.updatedtime = new Date().toISOString();
+            msgEl.querySelector('.quikchat-message-content').innerHTML = this._processContent(item.content);
+            msgEl.classList.remove('quikchat-typing');
             success = true;
 
             if (!this.userScrolledUp) {
@@ -278,10 +395,12 @@ class quikchat {
     messageReplaceContent(n, content) {
         let success = false;
         try {
-            this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`).lastChild.innerHTML = content;
+            const msgEl = this._messagesArea.querySelector(`.quikchat-msgid-${String(n).padStart(10, '0')}`);
             const item = this._history.filter((entry) => entry.msgid === n)[0];
             item.content = content;
             item.updatedtime = new Date().toISOString();
+            msgEl.querySelector('.quikchat-message-content').innerHTML = this._processContent(content);
+            msgEl.classList.remove('quikchat-typing');
             success = true;
 
             if (!this.userScrolledUp) {
@@ -293,6 +412,28 @@ class quikchat {
         return success;
     }
 
+    messageAddTypingIndicator(userString = '', align = 'left') {
+        const msgid = this.messageAddFull({
+            content: '',
+            userString: userString,
+            align: align,
+            role: 'assistant',
+        });
+        const msgEl = this.messageGetDOMObject(msgid);
+        msgEl.classList.add('quikchat-typing');
+        const contentDiv = msgEl.querySelector('.quikchat-message-content');
+        contentDiv.innerHTML = '<span class="quikchat-typing-dots"><span>.</span><span>.</span><span>.</span></span>';
+        return msgid;
+    }
+
+    setMessageFormatter(formatter) {
+        this._messageFormatter = formatter;
+    }
+
+    setSanitize(sanitize) {
+        this._sanitize = sanitize;
+    }
+
     // history functions
     /**
      *
@@ -302,13 +443,14 @@ class quikchat {
      */
     historyGet(n, m) {
         if (n === undefined) {
-            n = 0;
-            m = this._history.length;
+            return this._history.slice();
         }
         if (m === undefined) {
-            m = n < 0 ? m : n + 1;
+            if (n < 0) {
+                return this._history.slice(n);
+            }
+            return this._history.slice(n, n + 1);
         }
-
         return this._history.slice(n, m);
     }
 
@@ -329,7 +471,10 @@ class quikchat {
     }
 
     historyGetMessageContent(n) {
-        return this._history[n].content;
+        if (n >= 0 && n < this._history.length) {
+            return this._history[n].content;
+        }
+        return "";
     }
 
 

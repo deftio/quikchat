@@ -48,7 +48,7 @@ That's a working streaming LLM chat in one file — no bundler, no framework, no
 - **Typing indicator** — animated "..." dots that auto-clear when streaming begins
 - **Markdown support** — three tiers: base (no markdown), `-md` (basic markdown via [quikdown](https://github.com/deftio/quikdown)), `-md-full` (syntax highlighting, math, diagrams, maps — loaded on demand from CDN)
 - **HTML sanitization** — built-in XSS protection or plug in your own sanitizer
-- **Themeable** — 8 built-in CSS themes (light, dark, blue, warm, midnight, ocean, modern, debug) or write your own
+- **Themeable** — 11 built-in CSS themes (light, dark, blue, warm, midnight, ocean, modern, glass, gradient, minimal, debug) or write your own
 - **Multi-user** — multiple users per chat, multiple independent chats per page
 - **Message visibility & tagging** — hide system prompts and tool-call results from the UI while keeping them in history for LLM context
 - **History export / import** — save and restore complete chat sessions (`historyExport()` / `historyImport()`)
@@ -205,7 +205,7 @@ Examples include: basic UMD/ESM usage, theme switching, dual chatrooms, markdown
 | **Base** (`quikchat.umd.min.js`) | Chat widget, zero deps | None |
 | **Markdown** (`quikchat-md.umd.min.js`) | + bold, italic, code, tables, lists | None |
 | **Full** (`quikchat-md-full.umd.min.js`) | + syntax highlighting, math, diagrams, maps | CDN on demand |
-| **CSS** (`quikchat.css`) | All 8 themes | None |
+| **CSS** (`quikchat.css`) | All 11 themes | None |
 
 All builds are also available in ESM and CJS formats with sourcemaps. See the [downloads page](https://deftio.github.io/quikchat/site/downloads.html) for exact sizes, SRI hashes, and CDN links.
 

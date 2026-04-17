@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — Virtual Scrolling Stress Test</title>
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="../site/site.css" rel="stylesheet">
+  <link href="../dist/quikchat.css" rel="stylesheet">
+  <script src="../dist/quikchat.umd.min.js"></script>
+  <style>
+    .parent { height: 55vh; width: 100%; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .controls button { padding: 8px 14px; border: 1px solid #d0d0d0; border-radius: 6px; background: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.15s; }
+    .controls button:hover { background: #f5f5f5; border-color: #bbb; }
+    .controls button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .stats { font-size: 0.88rem; color: #555; line-height: 1.6; margin-top: 16px; padding: 12px 16px; background: #f9f9f9; border-radius: 8px; border: 1px solid #e4e4e7; }
+    .stats strong { color: #333; }
+    .site-dark .stats { background: #1a1a1a; border-color: #2a2a2a; color: #999; }
+    .site-dark .stats strong { color: #ddd; }
+  </style>
+</head>
+<body>
+<script src="../site/site-chrome.js?v=3"></script>
+
+<div class="wrap">
+  <header class="site-header">
+    <h1>Virtual Scrolling Stress Test</h1>
+    <p class="tagline">QuikChat automatically switches to virtual scrolling when the message count exceeds 500 (configurable via <code>virtualScrollingThreshold</code>). Only visible messages are rendered in the DOM — enabling smooth scrolling through tens of thousands of messages.</p>
+  </header>
+
+  <div class="controls">
+    <button id="btn-10k" onclick="loadMessages(10000)">Load 10,000 Messages</button>
+    <button id="btn-50k" onclick="loadMessages(50000)">Load 50,000 Messages</button>
+    <button id="btn-clear" onclick="clearMessages()">Clear</button>
+    <button id="themeBtn" onclick="cycleThemes()">Change Theme</button>
+  </div>
+
+  <div class="parent" id="stress-chat"></div>
+
+  <div class="stats" id="stats">
+    <strong>Messages:</strong> <span id="stat-count">0</span> &nbsp; | &nbsp;
+    <strong>Load time:</strong> <span id="stat-time">—</span> &nbsp; | &nbsp;
+    <strong>Rate:</strong> <span id="stat-rate">—</span> &nbsp; | &nbsp;
+    <strong>Virtual scrolling:</strong> <span id="stat-vs">inactive (activates at 500+ messages)</span>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  window.stressChat = new quikchat('#stress-chat', null, {
+    theme: 'quikchat-theme-light',
+    titleArea: { title: 'Virtual Scrolling Demo', align: 'left', show: true }
+  });
+  stressChat.inputAreaHide();
+
+  stressChat.messageAddNew('Click a button above to load messages. Virtual scrolling activates automatically at 500 messages.', 'system', 'left', 'system');
+
+  const users = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'];
+  const aligns = ['left', 'right'];
+
+  function updateStats(count, timeMs) {
+    document.getElementById('stat-count').textContent = count.toLocaleString();
+    if (timeMs !== undefined) {
+      document.getElementById('stat-time').textContent = (timeMs / 1000).toFixed(2) + 's';
+      document.getElementById('stat-rate').textContent = Math.round(count / (timeMs / 1000)).toLocaleString() + ' msg/s';
+    }
+    document.getElementById('stat-vs').textContent = count >= 500 ? 'active' : 'inactive (activates at 500+ messages)';
+  }
+
+  window.loadMessages = function (count) {
+    // Disable buttons during load
+    document.getElementById('btn-10k').disabled = true;
+    document.getElementById('btn-50k').disabled = true;
+
+    stressChat.historyClear();
+
+    const start = performance.now();
+
+    for (let i = 0; i < count; i++) {
+      const user = users[i % users.length];
+      const align = aligns[i % 2];
+      const len = 20 + Math.floor(Math.random() * 80);
+      const content = '[' + (i + 1) + '] ' + quikchat.loremIpsum(len, Math.floor(Math.random() * 500));
+      stressChat.messageAddNew(content, user, align);
+    }
+
+    const elapsed = performance.now() - start;
+    updateStats(count, elapsed);
+
+    document.getElementById('btn-10k').disabled = false;
+    document.getElementById('btn-50k').disabled = false;
+  };
+
+  window.clearMessages = function () {
+    stressChat.historyClear();
+    stressChat.messageAddNew('Cleared. Load messages again to test.', 'system', 'left', 'system');
+    updateStats(0);
+    document.getElementById('stat-time').textContent = '—';
+    document.getElementById('stat-rate').textContent = '—';
+  };
+
+  // Theme cycling
+  const themes = ['quikchat-theme-light', 'quikchat-theme-blue', 'quikchat-theme-warm', 'quikchat-theme-dark', 'quikchat-theme-midnight', 'quikchat-theme-ocean', 'quikchat-theme-modern', 'quikchat-theme-glass', 'quikchat-theme-gradient', 'quikchat-theme-minimal', 'quikchat-theme-debug'];
+  let themeIndex = 0;
+  window.cycleThemes = function () {
+    themeIndex = (themeIndex + 1) % themes.length;
+    stressChat.changeTheme(themes[themeIndex]);
+  };
+});
+</script>
+</body>
+</html>

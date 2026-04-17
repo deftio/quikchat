@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — Session Save/Restore</title>
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="../site/site.css" rel="stylesheet">
+  <link href="../dist/quikchat.css" rel="stylesheet">
+  <script src="../dist/quikchat.umd.min.js"></script>
+  <style>
+    .dual-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .chat-col { display: flex; flex-direction: column; }
+    .chat-col h3 { margin: 0 0 8px; font-size: 0.95rem; font-weight: 600; }
+    .chat-parent { height: 40vh; width: 100%; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .controls button { padding: 8px 14px; border: 1px solid #d0d0d0; border-radius: 6px; background: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.15s; }
+    .controls button:hover { background: #f5f5f5; border-color: #bbb; }
+    .json-area { width: 100%; height: 140px; font-family: monospace; font-size: 0.8rem; border: 1px solid #d0d0d0; border-radius: 6px; padding: 10px; resize: vertical; }
+    .status { font-size: 0.85rem; color: #666; margin-top: 8px; }
+    @media (max-width: 768px) { .dual-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<script src="../site/site-chrome.js?v=3"></script>
+
+<div class="wrap">
+  <header class="site-header">
+    <h1>Session Save/Restore</h1>
+    <p class="tagline">Export a full chat session as JSON with <code>historyExport()</code>, then restore it into another widget with <code>historyImport()</code>. Demonstrates round-trip serialization.</p>
+  </header>
+
+  <div class="controls">
+    <button onclick="exportSession()">Export A to JSON</button>
+    <button onclick="importSession()">Import into B</button>
+    <button onclick="clearB()">Clear B</button>
+    <button id="themeBtn" onclick="cycleThemes()">Change Theme</button>
+  </div>
+
+  <div class="dual-row">
+    <div class="chat-col">
+      <h3>Session A</h3>
+      <div class="chat-parent" id="chat-a"></div>
+    </div>
+    <div class="chat-col">
+      <h3>Session B</h3>
+      <div class="chat-parent" id="chat-b"></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:8px;font-size:0.95rem;">Exported JSON</h3>
+  <textarea class="json-area" id="json-output" placeholder="Click &quot;Export A to JSON&quot; to see the serialized session data here..."></textarea>
+  <div class="status" id="status"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Session A: interactive with pre-seeded messages
+  window.chatA = new quikchat('#chat-a',
+    (chat, msg) => {
+      chat.messageAddNew(msg, 'You', 'right', 'user');
+      setTimeout(() => {
+        chat.messageAddNew('Got it! I stored your message.', 'Bot', 'left', 'assistant');
+      }, 300);
+    },
+    {
+      theme: 'quikchat-theme-light',
+      titleArea: { title: 'Session A', align: 'left', show: true }
+    }
+  );
+
+  chatA.messageAddNew('Hi! Welcome to Session A.', 'Bot', 'left', 'assistant');
+  chatA.messageAddNew('Tell me about QuikChat.', 'You', 'right', 'user');
+  chatA.messageAddNew('QuikChat is a zero-dependency JavaScript chat widget. It supports 11 themes, markdown rendering, streaming, and full session export/import.', 'Bot', 'left', 'assistant');
+  chatA.messageAddNew('Can I save this conversation?', 'You', 'right', 'user');
+  chatA.messageAddNew('Yes! Use historyExport() to get the full session as a JSON-serializable array. Then historyImport() to restore it anywhere.', 'Bot', 'left', 'assistant');
+
+  // Session B: starts empty
+  window.chatB = new quikchat('#chat-b',
+    (chat, msg) => {
+      chat.messageAddNew(msg, 'You', 'right', 'user');
+      setTimeout(() => {
+        chat.messageAddNew('Echo from Session B: ' + msg, 'Bot', 'left', 'assistant');
+      }, 300);
+    },
+    {
+      theme: 'quikchat-theme-light',
+      titleArea: { title: 'Session B', align: 'left', show: true }
+    }
+  );
+
+  function setStatus(text) {
+    document.getElementById('status').textContent = text;
+  }
+
+  window.exportSession = function () {
+    const data = chatA.historyExport();
+    const json = JSON.stringify(data, null, 2);
+    document.getElementById('json-output').value = json;
+    setStatus('Exported ' + data.length + ' messages from Session A (' + json.length + ' bytes).');
+  };
+
+  window.importSession = function () {
+    const raw = document.getElementById('json-output').value.trim();
+    if (!raw) { setStatus('Nothing to import. Export Session A first.'); return; }
+    try {
+      const data = JSON.parse(raw);
+      chatB.historyImport(data);
+      setStatus('Imported ' + data.length + ' messages into Session B.');
+    } catch (e) {
+      setStatus('Invalid JSON: ' + e.message);
+    }
+  };
+
+  window.clearB = function () {
+    chatB.historyClear();
+    setStatus('Session B cleared.');
+  };
+
+  // Theme cycling
+  const themes = ['quikchat-theme-light', 'quikchat-theme-blue', 'quikchat-theme-warm', 'quikchat-theme-dark', 'quikchat-theme-midnight', 'quikchat-theme-ocean', 'quikchat-theme-modern', 'quikchat-theme-glass', 'quikchat-theme-gradient', 'quikchat-theme-minimal', 'quikchat-theme-debug'];
+  let themeIndex = 0;
+  window.cycleThemes = function () {
+    themeIndex = (themeIndex + 1) % themes.length;
+    chatA.changeTheme(themes[themeIndex]);
+    chatB.changeTheme(themes[themeIndex]);
+  };
+});
+</script>
+</body>
+</html>

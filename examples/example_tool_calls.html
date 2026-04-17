@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — Tool-Call Visibility</title>
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="../site/site.css" rel="stylesheet">
+  <link href="../dist/quikchat.css" rel="stylesheet">
+  <script src="../dist/quikchat.umd.min.js"></script>
+  <style>
+    .parent { height: 55vh; width: 100%; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .controls button { padding: 8px 14px; border: 1px solid #d0d0d0; border-radius: 6px; background: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.15s; }
+    .controls button:hover { background: #f5f5f5; border-color: #bbb; }
+    .controls button.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+
+    /* Tool-call messages get a distinct style when visible */
+    .quikchat-role-tool .quikchat-message-content {
+      background: #f3e8ff;
+      border-left: 3px solid #9333ea;
+      padding-left: 8px;
+      font-family: monospace;
+      font-size: 0.85em;
+    }
+    .site-dark .quikchat-role-tool .quikchat-message-content {
+      background: #1a0a2e;
+    }
+  </style>
+</head>
+<body>
+<script src="../site/site-chrome.js?v=3"></script>
+
+<div class="wrap">
+  <header class="site-header">
+    <h1>Tool-Call Visibility</h1>
+    <p class="tagline">Shows how to hide internal tool calls from the user using <code>visible: false</code> and <code>tags</code>, then reveal them with a toggle button via <code>messageSetVisibleByTag()</code>.</p>
+  </header>
+
+  <div class="controls">
+    <button id="btn-toggle" onclick="toggleToolCalls()">Show Tool Calls</button>
+    <button id="themeBtn" onclick="cycleThemes()">Change Theme</button>
+  </div>
+
+  <div class="parent" id="tool-chat"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const chat = new quikchat('#tool-chat', null, {
+    theme: 'quikchat-theme-light',
+    titleArea: { title: 'AI Assistant with Tools', align: 'left', show: true }
+  });
+  chat.inputAreaHide();
+
+  // Conversation 1: Weather query
+  chat.messageAddFull({
+    content: "What's the weather like in San Francisco right now?",
+    userString: 'You',
+    align: 'right',
+    role: 'user'
+  });
+
+  chat.messageAddFull({
+    content: '{"tool": "get_weather", "args": {"location": "San Francisco, CA", "units": "fahrenheit"}}',
+    userString: 'Tool Call',
+    align: 'left',
+    role: 'tool',
+    visible: false,
+    tags: ['tool-call']
+  });
+
+  chat.messageAddFull({
+    content: '{"temperature": 62, "condition": "Partly cloudy", "humidity": 72, "wind": "14 mph NW"}',
+    userString: 'Tool Result',
+    align: 'left',
+    role: 'tool',
+    visible: false,
+    tags: ['tool-call']
+  });
+
+  chat.messageAddFull({
+    content: "It's currently 62\u00b0F in San Francisco with partly cloudy skies. Humidity is at 72% with northwest winds at 14 mph. A typical afternoon for the city!",
+    userString: 'Assistant',
+    align: 'left',
+    role: 'assistant'
+  });
+
+  // Conversation 2: Flight search
+  chat.messageAddFull({
+    content: 'Can you search for flights from SFO to NYC next Friday?',
+    userString: 'You',
+    align: 'right',
+    role: 'user'
+  });
+
+  chat.messageAddFull({
+    content: '{"tool": "search_flights", "args": {"from": "SFO", "to": "JFK", "date": "2025-02-07", "passengers": 1}}',
+    userString: 'Tool Call',
+    align: 'left',
+    role: 'tool',
+    visible: false,
+    tags: ['tool-call']
+  });
+
+  chat.messageAddFull({
+    content: '{"results": [{"airline": "United", "price": 289, "depart": "07:15", "arrive": "15:45"}, {"airline": "Delta", "price": 312, "depart": "09:30", "arrive": "18:00"}, {"airline": "JetBlue", "price": 265, "depart": "11:20", "arrive": "19:50"}]}',
+    userString: 'Tool Result',
+    align: 'left',
+    role: 'tool',
+    visible: false,
+    tags: ['tool-call']
+  });
+
+  chat.messageAddFull({
+    content: "I found 3 flights from SFO to JFK next Friday:\n\n1. **United** \u2014 $289, departs 7:15 AM, arrives 3:45 PM\n2. **Delta** \u2014 $312, departs 9:30 AM, arrives 6:00 PM\n3. **JetBlue** \u2014 $265, departs 11:20 AM, arrives 7:50 PM\n\nJetBlue has the best price, but the United flight gets you there earliest. Want me to book one?",
+    userString: 'Assistant',
+    align: 'left',
+    role: 'assistant'
+  });
+
+  // Conversation 3: Calculator
+  chat.messageAddFull({
+    content: 'What is 15% tip on a $87.50 dinner bill split 3 ways?',
+    userString: 'You',
+    align: 'right',
+    role: 'user'
+  });
+
+  chat.messageAddFull({
+    content: '{"tool": "calculator", "args": {"expression": "(87.50 * 1.15) / 3"}}',
+    userString: 'Tool Call',
+    align: 'left',
+    role: 'tool',
+    visible: false,
+    tags: ['tool-call']
+  });
+
+  chat.messageAddFull({
+    content: '{"result": 33.54}',
+    userString: 'Tool Result',
+    align: 'left',
+    role: 'tool',
+    visible: false,
+    tags: ['tool-call']
+  });
+
+  chat.messageAddFull({
+    content: "With a 15% tip, the total comes to $100.63. Split 3 ways, that's **$33.54 per person**.",
+    userString: 'Assistant',
+    align: 'left',
+    role: 'assistant'
+  });
+
+  // Toggle tool calls
+  let toolsVisible = false;
+  window.toggleToolCalls = function () {
+    toolsVisible = !toolsVisible;
+    chat.messageSetVisibleByTag('tool-call', toolsVisible);
+    const btn = document.getElementById('btn-toggle');
+    btn.textContent = toolsVisible ? 'Hide Tool Calls' : 'Show Tool Calls';
+    if (toolsVisible) btn.classList.add('active');
+    else btn.classList.remove('active');
+  };
+
+  // Theme cycling
+  const themes = ['quikchat-theme-light', 'quikchat-theme-blue', 'quikchat-theme-warm', 'quikchat-theme-dark', 'quikchat-theme-midnight', 'quikchat-theme-ocean', 'quikchat-theme-modern', 'quikchat-theme-glass', 'quikchat-theme-gradient', 'quikchat-theme-minimal', 'quikchat-theme-debug'];
+  let themeIndex = 0;
+  window.cycleThemes = function () {
+    themeIndex = (themeIndex + 1) % themes.length;
+    chat.changeTheme(themes[themeIndex]);
+  };
+});
+</script>
+</body>
+</html>

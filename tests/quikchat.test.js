@@ -738,8 +738,13 @@ describe('quikchat', () => {
             expect(chatInstance.theme).toBe('quikchat-theme-light');
         });
 
-        test('should cycle through all three themes', () => {
-            const themes = ['quikchat-theme-dark', 'quikchat-theme-debug', 'quikchat-theme-light'];
+        test('should cycle through all built-in themes', () => {
+            const themes = [
+                'quikchat-theme-light', 'quikchat-theme-blue', 'quikchat-theme-warm',
+                'quikchat-theme-dark', 'quikchat-theme-midnight', 'quikchat-theme-ocean',
+                'quikchat-theme-modern', 'quikchat-theme-glass', 'quikchat-theme-gradient',
+                'quikchat-theme-minimal', 'quikchat-theme-debug'
+            ];
             for (const theme of themes) {
                 chatInstance.changeTheme(theme);
                 expect(chatInstance.theme).toBe(theme);
@@ -839,7 +844,7 @@ describe('quikchat', () => {
     describe('static methods', () => {
         test('version should return version info', () => {
             const v = quikchat.version();
-            expect(v.version).toBe('1.2.4');
+            expect(v.version).toBe('1.2.5');
             expect(v.license).toBe('BSD-2');
             expect(v.url).toContain('quikchat');
         });

@@ -34,3 +34,40 @@ jobs:
 
     - name: Build project
       run: npm run build
+
+    - name: Verify build outputs
+      run: |
+        EXPECTED=(
+          dist/quikchat.umd.js
+          dist/quikchat.umd.min.js
+          dist/quikchat.esm.js
+          dist/quikchat.esm.min.js
+          dist/quikchat.cjs.js
+          dist/quikchat.cjs.min.js
+          dist/quikchat-md.umd.js
+          dist/quikchat-md.umd.min.js
+          dist/quikchat-md.esm.js
+          dist/quikchat-md.esm.min.js
+          dist/quikchat-md.cjs.js
+          dist/quikchat-md.cjs.min.js
+          dist/quikchat-md-full.umd.js
+          dist/quikchat-md-full.umd.min.js
+          dist/quikchat-md-full.esm.js
+          dist/quikchat-md-full.esm.min.js
+          dist/quikchat-md-full.cjs.js
+          dist/quikchat-md-full.cjs.min.js
+          dist/quikchat.css
+          dist/quikchat.min.css
+        )
+        MISSING=0
+        for f in "${EXPECTED[@]}"; do
+          if [ ! -f "$f" ]; then
+            echo "MISSING: $f"
+            MISSING=$((MISSING + 1))
+          fi
+        done
+        if [ "$MISSING" -gt 0 ]; then
+          echo "ERROR: $MISSING expected build output(s) missing"
+          exit 1
+        fi
+        echo "All ${#EXPECTED[@]} expected build outputs present."

@@ -4,14 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QuikChat — Zero-dependency chat widget for the browser</title>
-  <meta name="description" content="A vanilla JavaScript chat control with zero runtime dependencies. Themeable, LLM-ready, under 4KB gzipped.">
+  <meta name="description" content="Zero-dependency JavaScript chat widget. 11 themes, markdown rendering, XSS sanitization, streaming, history save/restore, dynamic resize — under 5 KB gzipped. No framework required.">
   <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
   <link href="site.css" rel="stylesheet">
   <link href="../dist/quikchat.css" rel="stylesheet">
-  <script src="../dist/quikchat.umd.min.js"></script>
+  <script src="../dist/quikchat-md-full.umd.min.js"></script>
+  <script>
+    // Preload MathJax so it's ready when the demo conversation renders math
+    window.MathJax = {
+      loader: { load: ['input/tex', 'output/svg'] },
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      options: { renderActions: { addMenu: [] } },
+      svg: { fontCache: 'none' },
+      startup: { typeset: false }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js" async></script>
+  <style>
+    /* Extra horizontal padding so users can grab the scroll zone beside embedded maps */
+    #demo-markdown .quikchat-messages-area { padding-left: 14px; padding-right: 14px; }
+  </style>
 </head>
 <body>
-<script src="site-chrome.js" data-site-root="./"></script>
+<script src="site-chrome.js?v=3"></script>
 
 <div class="wrap">
 
@@ -23,19 +43,27 @@
       <img id="coverage-badge" style="vertical-align:middle;margin-left:4px;display:none" alt="coverage">
     </h1>
     <p class="tagline">
-      A vanilla JavaScript chat widget with zero runtime dependencies.<br>
-      Themeable, LLM-ready, under 5KB gzipped.
+      A zero-dependency JavaScript chat widget you can drop into any page.<br>
+      11 themes, XSS sanitization, streaming, session save/restore, dynamic resize, RTL support — under 5 KB gzipped.<br>
+      No framework required. Works great with
+      <a href="../examples/frameworks.html#react" style="color:inherit;text-decoration:underline">React</a>,
+      <a href="../examples/frameworks.html#vue" style="color:inherit;text-decoration:underline">Vue</a>,
+      <a href="../examples/frameworks.html#solid" style="color:inherit;text-decoration:underline">Solid</a>,
+      <a href="../examples/frameworks.html#svelte" style="color:inherit;text-decoration:underline">Svelte</a>, and
+      <a href="../examples/frameworks.html#angular" style="color:inherit;text-decoration:underline">Angular</a> too.
     </p>
   </header>
 
   <section id="demo">
-    <h2>Try it</h2>
-    <p>This is a live widget. Type a message and hit Send (or Shift+Enter).</p>
+    <h2>See it in action <span class="build-badge build-badge-full">md-full ~14 KB</span></h2>
+    <p>QuikChat is a zero-dependency chat widget. The base build handles messages, themes, streaming, history, and more in ~5 KB.
+       Add the <code>quikchat-md-full</code> build (still one <code>&lt;script&gt;</code> tag, still zero npm dependencies) and each message is rendered through
+       <a href="https://github.com/deftio/quikdown">quikdown</a> — adding tables, code highlighting, math, interactive maps, Mermaid diagrams, and inline SVG.
+       For just basic markdown use the lighter <code>quikchat-md</code> build (~9 KB).
+       For a pure chat widget with no markdown, see <a href="getting-started.html">Getting Started</a>.</p>
+    <p>Scroll through the conversation below to see what the full build can do.
+       See also: <a href="../examples/index.html">examples</a> for history save/restore, tool-call visibility, virtual scrolling, RTL, and more.</p>
     <div class="demo-controls">
-      <button class="btn" onclick="demoChat.titleAreaToggle()">Toggle Title</button>
-      <button class="btn" onclick="demoChat.inputAreaToggle()">Toggle Input</button>
-      <button class="btn" onclick="demoChat.messagesAreaAlternateColorsToggle()">Alternating</button>
-      <span class="sep"></span>
       <span class="btn-group">
         <button class="btn" id="themeBtn-light" onclick="setTheme('light')">Light</button>
         <button class="btn" id="themeBtn-blue" onclick="setTheme('blue')">Blue</button>
@@ -43,98 +71,87 @@
         <button class="btn" id="themeBtn-dark" onclick="setTheme('dark')">Dark</button>
         <button class="btn" id="themeBtn-midnight" onclick="setTheme('midnight')">Midnight</button>
         <button class="btn" id="themeBtn-ocean" onclick="setTheme('ocean')">Ocean</button>
+        <button class="btn" id="themeBtn-glass" onclick="setTheme('glass')">Glass</button>
+        <button class="btn" id="themeBtn-gradient" onclick="setTheme('gradient')">Gradient</button>
+        <button class="btn" id="themeBtn-minimal" onclick="setTheme('minimal')">Minimal</button>
         <button class="btn" id="themeBtn-debug" onclick="setTheme('debug')">Debug</button>
       </span>
     </div>
-    <div class="demo-row">
-      <div class="demo-box" id="demo-main"></div>
+
+    <div class="demo-tabs">
+      <a class="demo-tab active" href="#" onclick="showTab('md','demo');return false">Demo</a>
+      <a class="demo-tab" href="#" onclick="showTab('md','code');return false">Code</a>
     </div>
-  </section>
-
-  <section id="install">
-    <h2>Install</h2>
-    <h3>npm</h3>
-    <pre><code>npm install quikchat</code></pre>
-    <h3>CDN (no build step needed)</h3>
+    <div class="demo-tab-panel active" id="md-demo">
+      <div class="demo-row">
+        <div class="demo-box" id="demo-markdown" style="height:480px;"></div>
+      </div>
+    </div>
+    <div class="demo-tab-panel" id="md-code">
 <pre><code>&lt;link rel="stylesheet" href="https://unpkg.com/quikchat/dist/quikchat.css"&gt;
-&lt;script src="https://unpkg.com/quikchat/dist/quikchat.umd.min.js"&gt;&lt;/script&gt;</code></pre>
-    <h3>ESM import</h3>
-    <pre><code>import quikchat from 'quikchat';</code></pre>
-  </section>
+&lt;script src="https://unpkg.com/quikchat/dist/quikchat-md-full.umd.min.js"&gt;&lt;/script&gt;
 
-  <section>
-    <h2>Quick Start</h2>
-    <p>Create a container, include quikchat, and initialize with a callback:</p>
-<pre><code>&lt;div id="chat" style="height: 400px;"&gt;&lt;/div&gt;
+&lt;div id="chat" style="height: 480px;"&gt;&lt;/div&gt;
+
 &lt;script&gt;
 const chat = new quikchat("#chat",
   (chat, msg) =&gt; {
-    chat.messageAddNew(msg, "me", "right");
-    // send msg to your backend / LLM and post the response:
-    chat.messageAddNew("Got it!", "bot", "left");
+    chat.messageAddNew(msg, "you", "right", "user");
+    // send msg to your LLM, stream the response back:
+    // chat.messageAppendContent(id, token);
   },
-  {
-    theme: "quikchat-theme-light",
-    titleArea: { title: "My Chat", align: "left", show: true }
-  }
+  { theme: "quikchat-theme-light",
+    titleArea: { title: "My Chat", show: true } }
 );
 &lt;/script&gt;</code></pre>
-    <p>The callback fires when the user clicks Send or presses Shift+Enter.
-       Messages are not auto-echoed, so you control what appears and when.</p>
-  </section>
-
-  <section>
-    <h2>LLM Integration</h2>
-    <p>QuikChat tracks full message history. Feed it directly to any OpenAI-compatible API:</p>
-<pre><code>const history = chat.historyGet().map(m =&gt; ({
-  role: m.role,
-  content: m.content
-}));
-
-const response = await fetch("https://api.openai.com/v1/chat/completions", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "Authorization": "Bearer " + API_KEY
-  },
-  body: JSON.stringify({ model: "gpt-4o", messages: history })
-});</code></pre>
-    <p>Works with OpenAI, Ollama, LM Studio, Anthropic, Mistral, or any provider with a compatible API.
-       See the <a href="../examples/ollama_with_memory.html">Ollama</a> and
-       <a href="../examples/openai.html">OpenAI</a> examples for complete working code.</p>
+      <p style="font-size:0.88rem;color:#666;margin-top:8px;">Three builds available: <strong>base</strong> (~5 KB, no markdown), <strong>md</strong> (~9 KB, basic markdown), <strong>md-full</strong> (~14 KB, + syntax highlighting, math, maps, diagrams). All are a single script tag with zero npm dependencies.</p>
+    </div>
   </section>
 
   <section>
     <h2>Features</h2>
     <ul class="features">
-      <li>Zero runtime dependencies</li>
-      <li>Under 4KB gzipped (UMD)</li>
-      <li>Themeable with CSS (light, dark, custom)</li>
-      <li>Responsive — resizes with parent container</li>
-      <li>Multiple instances on one page</li>
-      <li>Multiple users per chat</li>
-      <li>Show/hide title and input areas</li>
-      <li>Full message history with retrieval</li>
-      <li>Append to messages (streaming / token completion)</li>
-      <li>Replace or remove messages</li>
-      <li>Per-message left / right / center alignment</li>
-      <li>Message visibility and tagging (hide system/tool messages)</li>
-      <li>History export / import (save and restore sessions)</li>
+      <li>Zero runtime dependencies — under 5 KB gzipped (base), ~9 KB with markdown, ~14 KB full</li>
+      <li>11 built-in CSS themes — light, dark, glass, gradient, minimal, and more</li>
+      <li>Markdown rendering — bold, italic, code blocks, tables, syntax highlighting, math, diagrams</li>
+      <li>XSS-safe — built-in HTML sanitization or plug in your own (e.g. DOMPurify)</li>
+      <li>Streaming — token-by-token display with typing indicator for LLM responses</li>
+      <li>History save / restore — export and import full chat sessions as JSON</li>
+      <li>Dynamic resize — fills parent container and adapts automatically</li>
+      <li>LLM-ready — <code>historyGet()</code> returns OpenAI-compatible <code>{ role, content }</code> objects</li>
+      <li>Multi-user — multiple users per chat, multiple independent chats per page</li>
+      <li>Message visibility and tagging — hide system prompts and tool-call results from UI</li>
       <li>RTL / LTR text direction support</li>
-      <li>Built-in HTML sanitization and content formatting pipeline</li>
-      <li>Typing indicator with animated dots</li>
       <li>Callbacks for send, add, append, replace, and delete events</li>
-      <li>Timestamps (show/hide)</li>
-      <li>UMD, ESM, and CJS builds included</li>
+      <li>Per-message timestamps (show/hide)</li>
+      <li>UMD, ESM, and CJS builds — works with CDN, npm, or local files</li>
     </ul>
+  </section>
+
+  <section id="why">
+    <h2>Why QuikChat?</h2>
+    <p>QuikChat sits between "build it from scratch" and "install a full chat SDK." Here's how it compares:</p>
+    <table class="api-table">
+      <tr><th>Feature</th><th>QuikChat</th><th>Custom &lt;div&gt;</th><th>Full Chat SDK</th></tr>
+      <tr><td>Bundle size</td><td><strong>~5 KB</strong> gzip</td><td>0 KB</td><td>50-200 KB</td></tr>
+      <tr><td>Dependencies</td><td><strong>0</strong></td><td>0</td><td>5-20+</td></tr>
+      <tr><td>Setup time</td><td>1 <code>&lt;script&gt;</code> tag</td><td>Hours of CSS/JS</td><td>npm + config</td></tr>
+      <tr><td>Themes</td><td><strong>11 built-in</strong></td><td>DIY</td><td>Varies</td></tr>
+      <tr><td>Markdown</td><td><strong>Built-in option</strong></td><td>No</td><td>Plugin</td></tr>
+      <tr><td>XSS sanitization</td><td><strong>Built-in</strong></td><td>No</td><td>Varies</td></tr>
+      <tr><td>History export</td><td><code>historyExport()</code></td><td>No</td><td>Custom</td></tr>
+      <tr><td>Streaming</td><td><code>messageAppendContent()</code></td><td>No</td><td>Yes</td></tr>
+      <tr><td>RTL support</td><td><code>setDirection('rtl')</code></td><td>No</td><td>Varies</td></tr>
+    </table>
   </section>
 
   <section>
     <h2>Theming</h2>
     <p>Themes are CSS classes applied to the widget root. Switch themes at runtime:</p>
     <pre><code>chat.changeTheme("quikchat-theme-dark");</code></pre>
-    <p>Seven themes are included: <code>light</code>, <code>blue</code>, <code>warm</code>,
-       <code>dark</code>, <code>midnight</code>, <code>ocean</code>, and <code>debug</code>
+    <p>Eleven themes are included: <code>light</code>, <code>blue</code>, <code>warm</code>,
+       <code>dark</code>, <code>midnight</code>, <code>ocean</code>, <code>modern</code>,
+       <code>glass</code>, <code>gradient</code>, <code>minimal</code>, and <code>debug</code>
        (all prefixed <code>quikchat-theme-</code>).
        To create a custom theme, see the <a href="theming.html">Theming Guide</a>.</p>
   </section>
@@ -247,23 +264,156 @@ const response = await fetch("https://api.openai.com/v1/chat/completions", {
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  window.demoChat = new quikchat("#demo-main",
+  window.mdChat = new quikchat("#demo-markdown",
     (chat, msg) => {
       chat.messageAddNew(msg, "you", "right", "user");
       setTimeout(() => {
-        const reply = quikchat.loremIpsum(Math.floor(Math.random() * 80) + 20);
-        chat.messageAddNew(reply, "bot", "left", "assistant");
-      }, 300);
+        chat.messageAddNew("You said:\n\n" + msg, "echo", "left", "assistant");
+      }, 200);
     },
     {
-      theme: "quikchat-theme-light",
-      titleArea: { title: "QuikChat Demo", align: "left", show: true },
+      theme: "quikchat-theme-blue",
+      titleArea: { title: "QuikChat + Your LLM", align: "left", show: true },
       messagesArea: { alternating: true }
     }
   );
-  demoChat.messageAddNew("Hello! Try sending a message.", "bot", "left", "assistant");
-  demoChat.messageAddNew("Use the buttons above to toggle UI elements and switch themes.", "bot", "left", "assistant");
-  setTheme("light");
+
+  // --- Multi-turn conversation showcasing rich markdown ---
+
+  mdChat.messageAddNew(
+    "I'm building a weather station dashboard. What does the data look like?",
+    "you", "right", "user"
+  );
+
+  mdChat.messageAddNew(
+    "Great project! Let's start with the data. Here's a typical dataset from five stations across San Francisco:\n\n" +
+    "```csv\n" +
+    "Station,Lat,Lon,Temp (C),Humidity (%),Wind (km/h)\n" +
+    "Pier 39,37.809,-122.410,18.2,72,14\n" +
+    "Presidio,37.798,-122.466,16.5,78,22\n" +
+    "Mission Bay,37.770,-122.393,19.1,65,11\n" +
+    "Twin Peaks,37.754,-122.447,14.8,85,31\n" +
+    "Ocean Beach,37.760,-122.509,13.6,91,38\n" +
+    "```\n\n" +
+    "Each station reports **temperature**, **humidity**, and **wind speed** every 60 seconds. Notice how the coastal stations run cooler and windier. Want to see them on a map?",
+    "bot", "left", "assistant"
+  );
+
+  mdChat.messageAddNew(
+    "Yes, show me the map.",
+    "you", "right", "user"
+  );
+
+  mdChat.messageAddNew(
+    "Here they are plotted on San Francisco:\n\n" +
+    "```geojson\n" +
+    '{"type":"FeatureCollection","features":[' +
+    '{"type":"Feature","geometry":{"type":"Point","coordinates":[-122.410,37.809]},"properties":{"name":"Pier 39"}},' +
+    '{"type":"Feature","geometry":{"type":"Point","coordinates":[-122.466,37.798]},"properties":{"name":"Presidio"}},' +
+    '{"type":"Feature","geometry":{"type":"Point","coordinates":[-122.393,37.770]},"properties":{"name":"Mission Bay"}},' +
+    '{"type":"Feature","geometry":{"type":"Point","coordinates":[-122.447,37.754]},"properties":{"name":"Twin Peaks"}},' +
+    '{"type":"Feature","geometry":{"type":"Point","coordinates":[-122.509,37.760]},"properties":{"name":"Ocean Beach"}}' +
+    "]}\n" +
+    "```\n\n" +
+    "Notice how **Ocean Beach** and **Twin Peaks** are exposed to the Pacific — that explains their higher wind speeds.",
+    "bot", "left", "assistant"
+  );
+
+  mdChat.messageAddNew(
+    "I need a \"feels like\" temperature. How does wind chill work?",
+    "you", "right", "user"
+  );
+
+  mdChat.messageAddNew(
+    "The standard **wind chill formula** (temps below 10°C, wind > 4.8 km/h):\n\n" +
+    "```math\nT_{\\text{wc}} = 13.12 + 0.6215\\,T_a - 11.37\\,v^{0.16} + 0.3965\\,T_a\\,v^{0.16}\n```\n\n" +
+    "Where `T_a` is air temp (°C) and `v` is wind speed (km/h). For Ocean Beach (`T_a = 13.6`, `v = 38`) the feels-like temp drops to **8.9°C**:\n\n" +
+    "```python\n" +
+    "def wind_chill(temp_c, wind_kmh):\n" +
+    "    if temp_c > 10 or wind_kmh <= 4.8:\n" +
+    "        return temp_c\n" +
+    "    v = wind_kmh ** 0.16\n" +
+    "    return 13.12 + 0.6215 * temp_c - 11.37 * v + 0.3965 * temp_c * v\n\n" +
+    "# Ocean Beach\n" +
+    "print(f\"{wind_chill(13.6, 38):.1f} C\")  # 8.9 C\n" +
+    "```",
+    "bot", "left", "assistant"
+  );
+
+  mdChat.messageAddNew(
+    "Sketch out the data pipeline?",
+    "you", "right", "user"
+  );
+
+  mdChat.messageAddNew(
+    "Here's the flow from stations to dashboard:\n\n" +
+    "```mermaid\n" +
+    "graph LR\n" +
+    "    A[Weather Stations] -->|MQTT| B[Message Broker]\n" +
+    "    B --> C[Stream Processor]\n" +
+    "    C -->|wind chill, alerts| D[(Time-Series DB)]\n" +
+    "    D --> E[REST API]\n" +
+    "    E --> F[Dashboard UI]\n" +
+    "    C -->|threshold breach| G[Alert Service]\n" +
+    "    G -->|email / SMS| H[Operators]\n" +
+    "```\n\n" +
+    "The **stream processor** is where your wind chill calculation lives — it enriches each reading before storing it.",
+    "bot", "left", "assistant"
+  );
+
+  mdChat.messageAddNew(
+    "I need a logo. Something with a wind rose.",
+    "you", "right", "user"
+  );
+
+  mdChat.messageAddNew(
+    "Here's a wind rose compass in SVG:\n\n" +
+    "```svg\n" +
+    '<svg viewBox="0 0 200 200" width="180" height="180" xmlns="http://www.w3.org/2000/svg">\n' +
+    '  <circle cx="100" cy="100" r="90" fill="#f0f4f8" stroke="#3a6ea5" stroke-width="2"/>\n' +
+    '  <polygon points="100,15 110,90 100,75 90,90" fill="#3a6ea5"/>\n' +
+    '  <polygon points="100,185 110,110 100,125 90,110" fill="#b0c4d8"/>\n' +
+    '  <polygon points="15,100 90,90 75,100 90,110" fill="#b0c4d8"/>\n' +
+    '  <polygon points="185,100 110,90 125,100 110,110" fill="#b0c4d8"/>\n' +
+    '  <polygon points="100,15 93,85 100,70 107,85" fill="#2d5a8a" opacity="0.7"/>\n' +
+    '  <circle cx="100" cy="100" r="8" fill="#3a6ea5"/>\n' +
+    '  <text x="100" y="12" text-anchor="middle" font-size="11" font-weight="bold" fill="#3a6ea5">N</text>\n' +
+    '  <text x="100" y="198" text-anchor="middle" font-size="11" font-weight="bold" fill="#3a6ea5">S</text>\n' +
+    '  <text x="8" y="104" text-anchor="middle" font-size="11" font-weight="bold" fill="#3a6ea5">W</text>\n' +
+    '  <text x="193" y="104" text-anchor="middle" font-size="11" font-weight="bold" fill="#3a6ea5">E</text>\n' +
+    "</svg>\n" +
+    "```\n\n" +
+    "The dark **N** pointer stands out so users can orient quickly.",
+    "bot", "left", "assistant"
+  );
+
+  mdChat.messageAddNew(
+    "This is amazing. So all of this — tables, maps, math, code, diagrams, SVG — works from just a chat widget?",
+    "you", "right", "user"
+  );
+
+  mdChat.messageAddNew(
+    "Exactly. That's **CSV tables, interactive maps, math equations, syntax-highlighted code, Mermaid diagrams, and inline SVG** — all from a single `<script>` tag. No build step, no bundler, no framework.\n\n" +
+    "QuikChat handles the chat widget (messages, history, themes, streaming). " +
+    "[Quikdown](https://github.com/deftio/quikdown) handles the markdown rendering. Together they're ~14 KB gzipped.",
+    "bot", "left", "assistant"
+  );
+
+  // Scroll the markdown demo to top so visitors start at the beginning of the story
+  setTimeout(() => {
+    const mdArea = document.querySelector('#demo-markdown .quikchat-messages-area');
+    if (mdArea) mdArea.scrollTop = 0;
+  }, 100);
+
+  // Re-typeset math after MathJax finishes loading (it loads async)
+  setTimeout(() => {
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      const mdEl = document.getElementById('demo-markdown');
+      if (mdEl) MathJax.typesetPromise([mdEl]).catch(() => {});
+    }
+  }, 2000);
+
+  setTheme("blue");
   document.getElementById("site-version").textContent = "v" + quikchat.version().version;
 
   // Load coverage badge from build manifest
@@ -279,8 +429,18 @@ document.addEventListener("DOMContentLoaded", () => {
     .catch(() => {});
 });
 
+function showTab(section, tab) {
+  document.getElementById(section + '-demo').classList.toggle('active', tab === 'demo');
+  document.getElementById(section + '-code').classList.toggle('active', tab === 'code');
+  var sect = document.getElementById(section + '-demo').closest('section');
+  sect.querySelectorAll('.demo-tab').forEach(function(b, i) {
+    b.classList.toggle('active', i === (tab === 'demo' ? 0 : 1));
+  });
+}
+
 function setTheme(name) {
-  demoChat.changeTheme("quikchat-theme-" + name);
+  const theme = "quikchat-theme-" + name;
+  if (window.mdChat) mdChat.changeTheme(theme);
   document.querySelectorAll(".btn-group .btn").forEach(b => b.classList.remove("active"));
   const el = document.getElementById("themeBtn-" + name);
   if (el) el.classList.add("active");

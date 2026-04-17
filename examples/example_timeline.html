@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — Event Timeline</title>
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="../site/site.css" rel="stylesheet">
+  <link href="../dist/quikchat.css" rel="stylesheet">
+  <script src="../dist/quikchat.umd.min.js"></script>
+  <style>
+    .parent { height: 55vh; width: 100%; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .controls button { padding: 8px 14px; border: 1px solid #d0d0d0; border-radius: 6px; background: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.15s; }
+    .controls button:hover { background: #f5f5f5; border-color: #bbb; }
+
+    /* Timeline-like styling for automated vs human events */
+    .quikchat-role-system .quikchat-message-content {
+      border-left: 3px solid #4caf50;
+      padding-left: 8px;
+    }
+    .quikchat-role-user .quikchat-message-content {
+      border-left: 3px solid #2196f3;
+      padding-left: 8px;
+    }
+  </style>
+</head>
+<body>
+<script src="../site/site-chrome.js?v=3"></script>
+
+<div class="wrap">
+  <header class="site-header">
+    <h1>Event Timeline</h1>
+    <p class="tagline">QuikChat as a read-only event log with timestamps. Automated events use <code>role: "system"</code> (green) and human actions use <code>role: "user"</code> (blue). Timestamps shown via <code>messagesAreaShowTimestamps(true)</code>.</p>
+  </header>
+
+  <div class="controls">
+    <button onclick="addDeployEvent()">Simulate New Event</button>
+    <button onclick="timeline.messagesAreaAlternateColorsToggle()">Alternating Colors</button>
+    <button id="themeBtn" onclick="cycleThemes()">Change Theme</button>
+  </div>
+
+  <div class="parent" id="timeline"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  window.timeline = new quikchat('#timeline', null, {
+    theme: 'quikchat-theme-light',
+    titleArea: { title: 'Deployment Timeline — v2.4.1', align: 'left', show: true },
+    messagesArea: { alternating: true }
+  });
+  timeline.inputAreaHide();
+  timeline.messagesAreaShowTimestamps(true);
+
+  // Pre-seeded deployment events
+  const events = [
+    { content: 'Pull request #847 opened: "Add rate limiting to /api/search"', user: 'alice', align: 'right', role: 'user' },
+    { content: 'CI pipeline started — running linter, unit tests, integration tests', user: 'CI Bot', align: 'left', role: 'system' },
+    { content: 'Lint: 0 errors, 0 warnings', user: 'CI Bot', align: 'left', role: 'system' },
+    { content: 'Unit tests: 248/248 passed (coverage: 100%)', user: 'CI Bot', align: 'left', role: 'system' },
+    { content: 'Integration tests: 32/32 passed', user: 'CI Bot', align: 'left', role: 'system' },
+    { content: 'Code review approved by bob and charlie', user: 'bob', align: 'right', role: 'user' },
+    { content: 'PR #847 merged into main', user: 'alice', align: 'right', role: 'user' },
+    { content: 'Build v2.4.1 started — compiling assets, generating source maps', user: 'CI Bot', align: 'left', role: 'system' },
+    { content: 'Build complete: 18 JS files + 2 CSS files (total: 142 KB gzipped)', user: 'CI Bot', align: 'left', role: 'system' },
+    { content: 'Deployed to staging (staging.example.com)', user: 'CI Bot', align: 'left', role: 'system' },
+    { content: 'QA smoke test passed on staging', user: 'diana', align: 'right', role: 'user' },
+    { content: 'Production deploy approved', user: 'alice', align: 'right', role: 'user' },
+    { content: 'Rolling deploy to production — 0/4 instances updated', user: 'CI Bot', align: 'left', role: 'system' },
+    { content: 'Rolling deploy — 2/4 instances updated, health checks passing', user: 'CI Bot', align: 'left', role: 'system' },
+    { content: 'Rolling deploy complete — 4/4 instances running v2.4.1', user: 'CI Bot', align: 'left', role: 'system' },
+    { content: 'v2.4.1 published to npm', user: 'CI Bot', align: 'left', role: 'system' }
+  ];
+
+  events.forEach(evt => {
+    timeline.messageAddNew(evt.content, evt.user, evt.align, evt.role);
+  });
+
+  // Simulate a new event
+  const newEvents = [
+    { content: 'Health check: all 4 instances responding (avg latency: 12ms)', user: 'Monitor', align: 'left', role: 'system' },
+    { content: 'CDN cache purged for /dist/* assets', user: 'CI Bot', align: 'left', role: 'system' },
+    { content: 'Post-deploy verification: API response times nominal', user: 'Monitor', align: 'left', role: 'system' },
+    { content: 'Release notes published to GitHub', user: 'alice', align: 'right', role: 'user' },
+    { content: 'Slack notification sent to #releases channel', user: 'CI Bot', align: 'left', role: 'system' }
+  ];
+  let eventIndex = 0;
+
+  window.addDeployEvent = function () {
+    const evt = newEvents[eventIndex % newEvents.length];
+    timeline.messageAddNew(evt.content, evt.user, evt.align, evt.role);
+    eventIndex++;
+  };
+
+  // Theme cycling
+  const themes = ['quikchat-theme-light', 'quikchat-theme-blue', 'quikchat-theme-warm', 'quikchat-theme-dark', 'quikchat-theme-midnight', 'quikchat-theme-ocean', 'quikchat-theme-modern', 'quikchat-theme-glass', 'quikchat-theme-gradient', 'quikchat-theme-minimal', 'quikchat-theme-debug'];
+  let themeIndex = 0;
+  window.cycleThemes = function () {
+    themeIndex = (themeIndex + 1) % themes.length;
+    timeline.changeTheme(themes[themeIndex]);
+  };
+});
+</script>
+</body>
+</html>

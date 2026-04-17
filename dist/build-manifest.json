@@ -1,6 +1,6 @@
 {
-  "version": "1.2.4",
-  "generated": "2026-04-04T20:06:22.609Z",
+  "version": "1.2.5",
+  "generated": "2026-04-17T19:27:03.559Z",
   "builds": [
     {
       "id": "base",
@@ -12,49 +12,49 @@
           "format": "UMD",
           "raw": "quikchat.umd.js",
           "min": "quikchat.umd.min.js",
-          "rawBytes": 33197,
-          "minBytes": 17502,
-          "gzipBytes": 4886,
-          "rawSize": "32.42 KB",
-          "minSize": "17.09 KB",
-          "gzipSize": "4.77 KB",
-          "sri": "sha384-HQyJgwhzkD0acTCjwR7zztCSy7vwf5wbYp70KrpWRm2yERA5fs6JaZGzBlzIVy+I"
+          "rawBytes": 33115,
+          "minBytes": 17417,
+          "gzipBytes": 4846,
+          "rawSize": "32.34 KB",
+          "minSize": "17.01 KB",
+          "gzipSize": "4.73 KB",
+          "sri": "sha384-iNJo0lpca5awSqcFMvsCct6jVSlcpnbqJhhYQjGhye+P83tZM0Z3Lsnq5LQzVsoD"
         },
         {
           "format": "CJS",
           "raw": "quikchat.cjs.js",
           "min": "quikchat.cjs.min.js",
-          "rawBytes": 31085,
-          "minBytes": 17287,
-          "gzipBytes": 4817,
-          "rawSize": "30.36 KB",
-          "minSize": "16.88 KB",
-          "gzipSize": "4.70 KB",
-          "sri": "sha384-fvOoFR3OCfLmwu35fiD4+hIK6FGxpU50HVGmvXXugUGppnkvyQTN+YAgy3PMDmHd"
+          "rawBytes": 31003,
+          "minBytes": 17202,
+          "gzipBytes": 4778,
+          "rawSize": "30.28 KB",
+          "minSize": "16.80 KB",
+          "gzipSize": "4.67 KB",
+          "sri": "sha384-g7zrASZvMiNP7enIx2AYQhbqnuezscydO3E+AqwdxcHTDBemVL7jXuv83+Fbky96"
         },
         {
           "format": "ESM",
           "raw": "quikchat.esm.js",
           "min": "quikchat.esm.min.js",
-          "rawBytes": 31075,
-          "minBytes": 17278,
-          "gzipBytes": 4813,
-          "rawSize": "30.35 KB",
-          "minSize": "16.87 KB",
-          "gzipSize": "4.70 KB",
-          "sri": "sha384-O8OYDXEwVzDZd1hiGm9SthiyuD0oKPrfgE7jGG/6ZhY/MRahnsJyye2PbPRcBr+5"
+          "rawBytes": 30993,
+          "minBytes": 17193,
+          "gzipBytes": 4773,
+          "rawSize": "30.27 KB",
+          "minSize": "16.79 KB",
+          "gzipSize": "4.66 KB",
+          "sri": "sha384-387oo15Ni/+Ik0qLcrHcmc+DRXUoufvji7N515j+6lhpGQFhVJq7yQq7CFGDydQr"
         },
         {
           "format": "CSS",
           "raw": "quikchat.css",
           "min": "quikchat.min.css",
-          "rawBytes": 21344,
-          "minBytes": 15110,
-          "gzipBytes": 2479,
-          "rawSize": "20.84 KB",
-          "minSize": "14.76 KB",
-          "gzipSize": "2.42 KB",
-          "sri": "sha384-GnOoGi8md5u5otyOQw6whG8+560AXWxskNqqkTKQYSrjd7/fqEFu+nHBL36lW7Dn"
+          "rawBytes": 28346,
+          "minBytes": 20572,
+          "gzipBytes": 3187,
+          "rawSize": "27.68 KB",
+          "minSize": "20.09 KB",
+          "gzipSize": "3.11 KB",
+          "sri": "sha384-x31ZP+sKmyuDQf5oyps6GK054U7aJoY5qsSDrCXl8TxkOJHT6GIs7sHXtp4oKj/F"
         }
       ]
     },
@@ -68,37 +68,37 @@
           "format": "UMD",
           "raw": "quikchat-md.umd.js",
           "min": "quikchat-md.umd.min.js",
-          "rawBytes": 63180,
-          "minBytes": 28095,
-          "gzipBytes": 8707,
-          "rawSize": "61.70 KB",
-          "minSize": "27.44 KB",
-          "gzipSize": "8.50 KB",
-          "sri": "sha384-XOxP36QfDMuxBMmDKJp6wA0/NVXG+A5zWa0g9GSJHVmiB8ZDga0sDN5ILAg3GMDC"
+          "rawBytes": 80577,
+          "minBytes": 28452,
+          "gzipBytes": 8849,
+          "rawSize": "78.69 KB",
+          "minSize": "27.79 KB",
+          "gzipSize": "8.64 KB",
+          "sri": "sha384-L9iAcGjokSUOadotSzErTN1UipJ7ROYOXWBZTPuqb7rr/ogjn9Vb5b0uUxOoryP1"
         },
         {
           "format": "CJS",
           "raw": "quikchat-md.cjs.js",
           "min": "quikchat-md.cjs.min.js",
-          "rawBytes": 59664,
-          "minBytes": 27868,
-          "gzipBytes": 8637,
-          "rawSize": "58.27 KB",
-          "minSize": "27.21 KB",
-          "gzipSize": "8.43 KB",
-          "sri": "sha384-HEBWAN+nFWYw5xalcWEXctrOO043twBK0qEazYQBsx1YV1UIHXEvEMh2VW+bW1H5"
+          "rawBytes": 76693,
+          "minBytes": 28225,
+          "gzipBytes": 8777,
+          "rawSize": "74.90 KB",
+          "minSize": "27.56 KB",
+          "gzipSize": "8.57 KB",
+          "sri": "sha384-wL4Vwn+X4qNUjoxy0vJb75BfqQIPin/1kA7T36UMWkGChKaM63hbxtcT6xqlw1xs"
         },
         {
           "format": "ESM",
           "raw": "quikchat-md.esm.js",
           "min": "quikchat-md.esm.min.js",
-          "rawBytes": 59654,
-          "minBytes": 27859,
-          "gzipBytes": 8638,
-          "rawSize": "58.26 KB",
-          "minSize": "27.21 KB",
-          "gzipSize": "8.44 KB",
-          "sri": "sha384-FxeypSY34JdH6ndHocWBv4OmG4om90MNCV6QyN5mGSNsJBdHnm6cjbTm5DjKZG2N"
+          "rawBytes": 76683,
+          "minBytes": 28216,
+          "gzipBytes": 8780,
+          "rawSize": "74.89 KB",
+          "minSize": "27.55 KB",
+          "gzipSize": "8.57 KB",
+          "sri": "sha384-sKVt44vaC+ZYYZ3p3neTus9grPGQZ08AO6A+1ScawYkHMp0Xl85s8mFn5xn0tYnW"
         }
       ]
     },
@@ -112,44 +112,44 @@
           "format": "UMD",
           "raw": "quikchat-md-full.umd.js",
           "min": "quikchat-md-full.umd.min.js",
-          "rawBytes": 107213,
-          "minBytes": 44583,
-          "gzipBytes": 14063,
-          "rawSize": "104.70 KB",
-          "minSize": "43.54 KB",
-          "gzipSize": "13.73 KB",
-          "sri": "sha384-SCqEKwwNNrbWcDDC+C6apgzpCMyE+9kAtodwSWFsqc7dSgiB8dMKUdgsx8UEYhIZ"
+          "rawBytes": 125007,
+          "minBytes": 45016,
+          "gzipBytes": 14233,
+          "rawSize": "122.08 KB",
+          "minSize": "43.96 KB",
+          "gzipSize": "13.90 KB",
+          "sri": "sha384-TeZBkXl2q8mdgFw4qhq7utkQiPENwG3HLRkbZawonYU2bpKhKFACevTT4D1+gZt9"
         },
         {
           "format": "CJS",
           "raw": "quikchat-md-full.cjs.js",
           "min": "quikchat-md-full.cjs.min.js",
-          "rawBytes": 101525,
-          "minBytes": 44356,
-          "gzipBytes": 13997,
-          "rawSize": "99.15 KB",
-          "minSize": "43.32 KB",
-          "gzipSize": "13.67 KB",
-          "sri": "sha384-8AZywird+70s7iTN9GxFIf/oUiMOiPodPhj7ORx+/FOwETcKDo6kHIsk3kZzRHiA"
+          "rawBytes": 118939,
+          "minBytes": 44789,
+          "gzipBytes": 14167,
+          "rawSize": "116.15 KB",
+          "minSize": "43.74 KB",
+          "gzipSize": "13.83 KB",
+          "sri": "sha384-qEYjRZlZ7cjR7WbQfD/1operc2squKTECgW+OWwKJ25VoBb0FAFS9e+UchEYht44"
         },
         {
           "format": "ESM",
           "raw": "quikchat-md-full.esm.js",
           "min": "quikchat-md-full.esm.min.js",
-          "rawBytes": 101515,
-          "minBytes": 44347,
-          "gzipBytes": 13995,
-          "rawSize": "99.14 KB",
-          "minSize": "43.31 KB",
-          "gzipSize": "13.67 KB",
-          "sri": "sha384-q7xCwu4Z7vWZaLs7GJzlcx9DHcEDZDkTkez8vAA4KJwjl7xtwuhYCxWcGZf60bir"
+          "rawBytes": 118929,
+          "minBytes": 44780,
+          "gzipBytes": 14165,
+          "rawSize": "116.14 KB",
+          "minSize": "43.73 KB",
+          "gzipSize": "13.83 KB",
+          "sri": "sha384-1MMgLmp8YbbeBU/wRqz31JI8J13BAjublC38byDR/si2+fpPbVyQmaaGodeCqKJ4"
         }
       ]
     }
   ],
   "coverage": {
     "statements": 100,
-    "branches": 98.13,
+    "branches": 97.48,
     "functions": 97.46,
     "lines": 100,
     "badge": "https://img.shields.io/badge/coverage-97.46%25-brightgreen.svg"

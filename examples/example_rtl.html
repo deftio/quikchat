@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — RTL / i18n</title>
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="../site/site.css" rel="stylesheet">
+  <link href="../dist/quikchat.css" rel="stylesheet">
+  <script src="../dist/quikchat.umd.min.js"></script>
+  <style>
+    .dual-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .chat-col { display: flex; flex-direction: column; }
+    .chat-col h3 { margin: 0 0 8px; font-size: 0.95rem; font-weight: 600; }
+    .chat-parent { height: 45vh; width: 100%; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .controls button { padding: 8px 14px; border: 1px solid #d0d0d0; border-radius: 6px; background: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.15s; }
+    .controls button:hover { background: #f5f5f5; border-color: #bbb; }
+    @media (max-width: 768px) { .dual-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<script src="../site/site-chrome.js?v=3"></script>
+
+<div class="wrap">
+  <header class="site-header">
+    <h1>RTL / i18n</h1>
+    <p class="tagline">QuikChat supports bidirectional text with <code>setDirection('rtl')</code> and <code>setDirection('ltr')</code>. The layout, alignment, and input direction all adapt automatically.</p>
+  </header>
+
+  <div class="controls">
+    <button onclick="swapDirections()">Swap Directions</button>
+    <button id="themeBtn" onclick="cycleThemes()">Change Theme</button>
+  </div>
+
+  <div class="dual-row">
+    <div class="chat-col">
+      <h3 id="label-left">English (LTR)</h3>
+      <div class="chat-parent" id="chat-ltr"></div>
+    </div>
+    <div class="chat-col">
+      <h3 id="label-right">Arabic (RTL)</h3>
+      <div class="chat-parent" id="chat-rtl"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // English LTR chat
+  window.chatLTR = new quikchat('#chat-ltr',
+    (chat, msg) => {
+      chat.messageAddNew(msg, 'You', 'right', 'user');
+      setTimeout(() => {
+        chat.messageAddNew('Thanks for your message!', 'Bot', 'left', 'assistant');
+      }, 300);
+    },
+    {
+      theme: 'quikchat-theme-light',
+      titleArea: { title: 'English Chat', align: 'left', show: true }
+    }
+  );
+  chatLTR.setDirection('ltr');
+
+  chatLTR.messageAddNew('Hello! This is a left-to-right conversation.', 'Bot', 'left', 'assistant');
+  chatLTR.messageAddNew('How does QuikChat handle RTL text?', 'You', 'right', 'user');
+  chatLTR.messageAddNew('Just call setDirection("rtl") and the entire layout flips — input, messages, and alignment all adapt automatically.', 'Bot', 'left', 'assistant');
+  chatLTR.messageAddNew('Does it work with mixed content?', 'You', 'right', 'user');
+  chatLTR.messageAddNew('Yes! Each widget is independent, so you can have LTR and RTL chats side by side on the same page.', 'Bot', 'left', 'assistant');
+
+  // Arabic RTL chat
+  window.chatRTL = new quikchat('#chat-rtl',
+    (chat, msg) => {
+      chat.messageAddNew(msg, '\u0623\u0646\u062a', 'left', 'user');
+      setTimeout(() => {
+        chat.messageAddNew('\u0634\u0643\u0631\u0627\u064b \u0639\u0644\u0649 \u0631\u0633\u0627\u0644\u062a\u0643!', '\u0628\u0648\u062a', 'right', 'assistant');
+      }, 300);
+    },
+    {
+      theme: 'quikchat-theme-light',
+      titleArea: { title: '\u0645\u062d\u0627\u062f\u062b\u0629 \u0639\u0631\u0628\u064a\u0629', align: 'right', show: true }
+    }
+  );
+  chatRTL.setDirection('rtl');
+
+  chatRTL.messageAddNew('\u0645\u0631\u062d\u0628\u0627\u064b! \u0647\u0630\u0647 \u0645\u062d\u0627\u062f\u062b\u0629 \u0628\u0627\u0644\u0644\u063a\u0629 \u0627\u0644\u0639\u0631\u0628\u064a\u0629 \u0645\u0646 \u0627\u0644\u064a\u0645\u064a\u0646 \u0625\u0644\u0649 \u0627\u0644\u064a\u0633\u0627\u0631.', '\u0628\u0648\u062a', 'right', 'assistant');
+  chatRTL.messageAddNew('\u0643\u064a\u0641 \u064a\u0639\u0645\u0644 \u0627\u062a\u062c\u0627\u0647 \u0627\u0644\u0646\u0635\u061f', '\u0623\u0646\u062a', 'left', 'user');
+  chatRTL.messageAddNew('\u064a\u062a\u0645 \u062a\u0628\u062f\u064a\u0644 \u0627\u0644\u0627\u062a\u062c\u0627\u0647 \u062a\u0644\u0642\u0627\u0626\u064a\u0627\u064b \u0639\u0646\u062f \u0627\u0633\u062a\u062f\u0639\u0627\u0621 setDirection. \u064a\u062a\u063a\u064a\u0631 \u0643\u0644 \u0634\u064a\u0621: \u0627\u0644\u0625\u062f\u062e\u0627\u0644 \u0648\u0627\u0644\u0631\u0633\u0627\u0626\u0644 \u0648\u0627\u0644\u0645\u062d\u0627\u0630\u0627\u0629.', '\u0628\u0648\u062a', 'right', 'assistant');
+  chatRTL.messageAddNew('\u0647\u0644 \u064a\u0645\u0643\u0646 \u062a\u0628\u062f\u064a\u0644 \u0627\u0644\u0627\u062a\u062c\u0627\u0647 \u0623\u062b\u0646\u0627\u0621 \u0627\u0644\u062a\u0634\u063a\u064a\u0644\u061f', '\u0623\u0646\u062a', 'left', 'user');
+  chatRTL.messageAddNew('\u0646\u0639\u0645! \u0627\u0636\u063a\u0637 \u0639\u0644\u0649 \u0632\u0631 "\u062a\u0628\u062f\u064a\u0644 \u0627\u0644\u0627\u062a\u062c\u0627\u0647\u0627\u062a" \u0641\u064a \u0627\u0644\u0623\u0639\u0644\u0649 \u0644\u0644\u062a\u062c\u0631\u0628\u0629.', '\u0628\u0648\u062a', 'right', 'assistant');
+
+  // Swap directions
+  let swapped = false;
+  window.swapDirections = function () {
+    swapped = !swapped;
+    chatLTR.setDirection(swapped ? 'rtl' : 'ltr');
+    chatRTL.setDirection(swapped ? 'ltr' : 'rtl');
+    document.getElementById('label-left').textContent = swapped ? 'English (now RTL)' : 'English (LTR)';
+    document.getElementById('label-right').textContent = swapped ? 'Arabic (now LTR)' : 'Arabic (RTL)';
+  };
+
+  // Theme cycling
+  const themes = ['quikchat-theme-light', 'quikchat-theme-blue', 'quikchat-theme-warm', 'quikchat-theme-dark', 'quikchat-theme-midnight', 'quikchat-theme-ocean', 'quikchat-theme-modern', 'quikchat-theme-glass', 'quikchat-theme-gradient', 'quikchat-theme-minimal', 'quikchat-theme-debug'];
+  let themeIndex = 0;
+  window.cycleThemes = function () {
+    themeIndex = (themeIndex + 1) % themes.length;
+    chatLTR.changeTheme(themes[themeIndex]);
+    chatRTL.changeTheme(themes[themeIndex]);
+  };
+});
+</script>
+</body>
+</html>

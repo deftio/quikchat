@@ -102,7 +102,7 @@ describe('quikchat-md', () => {
 
     test('version returns correct version info', () => {
         const v = quikchatMD.version();
-        expect(v.version).toBe('1.2.4');
+        expect(v.version).toBe('1.2.5');
     });
 
     test('all base quikchat methods work', () => {

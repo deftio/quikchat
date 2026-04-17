@@ -58,6 +58,16 @@ body {
 .site-nav a:hover {
   color: #000;
 }
+.site-nav button {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 0.85rem;
+  color: #555;
+  cursor: pointer;
+}
 
 /* ── Layout ───────────────────────────────────────────── */
 section { padding: 40px 0; }
@@ -198,6 +208,58 @@ p code, li code, td code {
 .badges img { vertical-align: middle; margin-right: 6px; }
 .badges a { display: inline-block; }
 
+/* ── Demo tabs ────────────────────────────────────────── */
+.demo-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 0;
+}
+.demo-tab {
+  display: inline-block;
+  padding: 8px 20px;
+  font-size: 0.86rem;
+  font-weight: 500;
+  border: 1px solid #d0d0d0;
+  border-bottom: none;
+  background: #f5f5f5;
+  color: #555;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.demo-tab:first-child { border-radius: 8px 0 0 0; }
+.demo-tab:last-child { border-radius: 0 8px 0 0; margin-left: -1px; }
+.demo-tab:hover { background: #eee; }
+.demo-tab.active { background: #fff; color: #1a1a1a; border-bottom: 1px solid #fff; margin-bottom: -1px; z-index: 1; }
+.demo-tab-panel { display: none; border: 1px solid #d0d0d0; border-radius: 0 0 8px 8px; padding: 20px; background: #fff; }
+.demo-tab-panel.active { display: block; }
+
+/* ── Build badges ────────────────────────────────────── */
+.build-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  vertical-align: middle;
+  margin-left: 8px;
+  letter-spacing: 0.02em;
+}
+.build-badge-base { background: #e8f5e9; color: #2e7d32; }
+.build-badge-full { background: #f3e5f5; color: #7b1fa2; }
+
+.site-dark .demo-tab {
+  background: #1a1a1a;
+  color: #999;
+  border-color: #3a3a3a;
+}
+.site-dark .demo-tab:hover { background: #222; }
+.site-dark .demo-tab.active { background: #111; color: #ddd; border-bottom-color: #111; }
+.site-dark .demo-tab-panel { background: #111; border-color: #3a3a3a; }
+.site-dark .build-badge-base { background: #1a2e1a; color: #66bb6a; }
+.site-dark .build-badge-full { background: #2a1a2e; color: #ba68c8; }
+
 /* ── Site footer ──────────────────────────────────────── */
 .site-footer {
   border-top: 1px solid #e0e0e0;
@@ -229,6 +291,7 @@ p code, li code, td code {
 .site-dark .site-nav .site-logo { color: #e0e0e0; }
 .site-dark .site-nav a { color: #999; }
 .site-dark .site-nav a:hover { color: #fff; }
+.site-dark .site-nav button { color: #999; border-color: #444; }
 
 .site-dark .site-header .tagline { color: #999; }
 

@@ -232,7 +232,7 @@ class quikchat {
     _autoGrowTextarea() {
         const el = this._textEntry;
         el.style.height = 'auto';
-        const maxHeight = parseInt(getComputedStyle(el).getPropertyValue('--quikchat-input-max-height')) || 120;
+        const maxHeight = 120;
         el.style.height = Math.min(el.scrollHeight, maxHeight) + 'px';
         el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
     }
@@ -609,7 +609,7 @@ class quikchat {
     }
 
     static version() {
-        return { "version": "1.2.4", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
+        return { "version": "1.2.5", "license": "BSD-2", "url": "https://github/deftio/quikchat" };
     }
 
     /**

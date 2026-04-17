@@ -7,8 +7,15 @@ QuikChat separates structure from appearance. Base CSS handles layout (flexbox, 
 | Theme class | Description |
 |---|---|
 | `quikchat-theme-light` | Light background, green send button, subtle borders |
+| `quikchat-theme-blue` | Professional steel-blue accents, blue title bar |
+| `quikchat-theme-warm` | Soft cream with muted earth tones |
 | `quikchat-theme-dark` | Dark background, dark green button, material-inspired |
+| `quikchat-theme-midnight` | Deep navy with brighter accents |
+| `quikchat-theme-ocean` | Teal/cyan on deep blue |
 | `quikchat-theme-modern` | Chat-bubble style — user messages in blue bubbles (right), assistant messages in grey bubbles (left) |
+| `quikchat-theme-glass` | Glassmorphism — frosted translucent backgrounds, backdrop-blur, indigo gradient send button |
+| `quikchat-theme-gradient` | Purple-indigo gradient title bar and send button, clean white message area |
+| `quikchat-theme-minimal` | Ultra-clean — sharp 4px corners, black send button, thin borders, typography-focused |
 | `quikchat-theme-debug` | Vivid colors (orchid, salmon, seagreen) for visual debugging |
 
 Set the theme at construction or switch at runtime:

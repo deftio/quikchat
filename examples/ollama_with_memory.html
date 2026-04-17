@@ -1,105 +1,125 @@
-<!DOCTYPE html> <!-- local running example using quikchat and ollama -->
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-        type="image/gif">
-
-    <title>QuikChat Demo with local Ollama</title>
-    <!-- Include Bootstrap CSS file -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- Include QuikChat CSS file -->
-    <link rel="stylesheet" href="../dist/quikchat.css">
-
-    <!-- Include QuikChat Chat JavaScript file -->
-    <script src="../dist/quikchat.umd.min.js"></script>
-    <style>
-        html,
-        body {
-            width: 100%;
-            height: 100%;
-        }
-        .chat-container {
-            height: 70vh;
-            width: 100%;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — Ollama with Memory</title>
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="../site/site.css" rel="stylesheet">
+  <link href="../dist/quikchat.css" rel="stylesheet">
+  <script src="../dist/quikchat.umd.min.js"></script>
+  <style>
+    .demo-box { height: 65vh; width: 100%; max-width: 700px; }
+    .note { font-size: 0.85rem; color: #888; margin-top: 12px; line-height: 1.5; }
+  </style>
 </head>
-
 <body>
-    <div class="container">
-        <div class="col-10">
-            <br>
-            <h2 class="">Ollama + Quikchat Demo with Conversational Memory</h2>
-            <p>This example demonstrates how to use quikchat with a local LLM using Ollama where quikchat provides the
-                chat history to Ollama provides the llm model. This allows the chat to "remember" what is being
-                discussed. <br>This example assumes <a href='https://ollama.com/'>ollama</a> is installed and running on port 11434 locally.  Also it assume the llama3.1 model is available.  This example will not work on the github pages demo website you must run this locally.</p>
-            <br>
-            <div class="chat-container" id="chat-container"></div>
-        </div>
-    </div>
-    <script>
+<script src="../site/site-chrome.js?v=3"></script>
 
-        // set up chat instance
-        const streamingChat = new quikchat('#chat-container',
-            ollamaStreamingCallback, {
-            theme: 'quikchat-theme-light',
-            titleArea: { title: "Memory Chat", "show": true, "align": "left" }
-        });
-        streamingChat.messageAddNew("How can I help? ", "bot", "left", "system");
+<div class="wrap">
+  <header class="site-header">
+    <h1>Ollama with Memory</h1>
+    <p class="tagline">Conversational context via <code>historyGet()</code> — the LLM remembers what was discussed. Uses <a href="https://ollama.com/">Ollama</a> with token streaming.</p>
+  </header>
 
-        // this calls the Ollama Streaming API with token streaming.
-        // note that a very similar function can be used to call OpenAI, Mistral, or, Claude etc.
-        // this is a pure js implementation that hits the API directly and doesn't use any libraries.
-        function ollamaStreamingCallback(chatInstance, userInput) {
-            let startPrompt = {
-                "content":
-                `You are a skilled assistant.  Respond to user input with detailed 
-                careful answers.  If you do not know the answer respond with 'I don't 
-                have any information on that topic'.`, "role": "system"
-            };
-            let start = true;
-            chatInstance.messageAddNew(userInput, "user", "right"); // echos the user input to the chat
-            return fetch('http://localhost:11434/api/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    model: "llama3.1",
-                    messages: [startPrompt, ...chatInstance.historyGet()], // passes the chat history to the model
-                    stream: true
-                })
-            }).then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.body.getReader();
-            }).then(reader => {
-                let id;
+  <p class="note">Requires Ollama running locally on port 11434 with the <code>llama3.1</code> model. Will not work on GitHub Pages.</p>
 
-                return reader.read().then(function processResult(result) {
-                    if (result.done) { return; }
-                    let x = new TextDecoder().decode(result.value, { stream: true });
-                    let y = JSON.parse(x.trim()); // deocde the JSON
-                    let content = y.message.content;//.message.content;
-                    if (start) {
-                        id = chatInstance.messageAddNew(content, "bot", "left"); // start a new chat message
-                        start = false;
-                    }
-                    else {
-                        chatInstance.messageAppendContent(id, content); // append new content to message
-                    }
-                    return reader.read().then(processResult);
-                });
-            }).then(() => {
-                // finally done .. can do something here if needed.
-            }).catch(error => {
-                console.error('Fetch error:', error);
-            });
+  <div class="demo-box" id="chat-container"></div>
+
+  <section style="margin-top:24px">
+    <h2>Code</h2>
+<pre><code>const chat = new quikchat('#chat', ollamaStreamingCallback, {
+  theme: 'quikchat-theme-light',
+  titleArea: { title: 'Memory Chat', show: true, align: 'left' }
+});
+
+function ollamaStreamingCallback(chatInstance, userInput) {
+  const startPrompt = {
+    content: 'You are a skilled assistant.',
+    role: 'system'
+  };
+  let start = true, id;
+  chatInstance.messageAddNew(userInput, 'user', 'right');
+
+  fetch('http://localhost:11434/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'llama3.1',
+      // historyGet() provides full conversation context
+      messages: [startPrompt, ...chatInstance.historyGet()],
+      stream: true
+    })
+  })
+  .then(r =&gt; r.body.getReader())
+  .then(reader =&gt; {
+    return reader.read().then(function process(result) {
+      if (result.done) return;
+      const data = JSON.parse(new TextDecoder().decode(result.value).trim());
+      const content = data.message.content;
+      if (start) {
+        id = chatInstance.messageAddNew(content, 'bot', 'left');
+        start = false;
+      } else {
+        chatInstance.messageAppendContent(id, content);
+      }
+      return reader.read().then(process);
+    });
+  });
+}</code></pre>
+  </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const streamingChat = new quikchat('#chat-container',
+    ollamaStreamingCallback,
+    {
+      theme: 'quikchat-theme-light',
+      titleArea: { title: 'Memory Chat', show: true, align: 'left' }
+    }
+  );
+  streamingChat.messageAddNew('How can I help?', 'bot', 'left', 'system');
+
+  function ollamaStreamingCallback(chatInstance, userInput) {
+    const startPrompt = {
+      content: 'You are a skilled assistant. Respond to user input with detailed careful answers. If you do not know the answer respond with \'I don\'t have any information on that topic\'.',
+      role: 'system'
+    };
+    let start = true;
+    chatInstance.messageAddNew(userInput, 'user', 'right');
+
+    return fetch('http://localhost:11434/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama3.1',
+        messages: [startPrompt, ...chatInstance.historyGet()],
+        stream: true
+      })
+    }).then(response => {
+      if (!response.ok) throw new Error('HTTP error! Status: ' + response.status);
+      return response.body.getReader();
+    }).then(reader => {
+      let id;
+      return reader.read().then(function processResult(result) {
+        if (result.done) return;
+        const x = new TextDecoder().decode(result.value, { stream: true });
+        const y = JSON.parse(x.trim());
+        const content = y.message.content;
+        if (start) {
+          id = chatInstance.messageAddNew(content, 'bot', 'left');
+          start = false;
+        } else {
+          chatInstance.messageAppendContent(id, content);
         }
-    </script>
+        return reader.read().then(processResult);
+      });
+    }).catch(error => {
+      console.error('Fetch error:', error);
+    });
+  }
+});
+</script>
 </body>
-
 </html>

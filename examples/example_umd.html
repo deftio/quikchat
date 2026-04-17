@@ -1,108 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuikChatJS</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
-        rel="stylesheet">
-    <link
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90' style='fill:blue'>&#x1F4AC;</text></svg>"
-        rel="icon" />
-
-    <script src="https://www.unpkg.com/bitwrench@1.2.16/bitwrench.min.js"></script>
-    <link href="../dist/quikchat.css" rel="stylesheet" />
-    <script src="../dist/quikchat.umd.min.js"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 5%;
-            height: 100%;
-            width: 100%;
-            font-family: 'Open Sans', sans-serif;
-            font-weight: 300;
-        }
-
-        .parent {
-            height: 45vh;
-            width: 100%;
-            margin: 0 auto;
-        }
-
-        /* these are not part of the widget, just for the demo test */
-           /* these are not part of the widget, just for the demo test */
-        .system-btn {
-            margin-top: 2px;
-            margin-bottom:  2px;
-            padding: 12px 8px;
-            background-color: #443491;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — UMD (Script Tag)</title>
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="../site/site.css" rel="stylesheet">
+  <link href="../dist/quikchat.css" rel="stylesheet">
+  <script src="../dist/quikchat.umd.min.js"></script>
+  <style>
+    .demo-box { height: 50vh; width: 100%; }
+    .demo-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  </style>
 </head>
-
 <body>
-    <h2>Quikchatjs Simple Example (UMD)</h2>
-    <p>This themeable chat widget with a title area, messages area, and input area.</p>
-    <div class="parent"></div>
-    <br>
-    <br>
-    <button class="system-btn" onclick="chatBox.titleAreaToggle()">Toggle Title</button>
-    <button class="system-btn" onclick="chatBox.inputAreaToggle()">Toggle Input</button>
-    <button class="system-btn" id="themeBtn">Change Themes</button>
-    <button class="system-btn" onclick="chatBox.messagesAreaAlternateColorsToggle()">Alternating Colors</button>
-    <br>
-    <script >
-        document.addEventListener('DOMContentLoaded', () => {
-            const parentDiv = document.querySelector('.parent');
-            window.chatBox = new quikchat(parentDiv, 
-            (chat, msg) => {
-                chat.messageAddNew(msg, 'me', 'right'); // echo the message to the chat area
-                // now do something with the message
+<script src="../site/site-chrome.js?v=3"></script>
 
-                // this is just a simple example of a bot response
-                // bw (bitwrench) is a utility library that is included in the demo but not related to quikchatjs
-                // this just creates a random message 
-                const botmsg = bw.loremIpsum(bw.random(25, 50), bw.random(0, 100))
-                chat.messageAddNew(botmsg, 'bot', 'left');
-            },
-            {
-                theme: 'quikchat-theme-light',
-                titleArea: { title: 'QuikChatJS', align: 'left', show: true },
-            });
-            chatBox.messageAddNew('Hello, how are you?', 'bot', 'left');
-            chatBox.messageAddNew('I am fine, thank you.', 'user', 'right');
-            chatBox.messageAddNew('How can I help you today?', 'bot', 'left');
-            chatBox.changeTheme("quikchat-theme-light");
-            console.log("quikchat version: "+quikchat.version().version);
+<div class="wrap">
+  <header class="site-header">
+    <h1>UMD (Script Tag)</h1>
+    <p class="tagline">The simplest way to use QuikChat — one <code>&lt;script&gt;</code> tag, zero build step. Theme switching, toggle title/input, alternating colors.</p>
+  </header>
 
-        });
+  <div class="demo-controls">
+    <button class="btn" onclick="chatBox.titleAreaToggle()">Toggle Title</button>
+    <button class="btn" onclick="chatBox.inputAreaToggle()">Toggle Input</button>
+    <button class="btn" onclick="chatBox.messagesAreaAlternateColorsToggle()">Alternating Colors</button>
+    <span class="btn-group" style="margin-left:8px">
+      <button class="btn active" id="themeBtn-light" onclick="setTheme('light')">Light</button>
+      <button class="btn" id="themeBtn-blue" onclick="setTheme('blue')">Blue</button>
+      <button class="btn" id="themeBtn-warm" onclick="setTheme('warm')">Warm</button>
+      <button class="btn" id="themeBtn-dark" onclick="setTheme('dark')">Dark</button>
+      <button class="btn" id="themeBtn-midnight" onclick="setTheme('midnight')">Midnight</button>
+      <button class="btn" id="themeBtn-ocean" onclick="setTheme('ocean')">Ocean</button>
+      <button class="btn" id="themeBtn-glass" onclick="setTheme('glass')">Glass</button>
+      <button class="btn" id="themeBtn-gradient" onclick="setTheme('gradient')">Gradient</button>
+      <button class="btn" id="themeBtn-minimal" onclick="setTheme('minimal')">Minimal</button>
+      <button class="btn" id="themeBtn-debug" onclick="setTheme('debug')">Debug</button>
+    </span>
+  </div>
 
+  <div class="demo-box" id="demo-main"></div>
 
+  <section style="margin-top:24px">
+    <h2>Code</h2>
+<pre><code>&lt;link rel="stylesheet" href="https://unpkg.com/quikchat/dist/quikchat.css"&gt;
+&lt;script src="https://unpkg.com/quikchat/dist/quikchat.umd.min.js"&gt;&lt;/script&gt;
 
-        
-        //cycle through themes
-        let cycleThemes = (() => {
-            let themes = ['quikchat-theme-light', 'quikchat-theme-dark', 'quikchat-theme-debug'];
-            let themeIndex = 0;
-            return () => {
-                themeIndex++;
-                if (themeIndex >= themes.length) {
-                    themeIndex = 0;
-                }
-                chatBox.changeTheme(themes[themeIndex]);
-            };
-        })();
+&lt;div id="chat" style="height: 400px;"&gt;&lt;/div&gt;
 
-        document.getElementById('themeBtn').addEventListener('click', cycleThemes);
-    </script>
+&lt;script&gt;
+const chat = new quikchat("#chat",
+  (chat, msg) =&gt; {
+    chat.messageAddNew(msg, "me", "right");
+    chat.messageAddNew("Got it!", "bot", "left");
+  },
+  { theme: "quikchat-theme-light",
+    titleArea: { title: "My Chat", align: "left", show: true } }
+);
+&lt;/script&gt;</code></pre>
+  </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  window.chatBox = new quikchat('#demo-main',
+    (chat, msg) => {
+      chat.messageAddNew(msg, 'you', 'right', 'user');
+      setTimeout(() => {
+        const reply = quikchat.loremIpsum(Math.floor(Math.random() * 60) + 20);
+        chat.messageAddNew(reply, 'bot', 'left', 'assistant');
+      }, 300);
+    },
+    {
+      theme: 'quikchat-theme-light',
+      titleArea: { title: 'QuikChat UMD Demo', align: 'left', show: true }
+    }
+  );
+  chatBox.messageAddNew('Hello, how are you?', 'bot', 'left', 'assistant');
+  chatBox.messageAddNew('I am fine, thank you.', 'you', 'right', 'user');
+  chatBox.messageAddNew('How can I help you today?', 'bot', 'left', 'assistant');
+});
+
+function setTheme(name) {
+  var theme = 'quikchat-theme-' + name;
+  chatBox.changeTheme(theme);
+  document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
+  var el = document.getElementById('themeBtn-' + name);
+  if (el) el.classList.add('active');
+}
+</script>
 </body>
-
 </html>

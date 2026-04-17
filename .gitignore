@@ -21,6 +21,14 @@ node_modules/
 coverage/
 test-results/
 
+# macOS
+.DS_Store
+
+# dev artifacts
+dev/
+tools/screenshot.sh
+.claude/
+
 # env
 .env
 .env.local

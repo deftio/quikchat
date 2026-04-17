@@ -535,7 +535,7 @@ chat.setSanitize(false);                               // disable
 
 ```javascript
 quikchat.version();
-// { version: "1.2.4", license: "BSD-2", url: "https://github/deftio/quikchat" }
+// { version: "1.2.5", license: "BSD-2", url: "https://github/deftio/quikchat" }
 ```
 
 ### quikchat.loremIpsum(numChars, startSpot, startWithCapitalLetter)

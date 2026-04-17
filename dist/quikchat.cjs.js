@@ -390,7 +390,7 @@ var quikchat = /*#__PURE__*/function () {
     value: function _autoGrowTextarea() {
       var el = this._textEntry;
       el.style.height = 'auto';
-      var maxHeight = parseInt(getComputedStyle(el).getPropertyValue('--quikchat-input-max-height')) || 120;
+      var maxHeight = 120;
       el.style.height = Math.min(el.scrollHeight, maxHeight) + 'px';
       el.style.overflowY = el.scrollHeight > maxHeight ? 'auto' : 'hidden';
     }
@@ -858,7 +858,7 @@ var quikchat = /*#__PURE__*/function () {
     key: "version",
     value: function version() {
       return {
-        "version": "1.2.4",
+        "version": "1.2.5",
         "license": "BSD-2",
         "url": "https://github/deftio/quikchat"
       };

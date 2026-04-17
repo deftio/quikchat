@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — Framework Integration</title>
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="../site/site.css" rel="stylesheet">
+  <link href="../dist/quikchat.css" rel="stylesheet">
+  <script src="../dist/quikchat.umd.min.js"></script>
+  <style>
+    .fw-tabs { display: flex; flex-wrap: wrap; gap: 0; margin-bottom: 0; }
+    .fw-tab {
+      padding: 8px 18px; font-size: 0.88rem; font-weight: 500;
+      border: 1px solid #d0d0d0; border-bottom: none;
+      background: #f5f5f5; color: #555; cursor: pointer;
+      font-family: inherit; transition: all 0.15s;
+    }
+    .fw-tab:first-child { border-radius: 8px 0 0 0; }
+    .fw-tab:last-child { border-radius: 0 8px 0 0; }
+    .fw-tab:hover { background: #eee; }
+    .fw-tab.active { background: #fff; color: #1a1a1a; border-bottom: 1px solid #fff; margin-bottom: -1px; z-index: 1; }
+    .fw-panel {
+      display: none; border: 1px solid #d0d0d0; border-radius: 0 0 8px 8px;
+      padding: 20px; background: #fff;
+    }
+    .fw-panel.active { display: block; }
+    .fw-panel h3 { margin-top: 0; }
+    .fw-panel pre { margin: 12px 0; }
+    .fw-demo { height: 350px; width: 100%; margin: 16px 0; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .fw-note { font-size: 0.85rem; color: #666; margin: 12px 0 0; line-height: 1.5; }
+    .fw-pattern { font-size: 0.88rem; color: #333; background: #f9f9fb; border: 1px solid #e8e8eb; border-radius: 6px; padding: 14px 16px; margin: 16px 0; line-height: 1.5; }
+
+    .site-dark .fw-tab { background: #1a1a1a; color: #999; border-color: #3a3a3a; }
+    .site-dark .fw-tab:hover { background: #222; }
+    .site-dark .fw-tab.active { background: #111; color: #ddd; border-bottom-color: #111; }
+    .site-dark .fw-panel { background: #111; border-color: #3a3a3a; }
+    .site-dark .fw-note { color: #888; }
+    .site-dark .fw-pattern { background: #1a1a1a; border-color: #2a2a2a; color: #ccc; }
+  </style>
+</head>
+<body>
+<script src="../site/site-chrome.js?v=3"></script>
+
+<div class="wrap">
+
+  <header class="site-header">
+    <h1>Framework Integration</h1>
+    <p class="tagline">QuikChat is vanilla JavaScript — it works with any framework because it's just DOM manipulation.
+       The pattern is always the same: create a container element, call <code>new quikchat(el)</code> on mount, and optionally clean up on unmount.
+       No framework-specific packages needed.</p>
+  </header>
+
+  <div class="fw-pattern">
+    <strong>The universal pattern:</strong> &nbsp;
+    1. Create a ref / container element &nbsp;&rarr;&nbsp;
+    2. <code>new quikchat(el, onSend, options)</code> in mount lifecycle &nbsp;&rarr;&nbsp;
+    3. Store the instance for API calls &nbsp;&rarr;&nbsp;
+    4. Clean up on unmount (optional)
+  </div>
+
+  <section style="padding-top: 24px;">
+    <div class="fw-tabs">
+      <button class="fw-tab active" onclick="showFW('react')">React</button>
+      <button class="fw-tab" onclick="showFW('vue')">Vue</button>
+      <button class="fw-tab" onclick="showFW('solid')">Solid</button>
+      <button class="fw-tab" onclick="showFW('svelte')">Svelte</button>
+      <button class="fw-tab" onclick="showFW('angular')">Angular</button>
+    </div>
+
+    <!-- ── React ────────────────────────────────────── -->
+    <div class="fw-panel active" id="fw-react">
+      <h3>React</h3>
+      <p>Use a <code>useRef</code> for the container and <code>useEffect</code> to initialize on mount.</p>
+<pre><code>import { useRef, useEffect } from "react";
+import quikchat from "quikchat";
+import "quikchat/dist/quikchat.css";
+
+function Chat() {
+  const el = useRef(null);
+  const chat = useRef(null);
+
+  useEffect(() => {
+    if (el.current && !chat.current) {
+      chat.current = new quikchat(el.current,
+        (c, msg) => {
+          c.messageAddNew(msg, "you", "right", "user");
+          // call your API, stream the response...
+        },
+        { theme: "quikchat-theme-light",
+          titleArea: { title: "React Chat", show: true } }
+      );
+    }
+  }, []);
+
+  return &lt;div ref={el} style={{ height: "400px" }} />;
+}</code></pre>
+      <p class="fw-note">A pre-built React wrapper is also available at <code>dist/quikchat.react.js</code> — see the <a href="quikchat-react.html">React example</a> for a live demo using it.</p>
+      <div class="fw-demo" id="demo-react"></div>
+    </div>
+
+    <!-- ── Vue ──────────────────────────────────────── -->
+    <div class="fw-panel" id="fw-vue">
+      <h3>Vue 3</h3>
+      <p>Use a template ref and <code>onMounted</code> to initialize.</p>
+<pre><code>&lt;template&gt;
+  &lt;div ref="chatEl" style="height: 400px" /&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { ref, onMounted } from "vue";
+import quikchat from "quikchat";
+import "quikchat/dist/quikchat.css";
+
+const chatEl = ref(null);
+let chat = null;
+
+onMounted(() => {
+  chat = new quikchat(chatEl.value,
+    (c, msg) => {
+      c.messageAddNew(msg, "you", "right", "user");
+    },
+    { theme: "quikchat-theme-light",
+      titleArea: { title: "Vue Chat", show: true } }
+  );
+});
+&lt;/script&gt;</code></pre>
+      <div class="fw-demo" id="demo-vue"></div>
+    </div>
+
+    <!-- ── Solid ────────────────────────────────────── -->
+    <div class="fw-panel" id="fw-solid">
+      <h3>SolidJS</h3>
+      <p>Use a ref variable and <code>onMount</code> to initialize.</p>
+<pre><code>import { onMount } from "solid-js";
+import quikchat from "quikchat";
+import "quikchat/dist/quikchat.css";
+
+function Chat() {
+  let el;
+  let chat;
+
+  onMount(() => {
+    chat = new quikchat(el,
+      (c, msg) => {
+        c.messageAddNew(msg, "you", "right", "user");
+      },
+      { theme: "quikchat-theme-light",
+        titleArea: { title: "Solid Chat", show: true } }
+    );
+  });
+
+  return &lt;div ref={el} style={{ height: "400px" }} /&gt;;
+}</code></pre>
+      <div class="fw-demo" id="demo-solid"></div>
+    </div>
+
+    <!-- ── Svelte ───────────────────────────────────── -->
+    <div class="fw-panel" id="fw-svelte">
+      <h3>Svelte</h3>
+      <p>Bind the container element and use <code>onMount</code>.</p>
+<pre><code>&lt;script&gt;
+  import { onMount } from "svelte";
+  import quikchat from "quikchat";
+  import "quikchat/dist/quikchat.css";
+
+  let chatEl;
+  let chat;
+
+  onMount(() => {
+    chat = new quikchat(chatEl,
+      (c, msg) => {
+        c.messageAddNew(msg, "you", "right", "user");
+      },
+      { theme: "quikchat-theme-light",
+        titleArea: { title: "Svelte Chat", show: true } }
+    );
+  });
+&lt;/script&gt;
+
+&lt;div bind:this={chatEl} style="height: 400px" /&gt;</code></pre>
+      <p class="fw-note">Svelte's <code>bind:this</code> gives you the DOM element directly — same pattern as every other framework. Works with both Svelte 4 and Svelte 5.</p>
+    </div>
+
+    <!-- ── Angular ──────────────────────────────────── -->
+    <div class="fw-panel" id="fw-angular">
+      <h3>Angular</h3>
+      <p>Use <code>ViewChild</code> and <code>ngAfterViewInit</code>.</p>
+<pre><code>import { Component, ViewChild, ElementRef, AfterViewInit } from "@angular/core";
+import quikchat from "quikchat";
+
+@Component({
+  selector: "app-chat",
+  template: `&lt;div #chatEl style="height: 400px"&gt;&lt;/div&gt;`,
+  styleUrls: ["~quikchat/dist/quikchat.css"]
+})
+export class ChatComponent implements AfterViewInit {
+  @ViewChild("chatEl") chatEl!: ElementRef;
+  private chat: any;
+
+  ngAfterViewInit() {
+    this.chat = new quikchat(this.chatEl.nativeElement,
+      (c: any, msg: string) => {
+        c.messageAddNew(msg, "you", "right", "user");
+      },
+      { theme: "quikchat-theme-light",
+        titleArea: { title: "Angular Chat", show: true } }
+    );
+  }
+}</code></pre>
+      <p class="fw-note">Angular's <code>nativeElement</code> gives you the DOM element. Import the CSS in your component or add it to <code>angular.json</code> styles array.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Notes</h2>
+    <ul>
+      <li><strong>No framework package needed.</strong> QuikChat is plain DOM — <code>npm install quikchat</code> works in any project.</li>
+      <li><strong>SSR/SSG:</strong> QuikChat requires a DOM, so initialize it only on the client side (in <code>useEffect</code>, <code>onMounted</code>, etc.). It won't run during server-side rendering.</li>
+      <li><strong>TypeScript:</strong> QuikChat ships as JavaScript. For TypeScript projects, you can use <code>declare module "quikchat"</code> or reference the JSDoc types in the source.</li>
+      <li><strong>Cleanup:</strong> QuikChat doesn't require explicit teardown. If your framework removes the container element from the DOM, the widget is gone. For strict cleanup, nullify your instance ref on unmount.</li>
+      <li><strong>Multiple instances:</strong> You can create as many QuikChat widgets as you need — each is independent with its own history, theme, and callbacks.</li>
+    </ul>
+  </section>
+
+</div>
+
+<script>
+// Live demos — vanilla JS standing in for each framework
+// (the integration pattern is the same, just the lifecycle hook differs)
+document.addEventListener('DOMContentLoaded', () => {
+  function makeDemo(el, title) {
+    return new quikchat(el,
+      (chat, msg) => {
+        chat.messageAddNew(msg, 'you', 'right', 'user');
+        setTimeout(() => {
+          chat.messageAddNew('Echo: ' + msg, 'bot', 'left', 'assistant');
+        }, 300);
+      },
+      {
+        theme: 'quikchat-theme-light',
+        titleArea: { title: title, align: 'left', show: true }
+      }
+    );
+  }
+
+  var demos = {};
+  demos.react = makeDemo('#demo-react', 'React Chat');
+  demos.react.messageAddNew('This is a live QuikChat widget — the same one you\'d get inside a React component.', 'bot', 'left', 'assistant');
+
+  // Lazy-init demos when their tab is shown
+  window.showFW = function (name) {
+    document.querySelectorAll('.fw-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.fw-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('fw-' + name).classList.add('active');
+    // Activate the right tab button
+    document.querySelectorAll('.fw-tab').forEach(b => {
+      if (b.textContent.toLowerCase().replace(/\s+/g, '') === name.replace(/\s+/g, '')) b.classList.add('active');
+    });
+
+    // Lazy-init demo widgets
+    if (!demos[name]) {
+      var el = document.getElementById('demo-' + name);
+      if (el) {
+        var titles = { vue: 'Vue Chat', solid: 'Solid Chat' };
+        demos[name] = makeDemo(el, titles[name] || name + ' Chat');
+        demos[name].messageAddNew('Same widget, same API — only the lifecycle hook changes.', 'bot', 'left', 'assistant');
+      }
+    }
+  };
+
+  // Activate tab from URL hash (e.g. frameworks.html#react)
+  var hash = location.hash.replace('#', '');
+  if (hash && document.getElementById('fw-' + hash)) {
+    showFW(hash);
+  }
+  window.addEventListener('hashchange', function () {
+    var h = location.hash.replace('#', '');
+    if (h && document.getElementById('fw-' + h)) showFW(h);
+  });
+});
+</script>
+</body>
+</html>

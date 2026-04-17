@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — Log Viewer</title>
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="../site/site.css" rel="stylesheet">
+  <link href="../dist/quikchat.css" rel="stylesheet">
+  <script src="../dist/quikchat.umd.min.js"></script>
+  <style>
+    .parent { height: 55vh; width: 100%; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .controls button { padding: 8px 14px; border: 1px solid #d0d0d0; border-radius: 6px; background: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.15s; }
+    .controls button:hover { background: #f5f5f5; border-color: #bbb; }
+    .controls button.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+    .filter-group { border-right: 1px solid #e0e0e0; padding-right: 8px; margin-right: 4px; display: flex; gap: 8px; }
+    .filter-group:last-child { border-right: none; }
+
+    /* Role-based log coloring */
+    .quikchat-role-warn .quikchat-message-content { background: #fff8e1; border-left: 3px solid #ff9800; padding-left: 8px; }
+    .quikchat-role-error .quikchat-message-content { background: #fce4ec; border-left: 3px solid #f44336; padding-left: 8px; }
+    .quikchat-role-debug .quikchat-message-content { background: #f5f5f5; border-left: 3px solid #9e9e9e; padding-left: 8px; color: #757575; }
+    .quikchat-role-info .quikchat-message-content { border-left: 3px solid #2196f3; padding-left: 8px; }
+
+    .site-dark .quikchat-role-warn .quikchat-message-content { background: #332b00; }
+    .site-dark .quikchat-role-error .quikchat-message-content { background: #330a0a; }
+    .site-dark .quikchat-role-debug .quikchat-message-content { background: #1a1a1a; color: #888; }
+  </style>
+</head>
+<body>
+<script src="../site/site-chrome.js?v=3"></script>
+
+<div class="wrap">
+  <header class="site-header">
+    <h1>Log Viewer</h1>
+    <p class="tagline">QuikChat as a read-only log viewer with live feed, tag-based filtering, and role-based color coding. No input area — just <code>messageAddFull()</code> and <code>messageSetVisibleByTag()</code>.</p>
+  </header>
+
+  <div class="controls">
+    <div class="filter-group">
+      <button class="active" id="btn-all" onclick="filterAll()">All</button>
+      <button id="btn-errors" onclick="filterErrors()">Errors</button>
+      <button id="btn-warnings" onclick="filterWarnings()">Warnings</button>
+    </div>
+    <div class="filter-group">
+      <button id="btn-live" onclick="toggleLive()">Pause Live Feed</button>
+      <button id="themeBtn" onclick="cycleThemes()">Change Theme</button>
+    </div>
+  </div>
+
+  <div class="parent" id="log-viewer"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const logChat = new quikchat('#log-viewer', null, {
+    theme: 'quikchat-theme-light',
+    titleArea: { title: 'Application Logs', align: 'left', show: true }
+  });
+  logChat.inputAreaHide();
+  logChat.messagesAreaShowTimestamps(true);
+
+  // Pre-seed with log entries
+  const logs = [
+    { content: '[server] Application started on port 3000', role: 'info', tag: 'info' },
+    { content: '[db] Connected to PostgreSQL (pool size: 10)', role: 'info', tag: 'info' },
+    { content: '[auth] JWT secret loaded from environment', role: 'info', tag: 'info' },
+    { content: '[cache] Redis connection established', role: 'info', tag: 'info' },
+    { content: '[api] GET /health — 200 OK (2ms)', role: 'info', tag: 'info' },
+    { content: '[auth] Failed login attempt for user "admin" — invalid password', role: 'warn', tag: 'warn' },
+    { content: '[api] GET /users — 200 OK (45ms)', role: 'info', tag: 'info' },
+    { content: '[db] Slow query detected: SELECT * FROM orders WHERE... (1230ms)', role: 'warn', tag: 'warn' },
+    { content: '[api] POST /upload — 500 Internal Server Error', role: 'error', tag: 'error' },
+    { content: '[worker] Background job #4821 completed (email_send)', role: 'debug', tag: 'debug' },
+    { content: '[api] GET /dashboard — 200 OK (89ms)', role: 'info', tag: 'info' },
+    { content: '[cache] Cache miss for key "user:1042:profile"', role: 'debug', tag: 'debug' },
+    { content: '[db] Connection pool exhausted — waiting for available connection', role: 'error', tag: 'error' },
+    { content: '[auth] Rate limit exceeded for IP 192.168.1.42 (50 req/min)', role: 'warn', tag: 'warn' },
+    { content: '[api] WebSocket connection established (client #238)', role: 'info', tag: 'info' }
+  ];
+
+  logs.forEach(log => {
+    logChat.messageAddFull({
+      content: log.content,
+      userString: log.role.toUpperCase(),
+      align: 'left',
+      role: log.role,
+      tags: [log.tag]
+    });
+  });
+
+  // Live feed: add a new log every 2 seconds
+  const liveMessages = [
+    { content: '[api] GET /api/v2/products — 200 OK (%ms)', role: 'info', tag: 'info' },
+    { content: '[worker] Processing job #%id (report_generate)', role: 'debug', tag: 'debug' },
+    { content: '[api] POST /api/v2/orders — 201 Created (%ms)', role: 'info', tag: 'info' },
+    { content: '[auth] Token refreshed for user #%id', role: 'info', tag: 'info' },
+    { content: '[cache] Cache eviction: %n keys removed', role: 'debug', tag: 'debug' },
+    { content: '[db] Query timeout after 5000ms: UPDATE inventory SET...', role: 'error', tag: 'error' },
+    { content: '[api] GET /api/v2/search?q=... — 200 OK (%ms)', role: 'info', tag: 'info' },
+    { content: '[auth] Suspicious activity: multiple failed logins from %ip', role: 'warn', tag: 'warn' },
+    { content: '[worker] Job #%id failed: ECONNREFUSED', role: 'error', tag: 'error' },
+    { content: '[api] DELETE /api/v2/sessions/%id — 204 No Content', role: 'info', tag: 'info' },
+    { content: '[db] Replication lag: 320ms (threshold: 500ms)', role: 'warn', tag: 'warn' },
+    { content: '[cache] Hit ratio: 94.2% (last 1000 requests)', role: 'debug', tag: 'debug' }
+  ];
+
+  let liveRunning = true;
+  window.liveInterval = setInterval(() => {
+    if (!liveRunning) return;
+    const msg = liveMessages[Math.floor(Math.random() * liveMessages.length)];
+    const content = msg.content
+      .replace('%ms', Math.floor(Math.random() * 200 + 5) + 'ms')
+      .replace('%id', Math.floor(Math.random() * 9000 + 1000))
+      .replace('%n', Math.floor(Math.random() * 50 + 1))
+      .replace('%ip', '192.168.' + Math.floor(Math.random() * 255) + '.' + Math.floor(Math.random() * 255));
+    logChat.messageAddFull({
+      content: content,
+      userString: msg.role.toUpperCase(),
+      align: 'left',
+      role: msg.role,
+      tags: [msg.tag]
+    });
+  }, 2000);
+
+  // Filter functions
+  let currentFilter = 'all';
+
+  window.filterAll = function () {
+    currentFilter = 'all';
+    logChat.messageSetVisibleByTag('info', true);
+    logChat.messageSetVisibleByTag('warn', true);
+    logChat.messageSetVisibleByTag('error', true);
+    logChat.messageSetVisibleByTag('debug', true);
+    setActiveButton('btn-all');
+  };
+
+  window.filterErrors = function () {
+    if (currentFilter === 'errors') { filterAll(); return; }
+    currentFilter = 'errors';
+    logChat.messageSetVisibleByTag('info', false);
+    logChat.messageSetVisibleByTag('warn', false);
+    logChat.messageSetVisibleByTag('error', true);
+    logChat.messageSetVisibleByTag('debug', false);
+    setActiveButton('btn-errors');
+  };
+
+  window.filterWarnings = function () {
+    if (currentFilter === 'warnings') { filterAll(); return; }
+    currentFilter = 'warnings';
+    logChat.messageSetVisibleByTag('info', false);
+    logChat.messageSetVisibleByTag('warn', true);
+    logChat.messageSetVisibleByTag('error', false);
+    logChat.messageSetVisibleByTag('debug', false);
+    setActiveButton('btn-warnings');
+  };
+
+  window.toggleLive = function () {
+    liveRunning = !liveRunning;
+    document.getElementById('btn-live').textContent = liveRunning ? 'Pause Live Feed' : 'Resume Live Feed';
+  };
+
+  function setActiveButton(id) {
+    document.querySelectorAll('.filter-group:first-child button').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // Theme cycling
+  const themes = ['quikchat-theme-light', 'quikchat-theme-blue', 'quikchat-theme-warm', 'quikchat-theme-dark', 'quikchat-theme-midnight', 'quikchat-theme-ocean', 'quikchat-theme-modern', 'quikchat-theme-glass', 'quikchat-theme-gradient', 'quikchat-theme-minimal', 'quikchat-theme-debug'];
+  let themeIndex = 0;
+  window.cycleThemes = function () {
+    themeIndex = (themeIndex + 1) % themes.length;
+    logChat.changeTheme(themes[themeIndex]);
+  };
+});
+</script>
+</body>
+</html>

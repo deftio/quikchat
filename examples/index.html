@@ -66,13 +66,13 @@
   </style>
 </head>
 <body>
-<script src="../site/site-chrome.js" data-site-root="../site/"></script>
+<script src="../site/site-chrome.js?v=3"></script>
 
 <div class="wrap">
 
   <header class="site-header">
     <h1>Examples</h1>
-    <p class="tagline">Zero dependencies. One script tag. Multi-user chat, streaming LLM integration, 8 built-in themes, markdown with syntax highlighting and math, message visibility for tool calls, history export/import, RTL support — all in a single HTML file with no build step. View source on any example to see how.</p>
+    <p class="tagline">Zero dependencies. One script tag. Multi-user chat, streaming LLM integration, 11 built-in themes, markdown with syntax highlighting and math, message visibility for tool calls, history export/import, RTL support — all in a single HTML file with no build step. View source on any example to see how.</p>
   </header>
 
   <section>
@@ -131,10 +131,67 @@
 
   <section>
     <h2>Framework Integration</h2>
+    <p style="font-size:0.88rem;color:#666;margin-bottom:12px;">QuikChat is vanilla JS — it works with any framework. No framework-specific packages needed.</p>
     <div class="example-grid">
       <div class="example-card">
-        <h3><a href="quikchat-react.html">React</a> <span class="badge badge-base">base</span></h3>
-        <p>Using QuikChat inside a React component with hooks.</p>
+        <h3><a href="frameworks.html#react">React</a> <span class="badge badge-base">base</span></h3>
+        <p><code>useRef</code> + <code>useEffect</code> — live demo and integration pattern.</p>
+      </div>
+      <div class="example-card">
+        <h3><a href="frameworks.html#vue">Vue</a> <span class="badge badge-base">base</span></h3>
+        <p>Template ref + <code>onMounted</code> — live demo and integration pattern.</p>
+      </div>
+      <div class="example-card">
+        <h3><a href="frameworks.html#solid">SolidJS</a> <span class="badge badge-base">base</span></h3>
+        <p>Ref variable + <code>onMount</code> — live demo and integration pattern.</p>
+      </div>
+      <div class="example-card">
+        <h3><a href="frameworks.html#svelte">Svelte</a> <span class="badge badge-base">base</span></h3>
+        <p><code>bind:this</code> + <code>onMount</code> — code example for Svelte 4/5.</p>
+      </div>
+      <div class="example-card">
+        <h3><a href="frameworks.html#angular">Angular</a> <span class="badge badge-base">base</span></h3>
+        <p><code>ViewChild</code> + <code>ngAfterViewInit</code> — code example.</p>
+      </div>
+      <div class="example-card">
+        <h3><a href="quikchat-react.html">React Wrapper</a> <span class="badge badge-base">base</span></h3>
+        <p>Pre-built React wrapper component with <code>useRef</code> and <code>forwardRef</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Non-Chat Use Cases</h2>
+    <div class="example-grid">
+      <div class="example-card">
+        <h3><a href="example_log_viewer.html">Log Viewer</a> <span class="badge badge-base">base</span></h3>
+        <p>Read-only log display with live feed, role-based color coding, and tag-based filtering (All / Errors / Warnings).</p>
+      </div>
+      <div class="example-card">
+        <h3><a href="example_timeline.html">Event Timeline</a> <span class="badge badge-base">base</span></h3>
+        <p>Deployment timeline with timestamps, automated events (system) and human actions (user) color-coded by role.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Advanced Features</h2>
+    <div class="example-grid">
+      <div class="example-card">
+        <h3><a href="example_tool_calls.html">Tool-Call Visibility</a> <span class="badge badge-base">base</span></h3>
+        <p>Hide internal tool calls with <code>visible: false</code> and reveal them with a toggle using <code>messageSetVisibleByTag()</code>.</p>
+      </div>
+      <div class="example-card">
+        <h3><a href="example_history.html">Session Save/Restore</a> <span class="badge badge-base">base</span></h3>
+        <p>Export a full chat session as JSON with <code>historyExport()</code> and restore it into another widget with <code>historyImport()</code>.</p>
+      </div>
+      <div class="example-card">
+        <h3><a href="example_virtual_scroll.html">Virtual Scrolling Stress Test</a> <span class="badge badge-base">base</span></h3>
+        <p>Load 10,000 or 50,000 messages and scroll smoothly. Virtual scrolling activates automatically at 500 messages.</p>
+      </div>
+      <div class="example-card">
+        <h3><a href="example_rtl.html">RTL / i18n</a> <span class="badge badge-base">base</span></h3>
+        <p>Side-by-side English (LTR) and Arabic (RTL) chat widgets with a button to swap directions at runtime.</p>
       </div>
     </div>
   </section>

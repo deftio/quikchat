@@ -1,100 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuikChat React Wrapper Example</title>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
-    <link href="../dist/quikchat.css" rel="stylesheet" />
-    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="../dist/quikchat.esm.min.js"></script>
-    <script src="../dist/quikchat.react.js"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 5%;
-            height: 100%;
-            width: 100%;
-            font-family: 'Open Sans', sans-serif;
-            font-weight: 300;
-        }
-        #root {
-            height: 50vh;
-            width: 100%;
-            margin: 0 auto;
-        }
-        .system-btn {
-            padding: 8px 8px;
-            background-color: #918434;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            white-space: nowrap;
-            margin-right: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — React Wrapper</title>
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="../site/site.css" rel="stylesheet">
+  <link href="../dist/quikchat.css" rel="stylesheet">
+  <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="../dist/quikchat.esm.min.js"></script>
+  <script src="../dist/quikchat.react.js"></script>
+  <style>
+    #root { height: 50vh; width: 100%; }
+    .demo-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  </style>
 </head>
 <body>
-    <h2>QuikChat React Wrapper Example</h2>
-    <div id="root"></div>
+<script src="../site/site-chrome.js?v=3"></script>
 
-    <script type="text/babel">
-        const { QuikChat } = window.QuikChatReact;
+<div class="wrap">
+  <header class="site-header">
+    <h1>React Wrapper</h1>
+    <p class="tagline">Using the pre-built React wrapper component (<code>dist/quikchat.react.js</code>) with <code>useRef</code> and <code>forwardRef</code>. See also the <a href="frameworks.html#react">vanilla React integration</a>.</p>
+  </header>
 
-        const App = () => {
-            const chatRef = React.useRef();
+  <div id="root"></div>
 
-            const handleSend = (chat, msg) => {
-                chat.messageAddNew(msg, 'me', 'right');
-                
-                // Simulate bot response
-                setTimeout(() => {
-                    chat.messageAddNew('This is a simulated response.', 'bot', 'left');
-                }, 1000);
-            };
+  <section style="margin-top:24px">
+    <h2>Code</h2>
+<pre><code>import { QuikChat } from 'quikchat/dist/quikchat.react';
 
-            const toggleTitle = () => {
-                chatRef.current.titleAreaToggle();
-            };
+const App = () =&gt; {
+  const chatRef = React.useRef();
 
-            const toggleInput = () => {
-                chatRef.current.inputAreaToggle();
-            };
+  const handleSend = (chat, msg) =&gt; {
+    chat.messageAddNew(msg, 'me', 'right');
+    setTimeout(() =&gt; {
+      chat.messageAddNew('Echo: ' + msg, 'bot', 'left');
+    }, 300);
+  };
 
-            const cycleThemes = (() => {
-                const themes = ['quikchat-theme-light', 'quikchat-theme-dark', 'quikchat-theme-debug'];
-                let themeIndex = 0;
-                return () => {
-                    themeIndex = (themeIndex + 1) % themes.length;
-                    chatRef.current.changeTheme(themes[themeIndex]);
-                };
-            })();
+  return (
+    &lt;div&gt;
+      &lt;QuikChat
+        ref={chatRef}
+        onSend={handleSend}
+        options={{
+          theme: 'quikchat-theme-light',
+          titleArea: { title: 'React Chat', align: 'left', show: true }
+        }}
+      /&gt;
+      &lt;button onClick={() =&gt; chatRef.current.titleAreaToggle()}&gt;Toggle Title&lt;/button&gt;
+      &lt;button onClick={() =&gt; chatRef.current.changeTheme('quikchat-theme-dark')}&gt;Dark Theme&lt;/button&gt;
+    &lt;/div&gt;
+  );
+};</code></pre>
+  </section>
+</div>
 
-            return React.createElement(
-                'div',
-                null,
-                React.createElement(QuikChat, {
-                    ref: chatRef,
-                    onSend: handleSend,
-                    options: {
-                        theme: 'quikchat-theme-light',
-                        titleArea: { title: 'QuikChat React', align: 'left', show: true },
-                    }
-                }),
-                React.createElement(
-                    'div',
-                    { style: { marginTop: '20px' } },
-                    React.createElement('button', { className: "system-btn", onClick: toggleTitle }, 'Toggle Title'),
-                    React.createElement('button', { className: "system-btn", onClick: toggleInput }, 'Toggle Input'),
-                    React.createElement('button', { className: "system-btn", onClick: cycleThemes }, 'Change Themes')
-                )
-            );
-        };
+<script type="text/babel">
+  const { QuikChat } = window.QuikChatReact;
 
-        ReactDOM.render(React.createElement(App), document.getElementById('root'));
-    </script>
+  const App = () => {
+    const chatRef = React.useRef();
+
+    const handleSend = (chat, msg) => {
+      chat.messageAddNew(msg, 'me', 'right');
+      setTimeout(() => {
+        chat.messageAddNew('This is a simulated response.', 'bot', 'left');
+      }, 300);
+    };
+
+    const toggleTitle = () => chatRef.current.titleAreaToggle();
+    const toggleInput = () => chatRef.current.inputAreaToggle();
+
+    const themes = ['quikchat-theme-light', 'quikchat-theme-blue', 'quikchat-theme-warm', 'quikchat-theme-dark', 'quikchat-theme-midnight', 'quikchat-theme-ocean', 'quikchat-theme-glass', 'quikchat-theme-gradient', 'quikchat-theme-minimal', 'quikchat-theme-debug'];
+    const themeIndex = React.useRef(0);
+    const cycleThemes = () => {
+      themeIndex.current = (themeIndex.current + 1) % themes.length;
+      chatRef.current.changeTheme(themes[themeIndex.current]);
+    };
+
+    return React.createElement(
+      'div',
+      null,
+      React.createElement(QuikChat, {
+        ref: chatRef,
+        onSend: handleSend,
+        options: {
+          theme: 'quikchat-theme-light',
+          titleArea: { title: 'QuikChat React', align: 'left', show: true }
+        }
+      }),
+      React.createElement(
+        'div',
+        { className: 'demo-controls' },
+        React.createElement('button', { className: 'btn', onClick: toggleTitle }, 'Toggle Title'),
+        React.createElement('button', { className: 'btn', onClick: toggleInput }, 'Toggle Input'),
+        React.createElement('button', { className: 'btn', onClick: cycleThemes }, 'Change Theme')
+      )
+    );
+  };
+
+  ReactDOM.render(React.createElement(App), document.getElementById('root'));
+</script>
 </body>
 </html>

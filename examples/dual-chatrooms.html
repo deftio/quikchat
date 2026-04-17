@@ -1,91 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-        type="image/gif">
-
-    <title>QuikChat with Dual Chatrooms Example</title>
-    <!-- Include Bootstrap CSS file -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    
-    <!-- Include Quik Chat CSS file -->
-    <link rel="stylesheet" href="../dist/quikchat.css">
-
-    <!-- Include Quik Chat JavaScript file -->
-    <script src="../dist/quikchat.umd.min.js"></script>
-
-    <style>
-        html, body {
-            width: 100%;
-            height: 100%;
-            box-sizing: border-box;
-        }
-        .chat-container {
-            height: 50vh;
-            width: 95%;
-            border-radius: 1em;
-        }
-    </style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — Dual Chatrooms</title>
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="../site/site.css" rel="stylesheet">
+  <link href="../dist/quikchat.css" rel="stylesheet">
+  <script src="../dist/quikchat.umd.min.js"></script>
+  <style>
+    .dual-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .dual-row .demo-box { height: 55vh; }
+    @media (max-width: 640px) { .dual-row { grid-template-columns: 1fr; } }
+  </style>
 </head>
-
 <body>
+<script src="../site/site-chrome.js?v=3"></script>
 
-    <div class="container">
-        <br>
-        <h2 class="">Dual Chat Containers</h2>
-        <p>These chat containers can send messages to each other showing that each chat control is a separate instance. </p>
+<div class="wrap">
+  <header class="site-header">
+    <h1>Dual Chatrooms</h1>
+    <p class="tagline">Two independent chat widgets that send messages to each other. Each instance has its own history, theme, and callbacks.</p>
+  </header>
 
-        <div class="row">
-            <div class="col-6">
-                <div class="chat-container" id="chat-container1"></div>
-            </div>
-            <div class="col-6">
-                <div class="chat-container" id="chat-container2"></div>
-            </div>
-        </div>
-    </div>
+  <div class="dual-row">
+    <div class="demo-box" id="chat1"></div>
+    <div class="demo-box" id="chat2"></div>
+  </div>
 
+  <section style="margin-top:24px">
+    <h2>Code</h2>
+<pre><code>const chat1 = new quikchat('#chat1', null, {
+  theme: 'quikchat-theme-light',
+  titleArea: { title: 'Sue Smith', align: 'left', show: true }
+});
+const chat2 = new quikchat('#chat2', null, {
+  theme: 'quikchat-theme-dark',
+  titleArea: { title: 'Pat Park', align: 'left', show: true }
+});
 
-    <script>
+// Cross-post messages between widgets
+chat1.setCallbackOnSend((c, msg) =&gt; {
+  c.messageAddNew(msg, 'Sue', 'right');
+  chat2.messageAddNew(msg, 'Sue', 'left');
+});
+chat2.setCallbackOnSend((c, msg) =&gt; {
+  c.messageAddNew(msg, 'Pat', 'right');
+  chat1.messageAddNew(msg, 'Pat', 'left');
+});</code></pre>
+  </section>
+</div>
 
-        const chat1 = new quikchat('#chat-container1');
-        chat1.titleAreaSetContents("Sue Smith Chat Window","left"); // optional title area
-        chat1.titleAreaShow();  // show the title area (default is hidden)
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const chat1 = new quikchat('#chat1', null, {
+    theme: 'quikchat-theme-light',
+    titleArea: { title: 'Sue Smith', align: 'left', show: true }
+  });
+  const chat2 = new quikchat('#chat2', null, {
+    theme: 'quikchat-theme-dark',
+    titleArea: { title: 'Pat Park', align: 'left', show: true }
+  });
 
-        const chat2 = new quikchat('#chat-container2');
-        chat2.titleAreaSetContents("Pat Park Chat Window","left"); // optional title area
-        chat2.titleAreaShow();  // show the title area (can hide with chat2.titleAreaHide())
-  
-        chat2.changeTheme("quikchat-theme-dark"); // change theme of chat2 to show different themes on same page
-       
-        // callback functions to send messages to each other
-        cb1 = (chatInstance, content) => {
-            chatInstance.messageAddNew(content,"Sue Smith","right")  // echo input to own message area
-            chat2.messageAddNew(content,"Sue Smith","left")         // post to other chat
-        }
-        // set the callback functions
-        cb2 = (chatInstance, content) => {
-            chatInstance.messageAddNew(content,"Pat Park","right") // echo input to own message area
-            chat1.messageAddNew(content,"Pat Park","left")        // post to other chat
-        }
-        chat1.setCallbackOnSend(cb1);
-        chat2.setCallbackOnSend(cb2);
-        
-        // some starter messages for each chat
-        chat1.messageAddNew("Hello, Pat!","Sue Smith","right"); // writes to chat1
-        chat1.messageAddNew("Hello, Sue!","Pat Park","left");
+  chat1.setCallbackOnSend((c, msg) => {
+    c.messageAddNew(msg, 'Sue', 'right');
+    chat2.messageAddNew(msg, 'Sue', 'left');
+  });
+  chat2.setCallbackOnSend((c, msg) => {
+    c.messageAddNew(msg, 'Pat', 'right');
+    chat1.messageAddNew(msg, 'Pat', 'left');
+  });
 
-        chat2.messageAddNew("Hello, Pat!","Sue Smith","left"); // writes to chat2
-        chat2.messageAddNew("Hello, Sue!","Pat Park","right");
-
-        
-        
-    
-    </script>
+  // Starter messages
+  chat1.messageAddNew('Hello, Pat!', 'Sue', 'right');
+  chat1.messageAddNew('Hello, Sue!', 'Pat', 'left');
+  chat2.messageAddNew('Hello, Pat!', 'Sue', 'left');
+  chat2.messageAddNew('Hello, Sue!', 'Pat', 'right');
+});
+</script>
 </body>
-
 </html>

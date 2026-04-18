@@ -844,7 +844,7 @@ describe('quikchat', () => {
     describe('static methods', () => {
         test('version should return version info', () => {
             const v = quikchat.version();
-            expect(v.version).toBe('1.2.5');
+            expect(v.version).toBe('1.2.6');
             expect(v.license).toBe('BSD-2');
             expect(v.url).toContain('quikchat');
         });

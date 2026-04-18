@@ -862,7 +862,7 @@
       key: "version",
       value: function version() {
         return {
-          "version": "1.2.5",
+          "version": "1.2.6",
           "license": "BSD-2",
           "url": "https://github/deftio/quikchat"
         };

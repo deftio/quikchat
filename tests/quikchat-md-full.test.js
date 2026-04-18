@@ -108,7 +108,7 @@ describe('quikchat-md-full', () => {
 
     test('version returns correct version info', () => {
         const v = quikchatMDFull.version();
-        expect(v.version).toBe('1.2.5');
+        expect(v.version).toBe('1.2.6');
     });
 
     test('all base quikchat methods work', () => {

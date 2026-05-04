@@ -4,7 +4,11 @@
 
 # QuikChat
 
-A lightweight, zero-dependency vanilla JavaScript chat widget. Drop it into any page — no React, no Vue, no build step required — and connect it to any LLM, WebSocket, or message source with plain `fetch()`.
+A lightweight, zero-dependency JavaScript chat widget, with history save/restore, multiple instance support, and several other goodies. Works with any framework — React, Vue, Svelte, Angular, Solid — or none at all. Connect it to any LLM, WebSocket, or message source with plain `fetch()`.  
+
+[Live Demo & Documentation](https://deftio.github.io/quikchat/site/)
+
+[![QuikChat screenshot](site/quikchat-screenshot.png)](https://deftio.github.io/quikchat/site/)
 
 ```html
 <script src="https://unpkg.com/quikchat"></script>
@@ -191,12 +195,13 @@ Style messages by role with CSS hooks: `.quikchat-role-user`, `.quikchat-role-as
 | [LLM Integration](docs/llm-integration.md) | Ollama, OpenAI, LM Studio, tool calls, conversational memory |
 | [Theming](docs/theming.md) | Custom themes, CSS architecture, built-in themes |
 | [CSS Architecture](docs/css-architecture.md) | Base vs theme separation, ARIA accessibility |
+| [Recipes](docs/recipes.md) | Common patterns: log viewer, tool-call visibility, session persistence, RTL |
 
 ## Demo & Examples
 
 [Live Demo](https://deftio.github.io/quikchat/site/) | [Examples](https://deftio.github.io/quikchat/examples/)
 
-Examples include: basic UMD/ESM usage, theme switching, dual chatrooms, markdown rendering ([basic](./examples/example_markdown.html) and [full with syntax highlighting + math + diagrams](./examples/example_md_full.html)), streaming with Ollama/OpenAI/LM Studio, and React integration.
+Examples include: basic UMD/ESM usage, dual chatrooms, markdown rendering ([basic](./examples/example_markdown.html) and [full with syntax highlighting + math + diagrams](./examples/example_md_full.html)), LLM integrations (Ollama, OpenAI, LM Studio), [LLM tool-calling editor](./examples/example_tool_editor.html), tool-call visibility, session save/restore, RTL/i18n, log viewer, event timeline, framework integration (React, Vue, Solid, Svelte, Angular), and backend examples ([FastAPI](./examples/fastapi_llm/), [Express](./examples/npm_express/)).
 
 ## Build Variants
 

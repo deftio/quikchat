@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuikChat — Virtual Scrolling Stress Test</title>
+  <title>QuikChat — High-Volume Message Stress Test</title>
   <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
   <link href="../site/site.css" rel="stylesheet">
   <link href="../dist/quikchat.css" rel="stylesheet">
@@ -25,8 +25,8 @@
 
 <div class="wrap">
   <header class="site-header">
-    <h1>Virtual Scrolling Stress Test</h1>
-    <p class="tagline">QuikChat automatically switches to virtual scrolling when the message count exceeds 500 (configurable via <code>virtualScrollingThreshold</code>). Only visible messages are rendered in the DOM — enabling smooth scrolling through tens of thousands of messages.</p>
+    <h1>High-Volume Message Stress Test</h1>
+    <p class="tagline">Load thousands of messages to test QuikChat's rendering performance. Note: virtual scrolling (rendering only visible DOM nodes) is planned but not yet available — all messages are currently rendered as DOM elements.</p>
   </header>
 
   <div class="controls">
@@ -42,7 +42,7 @@
     <strong>Messages:</strong> <span id="stat-count">0</span> &nbsp; | &nbsp;
     <strong>Load time:</strong> <span id="stat-time">—</span> &nbsp; | &nbsp;
     <strong>Rate:</strong> <span id="stat-rate">—</span> &nbsp; | &nbsp;
-    <strong>Virtual scrolling:</strong> <span id="stat-vs">inactive (activates at 500+ messages)</span>
+    <strong>Virtual scrolling:</strong> <span id="stat-vs">not yet available</span>
   </div>
 </div>
 
@@ -50,11 +50,11 @@
 document.addEventListener('DOMContentLoaded', () => {
   window.stressChat = new quikchat('#stress-chat', null, {
     theme: 'quikchat-theme-light',
-    titleArea: { title: 'Virtual Scrolling Demo', align: 'left', show: true }
+    titleArea: { title: 'High-Volume Message Demo', align: 'left', show: true }
   });
   stressChat.inputAreaHide();
 
-  stressChat.messageAddNew('Click a button above to load messages. Virtual scrolling activates automatically at 500 messages.', 'system', 'left', 'system');
+  stressChat.messageAddNew('Click a button above to load messages and test rendering performance.', 'system', 'left', 'system');
 
   const users = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'];
   const aligns = ['left', 'right'];
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('stat-time').textContent = (timeMs / 1000).toFixed(2) + 's';
       document.getElementById('stat-rate').textContent = Math.round(count / (timeMs / 1000)).toLocaleString() + ' msg/s';
     }
-    document.getElementById('stat-vs').textContent = count >= 500 ? 'active' : 'inactive (activates at 500+ messages)';
+    document.getElementById('stat-vs').textContent = 'not yet available';
   }
 
   window.loadMessages = function (count) {

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuikChatJS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+        rel="stylesheet">
+    <link
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90' style='fill:blue'>&#x1F4AC;</text></svg>"
+        rel="icon" />
+
+    <link href="./static/quikchat.min.css" rel="stylesheet" />
+    <script src="./static/quikchat.umd.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 5%;
+            height: 100%;
+            width: 100%;
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 300;
+            box-sizing: border-box;
+        }
+
+        .chatContainer {
+            float: left;
+            height: 45vh;
+            width: 45%;
+            margin: 0 auto;
+            padding-right: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Quikchatjs Fast API examples</h2>
+    <p>This page demonstrates two chat widgets that get AI responses from a python FastAPI server application.<br>
+       The streaming chat writes responses word by word, while the completions chat waits until the AI has generated a complete response before writing to the widget.</p>
+
+    <div class="chatContainer" id="chatContainerStreaming"></div>
+    <div class="chatContainer" id="chatContainerCompletion"></div>
+
+    <script>
+        const streamingDiv = document.querySelector('#chatContainerStreaming');
+        const completionDiv = document.querySelector('#chatContainerCompletion');
+
+        // Streaming response chat box
+        const streamingChatBox = new quikchat(streamingDiv, async (chat, msg) => {
+            chat.messageAddNew(msg, 'me', 'right');
+
+            const response = await fetch('/api/streaming-completion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: msg })
+            }
+            );
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let data = "";
+            let msgId = 0;
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                data += decoder.decode(value, { stream: true });
+                if (0 == msgId)
+                    msgId = chat.messageAddNew(data, 'bot', 'left', 'system');
+                else
+                    chat.messageAppendContent(msgId, data);
+                data = ""; // clear data for next chunk
+            }
+        }, {
+            theme: 'quikchat-theme-light',
+            titleArea: { title: 'Streaming Chat', align: 'left', show: true },
+        });
+        streamingChatBox.messageAddNew('How can I help you?', 'bot', 'left', 'system');
+
+        // Completion response chat box
+        const completionChatBox = new quikchat(completionDiv, async (chat, msg) => {
+            chat.messageAddNew(msg, 'me', 'right');
+
+            const response = await fetch('/api/completion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: msg })
+            });
+
+            const data = await response.json();
+            if (data.response) {
+                chat.messageAddNew(data.response, 'bot', 'left', 'system');
+            } else {
+                chat.messageAddNew('Error fetching completion.', 'bot', 'left', 'system');
+            }
+        }, {
+            theme: 'quikchat-theme-light',
+            titleArea: { title: 'Completion Chat', align: 'left', show: true },
+        });
+
+        completionChatBox.messageAddNew('How can I help you?', 'bot', 'left');
+
+    </script>
+</body>
+
+</html>

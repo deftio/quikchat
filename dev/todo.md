@@ -1,18 +1,22 @@
 # QuikChat JS TODO list
 
-* CSS cleanup: separate structural from theme properties (see dev/quikchat-css-cleanup.md)
-* show/hide timestamps
-* add support for right to left languages by making css with [send] on left
+* restore virtual scrolling (SimpleVirtualScroller) — lost in a bad merge around v1.1.16. Old implementation exists in commit 2809f83. The example (`examples/example_virtual_scroll.html`), docs (`docs/virtual-scrolling.md`), and CLAUDE.md all reference it but the code is missing from `src/quikchat.js`. Key features: threshold-based activation (500 msgs default), dynamic height measurement, RAF-throttled scroll, spacer elements for correct scroll height, sanitizer/markdown plugin threading.
 * add support for inline "user" icon with chat message instead of on top
-* example Anthropic
-* example Mistral
-* example React Component
-* test suite coverage to 97% (threshold enforced in jest config)
-* improve docs site (see discussion in dev/quikchat-css-cleanup.md and bitwrench comparison)
-* clean up scroll to bottom behavior (in progress)
-* add stats api (num messages, users, total chars written etc)
 * add user mgmt
-* add callbacks : onMessageAppend, onMessageReplace
+
+==========
+
+* (done 1.2.7) example LLM tool editor (example_tool_editor.html)
+* (done 1.2.x) show/hide timestamps
+* (done 1.2.x) add support for right to left languages (setDirection('rtl'))
+* (done 1.2.x) example React Component (quikchat-react.html, frameworks.html)
+* (done 1.2.x) test suite coverage to 97% (threshold enforced in jest config, currently 100% stmts)
+* (done 1.2.x) improve docs site (full site with getting started, API ref, theming, etc.)
+* (done 1.2.x) clean up scroll to bottom behavior (scroll-to-bottom button)
+* (done 1.2.x) add stats api (historyStats)
+* (done 1.2.x) add callbacks: onMessageAppend, onMessageReplace (setCallbackonMessageAppended, etc.)
+* (done 1.2.x) CSS cleanup: separate structural from theme properties
+* (done 1.2.x) example Anthropic / Mistral (openai.html supports any OpenAI-compatible API)
 
 ==========
 

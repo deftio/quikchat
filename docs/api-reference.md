@@ -436,7 +436,7 @@ Returns `true` if alternating colors are currently enabled.
 
 ### changeTheme(newTheme)
 
-Switch the theme CSS class. Built-in themes: `light`, `dark`, `blue`, `warm`, `midnight`, `ocean`, `modern`, `debug` (all prefixed `quikchat-theme-`).
+Switch the theme CSS class. Built-in themes: `light`, `blue`, `warm`, `dark`, `midnight`, `ocean`, `modern`, `glass`, `gradient`, `minimal`, `debug` (all prefixed `quikchat-theme-`).
 
 ```javascript
 chat.changeTheme('quikchat-theme-dark');
@@ -535,7 +535,7 @@ chat.setSanitize(false);                               // disable
 
 ```javascript
 quikchat.version();
-// { version: "1.2.5", license: "BSD-2", url: "https://github/deftio/quikchat" }
+// { version: "1.2.7", license: "BSD-2", url: "https://github/deftio/quikchat" }
 ```
 
 ### quikchat.loremIpsum(numChars, startSpot, startWithCapitalLetter)

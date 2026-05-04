@@ -856,9 +856,9 @@ var quikchat = /*#__PURE__*/function () {
     key: "version",
     value: function version() {
       return {
-        "version": "1.2.6",
+        "version": "1.2.7",
         "license": "BSD-2",
-        "url": "https://github/deftio/quikchat"
+        "url": "https://github.com/deftio/quikchat"
       };
     }
 

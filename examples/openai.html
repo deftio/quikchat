@@ -3,26 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuikChat — OpenAI</title>
+  <title>QuikChat — LLM Chat</title>
   <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
   <link href="../site/site.css" rel="stylesheet">
   <link href="../dist/quikchat.css" rel="stylesheet">
   <script src="../dist/quikchat.umd.min.js"></script>
   <style>
     .layout { display: grid; grid-template-columns: 1fr 1.4fr; gap: 20px; align-items: start; }
-    .demo-box { height: 65vh; width: 100%; }
-    .settings-panel { border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background: #fafafa; }
-    .settings-panel h3 { margin-top: 0; }
-    .settings-panel label { display: block; margin-top: 12px; font-weight: 600; font-size: 0.88rem; }
-    .settings-panel input, .settings-panel textarea {
-      width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;
-      font-size: 0.88rem; margin-top: 4px; box-sizing: border-box;
+    .demo-box { height: 70vh; width: 100%; }
+    .settings-panel { border: 1px solid #e0e0e0; border-radius: 8px; background: #fafafa; overflow: hidden; }
+    .tabs { display: flex; border-bottom: 1px solid #e0e0e0; }
+    .tab-btn {
+      flex: 1; padding: 10px 4px; border: none; background: transparent;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer; color: #666;
+      border-bottom: 2px solid transparent; transition: all 0.15s;
+    }
+    .tab-btn:hover { color: #333; background: #f0f0f0; }
+    .tab-btn.active { color: #0066cc; border-bottom-color: #0066cc; }
+    .tab-content { display: none; padding: 14px 18px; }
+    .tab-content.active { display: block; }
+    .settings-panel label { display: block; margin-top: 10px; font-weight: 600; font-size: 0.83rem; }
+    .settings-panel label:first-child { margin-top: 0; }
+    .settings-panel input, .settings-panel textarea, .settings-panel select {
+      width: 100%; padding: 7px 8px; border: 1px solid #ccc; border-radius: 6px;
+      font-size: 0.83rem; margin-top: 4px; box-sizing: border-box; font-family: inherit;
     }
     .settings-panel textarea { resize: none; }
-    .note { font-size: 0.82rem; color: #888; margin-top: 8px; line-height: 1.5; }
+    .settings-panel select { appearance: auto; }
+    .range-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+    .range-row input[type="range"] { flex: 1; padding: 0; }
+    .range-val { min-width: 38px; text-align: right; font-size: 0.83rem; font-variant-numeric: tabular-nums; }
+    .btn-row { margin-top: 14px; display: flex; gap: 8px; }
+    .btn-row .btn { flex: 1; }
+    .note { font-size: 0.78rem; color: #888; margin-top: 10px; line-height: 1.45; }
+    .preset-note { font-size: 0.76rem; color: #999; margin-top: 4px; }
+
+    /* Stats tab */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat-card {
+      background: #fff; border: 1px solid #e8e8e8; border-radius: 6px; padding: 10px 12px;
+    }
+    .stat-label { font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 0.04em; }
+    .stat-value { font-size: 1.15rem; font-weight: 700; color: #333; margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .stat-sub { font-size: 0.72rem; color: #aaa; margin-top: 1px; }
+    .stats-section-label { font-size: 0.76rem; font-weight: 700; color: #555; margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .stats-section-label:first-child { margin-top: 0; }
+    .stat-card-wide { grid-column: 1 / -1; }
+    .stat-bar { display: flex; gap: 16px; align-items: baseline; }
+    .stat-bar-item { display: flex; flex-direction: column; }
+    .stats-empty { color: #aaa; font-size: 0.85rem; font-style: italic; padding: 20px 0; text-align: center; }
+
     @media (max-width: 700px) { .layout { grid-template-columns: 1fr; } }
     .site-dark .settings-panel { background: #1a1a1a; border-color: #3a3a3a; }
-    .site-dark .settings-panel input, .site-dark .settings-panel textarea { background: #111; color: #ddd; border-color: #3a3a3a; }
+    .site-dark .tabs { border-bottom-color: #3a3a3a; }
+    .site-dark .tab-btn { color: #888; }
+    .site-dark .tab-btn:hover { color: #ccc; background: #222; }
+    .site-dark .tab-btn.active { color: #5ba3e6; border-bottom-color: #5ba3e6; }
+    .site-dark .settings-panel input,
+    .site-dark .settings-panel textarea,
+    .site-dark .settings-panel select { background: #111; color: #ddd; border-color: #3a3a3a; }
+    .site-dark .stat-card { background: #111; border-color: #2a2a2a; }
+    .site-dark .stat-value { color: #ddd; }
+    .site-dark .stats-section-label { color: #999; }
   </style>
 </head>
 <body>
@@ -30,48 +72,184 @@
 
 <div class="wrap">
   <header class="site-header">
-    <h1>OpenAI</h1>
-    <p class="tagline">GPT-4o with token streaming. Works with any OpenAI-compatible API (OpenAI, Mistral, Anthropic, local proxies). Your API key stays in your browser.</p>
+    <h1>LLM Chat</h1>
+    <p class="tagline">Connect to any OpenAI-compatible API — OpenAI, Groq, Together AI, Mistral, Ollama, LM Studio, or any local/remote provider. Configure model parameters and view response metrics. Your API key stays in your browser.</p>
   </header>
 
   <div class="layout">
     <div class="settings-panel">
-      <h3>Settings</h3>
-      <form id="settingsForm">
-        <label for="prompt">System Prompt</label>
-        <textarea rows="3" id="prompt" placeholder="You are a helpful assistant.">You are a helpful assistant. Answer the user's questions but say 'I don't know that' if you don't know the answer.</textarea>
-        <label for="apiKey">API Key</label>
-        <input type="text" id="apiKey" placeholder="sk-... (stored in a local cookie, never sent to any server)">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="connection">Connection</button>
+        <button class="tab-btn" data-tab="model">Model</button>
+        <button class="tab-btn" data-tab="prompt">Prompt</button>
+        <button class="tab-btn" data-tab="stats">Stats</button>
+      </div>
+
+      <!-- Connection tab -->
+      <div class="tab-content active" id="tab-connection">
+        <label for="provider">Provider Preset</label>
+        <select id="provider">
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic (Claude)</option>
+          <option value="groq">Groq</option>
+          <option value="together">Together AI</option>
+          <option value="mistral">Mistral</option>
+          <option value="ollama">Ollama (local)</option>
+          <option value="lmstudio">LM Studio (local)</option>
+          <option value="custom">Custom</option>
+        </select>
+        <p class="preset-note">Selects default URL and model. You can override below.</p>
+
         <label for="baseUrl">Base URL</label>
         <input type="text" id="baseUrl" value="https://api.openai.com/v1/chat/completions">
-        <br><br>
-        <button class="btn" type="submit">Save Settings</button>
+
+        <label for="apiKey">API Key</label>
+        <input type="password" id="apiKey" placeholder="sk-... (stored locally, never sent to any server)">
+
+        <div class="btn-row">
+          <button class="btn" id="saveBtn">Save Settings</button>
+          <button class="btn" id="clearBtn" style="background:#888;">Clear Chat</button>
+        </div>
         <p class="note">Settings are saved as cookies on your local machine. Nothing is sent to any server other than the API endpoint above.</p>
-      </form>
+      </div>
+
+      <!-- Model tab -->
+      <div class="tab-content" id="tab-model">
+        <label for="model">Model</label>
+        <input type="text" id="model" value="gpt-5.2">
+
+        <label for="temperature">Temperature</label>
+        <div class="range-row">
+          <input type="range" id="temperature" min="0" max="2" step="0.05" value="0.5">
+          <span class="range-val" id="tempVal">0.50</span>
+        </div>
+
+        <label for="maxTokens">Max Tokens</label>
+        <input type="number" id="maxTokens" value="2048" min="1" max="128000" step="1">
+
+        <label for="topP">Top P</label>
+        <div class="range-row">
+          <input type="range" id="topP" min="0" max="1" step="0.05" value="1">
+          <span class="range-val" id="topPVal">1.00</span>
+        </div>
+
+        <label for="freqPenalty">Frequency Penalty</label>
+        <div class="range-row">
+          <input type="range" id="freqPenalty" min="-2" max="2" step="0.1" value="0">
+          <span class="range-val" id="freqPenaltyVal">0.0</span>
+        </div>
+
+        <label for="presPenalty">Presence Penalty</label>
+        <div class="range-row">
+          <input type="range" id="presPenalty" min="-2" max="2" step="0.1" value="0">
+          <span class="range-val" id="presPenaltyVal">0.0</span>
+        </div>
+
+        <label for="stopSeq">Stop Sequences</label>
+        <input type="text" id="stopSeq" placeholder="comma-separated, e.g. \n,###" value="">
+
+        <label for="seed">Seed</label>
+        <input type="number" id="seed" placeholder="empty = random" value="">
+
+        <p class="note">Not all providers support every parameter. Unsupported fields are typically ignored.</p>
+      </div>
+
+      <!-- Prompt tab -->
+      <div class="tab-content" id="tab-prompt">
+        <label for="prompt">System Prompt</label>
+        <textarea rows="8" id="prompt" placeholder="You are a helpful assistant.">You are a helpful assistant. Answer the user's questions but say 'I don't know that' if you don't know the answer.</textarea>
+        <p class="note">The system prompt is prepended to the conversation history on each request. It is not stored in the chat.</p>
+      </div>
+
+      <!-- Stats tab -->
+      <div class="tab-content" id="tab-stats">
+        <div id="statsEmpty" class="stats-empty">Send a message to see response metrics.</div>
+        <div id="statsContent" style="display:none;">
+          <div class="stats-section-label">Last Request</div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Response Time</div>
+              <div class="stat-value" id="st-time">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Time to First Token</div>
+              <div class="stat-value" id="st-ttft">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Chars In</div>
+              <div class="stat-value" id="st-chars-in">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Chars Out</div>
+              <div class="stat-value" id="st-chars-out">—</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Tokens In</div>
+              <div class="stat-value" id="st-tok-in">—</div>
+              <div class="stat-sub" id="st-tok-in-note"></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Tokens Out</div>
+              <div class="stat-value" id="st-tok-out">—</div>
+              <div class="stat-sub" id="st-tok-out-note"></div>
+            </div>
+            <div class="stat-card stat-card-wide">
+              <div class="stat-label">Speed</div>
+              <div class="stat-value" id="st-speed">—</div>
+            </div>
+          </div>
+
+          <div class="stats-section-label">Session Totals</div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Requests</div>
+              <div class="stat-value" id="st-s-reqs">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total Time</div>
+              <div class="stat-value" id="st-s-time">0s</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total Chars</div>
+              <div class="stat-value" id="st-s-chars">—</div>
+              <div class="stat-sub" id="st-s-chars-sub"></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Total Tokens</div>
+              <div class="stat-value" id="st-s-toks">—</div>
+              <div class="stat-sub" id="st-s-toks-sub"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
     <div class="demo-box" id="chatBox"></div>
   </div>
 
   <section style="margin-top:24px">
     <h2>Code</h2>
-<pre><code>const chat = new quikchat('#chat', handleAIRequest);
+<pre><code>const chat = new quikchat('#chat', handleLLMRequest);
 
-async function handleAIRequest(chatInstance, userInput) {
+async function handleLLMRequest(chatInstance, userInput) {
   chatInstance.messageAddNew(userInput, 'user', 'right');
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetch(baseUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + apiKey
     },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
+      model: model,
       messages: [
         { role: 'system', content: systemPrompt },
-        ...chatInstance.historyGet()  // full conversation context
+        ...chatInstance.historyGet()
       ],
-      stream: true
+      temperature: 0.5,
+      max_tokens: 2048,
+      stream: true,
+      stream_options: { include_usage: true }
     })
   });
 
@@ -89,6 +267,7 @@ async function handleAIRequest(chatInstance, userInput) {
     } else {
       chatInstance.messageAppendContent(id, content);
     }
+    // final chunk may contain usage: { prompt_tokens, completion_tokens }
   }
 }</code></pre>
   </section>
@@ -96,38 +275,147 @@ async function handleAIRequest(chatInstance, userInput) {
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const chatInstance = new quikchat('#chatBox', handleAIRequest, {
-    theme: 'quikchat-theme-light',
-    titleArea: { title: 'OpenAI Chat', show: true, align: 'left' }
+
+  // ── Provider presets ──────────────────────────────────────────────
+  const presets = {
+    openai:    { url: 'https://api.openai.com/v1/chat/completions',      model: 'gpt-5.2',                  needsKey: true  },
+    anthropic: { url: 'https://api.anthropic.com/v1/chat/completions',  model: 'claude-sonnet-4-20250514', needsKey: true  },
+    groq:      { url: 'https://api.groq.com/openai/v1/chat/completions', model: 'llama-3.3-70b-versatile', needsKey: true  },
+    together: { url: 'https://api.together.xyz/v1/chat/completions',    model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo', needsKey: true  },
+    mistral:  { url: 'https://api.mistral.ai/v1/chat/completions',      model: 'mistral-small-latest', needsKey: true  },
+    ollama:   { url: 'http://localhost:11434/v1/chat/completions',       model: 'llama3.1',          needsKey: false },
+    lmstudio: { url: 'http://localhost:1234/v1/chat/completions',       model: 'local-model',       needsKey: false },
+    custom:   { url: '',                                                 model: '',                  needsKey: true  }
+  };
+
+  // ── DOM refs ──────────────────────────────────────────────────────
+  const providerEl    = document.getElementById('provider');
+  const baseUrlEl     = document.getElementById('baseUrl');
+  const apiKeyEl      = document.getElementById('apiKey');
+  const modelEl       = document.getElementById('model');
+  const temperatureEl = document.getElementById('temperature');
+  const tempValEl     = document.getElementById('tempVal');
+  const maxTokensEl   = document.getElementById('maxTokens');
+  const topPEl        = document.getElementById('topP');
+  const topPValEl     = document.getElementById('topPVal');
+  const freqPenEl     = document.getElementById('freqPenalty');
+  const freqPenValEl  = document.getElementById('freqPenaltyVal');
+  const presPenEl     = document.getElementById('presPenalty');
+  const presPenValEl  = document.getElementById('presPenaltyVal');
+  const stopSeqEl     = document.getElementById('stopSeq');
+  const seedEl        = document.getElementById('seed');
+  const promptEl      = document.getElementById('prompt');
+
+  // ── Tabs ──────────────────────────────────────────────────────────
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
   });
 
-  async function handleAIRequest(chatInstance, userInput) {
-    const apiKey = document.getElementById('apiKey').value || '';
-    const baseUrl = document.getElementById('baseUrl').value || 'https://api.openai.com/v1/chat/completions';
-    const prompt = document.getElementById('prompt').value || 'You are a helpful assistant.';
+  // ── Provider preset selection ─────────────────────────────────────
+  providerEl.addEventListener('change', () => {
+    const p = presets[providerEl.value];
+    if (p) {
+      baseUrlEl.value = p.url;
+      modelEl.value = p.model;
+    }
+  });
+
+  // ── Range sliders ─────────────────────────────────────────────────
+  temperatureEl.addEventListener('input', () => { tempValEl.textContent = parseFloat(temperatureEl.value).toFixed(2); });
+  topPEl.addEventListener('input',        () => { topPValEl.textContent = parseFloat(topPEl.value).toFixed(2); });
+  freqPenEl.addEventListener('input',     () => { freqPenValEl.textContent = parseFloat(freqPenEl.value).toFixed(1); });
+  presPenEl.addEventListener('input',     () => { presPenValEl.textContent = parseFloat(presPenEl.value).toFixed(1); });
+
+  // ── Session stats accumulator ─────────────────────────────────────
+  const session = { requests: 0, totalTime: 0, charsIn: 0, charsOut: 0, tokIn: 0, tokOut: 0, tokReported: false };
+
+  // ── QuikChat instance ─────────────────────────────────────────────
+  const chatInstance = new quikchat('#chatBox', handleLLMRequest, {
+    theme: 'quikchat-theme-light',
+    titleArea: { title: 'LLM Chat', show: true, align: 'left' }
+  });
+
+  // ── Streaming handler ─────────────────────────────────────────────
+  async function handleLLMRequest(chatInstance, userInput) {
+    const apiKey   = apiKeyEl.value || '';
+    const baseUrl  = baseUrlEl.value || 'https://api.openai.com/v1/chat/completions';
+    const model    = modelEl.value || 'gpt-5.2';
+    const temp     = parseFloat(temperatureEl.value) || 0.5;
+    const maxTok   = parseInt(maxTokensEl.value, 10) || 2048;
+    const topP     = parseFloat(topPEl.value);
+    const freqPen  = parseFloat(freqPenEl.value);
+    const presPen  = parseFloat(presPenEl.value);
+    const stopRaw  = stopSeqEl.value.trim();
+    const seedRaw  = seedEl.value.trim();
+    const prompt   = promptEl.value || 'You are a helpful assistant.';
 
     chatInstance.messageAddNew(userInput, 'user', 'right');
+    chatInstance.inputAreaSetEnabled(false);
+    chatInstance.inputAreaSetButtonText('...');
+
+    // Measure chars sent
+    const messages = [{ role: 'system', content: prompt }, ...chatInstance.historyGet()];
+    const charsIn = messages.reduce((sum, m) => sum + (m.content || '').length, 0);
+
+    const t0 = performance.now();
+    let tFirstToken = null;
+    let charsOut = 0;
+    let usage = null;
+
+    // Show typing indicator
+    const typingId = chatInstance.messageAddTypingIndicator('Assistant', 'left');
 
     try {
-      const response = await fetch(baseUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + apiKey
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: prompt },
-            ...chatInstance.historyGet()
-          ],
-          temperature: 0.5,
-          max_tokens: 2050,
-          stream: true
-        })
-      });
+      const headers = { 'Content-Type': 'application/json' };
+      if (apiKey) headers['Authorization'] = 'Bearer ' + apiKey;
 
-      if (!response.ok) throw new Error('Error: ' + response.status + ' ' + response.statusText);
+      const body = {
+        model: model,
+        messages: messages,
+        temperature: temp,
+        max_tokens: maxTok,
+        stream: true,
+        stream_options: { include_usage: true }
+      };
+      if (topP < 1)    body.top_p = topP;
+      if (freqPen !== 0) body.frequency_penalty = freqPen;
+      if (presPen !== 0) body.presence_penalty = presPen;
+      if (stopRaw) {
+        const stops = stopRaw.split(',').map(s => s.replace(/\\n/g, '\n').replace(/\\t/g, '\t'));
+        if (stops.length) body.stop = stops;
+      }
+      if (seedRaw !== '') body.seed = parseInt(seedRaw, 10);
+
+      let response;
+      try {
+        response = await fetch(baseUrl, {
+          method: 'POST',
+          headers: headers,
+          signal: AbortSignal.timeout(60000),
+          body: JSON.stringify(body)
+        });
+      } catch (fetchErr) {
+        if (fetchErr.name === 'TimeoutError') {
+          throw new Error('Request timed out after 60 seconds. Check that the API endpoint is reachable.');
+        }
+        throw new Error('Could not connect to ' + baseUrl + '. Check the URL and that the server is running.');
+      }
+
+      if (!response.ok) {
+        const errText = await response.text().catch(() => '');
+        if (response.status === 401) throw new Error('Authentication failed (401). Check your API key.');
+        if (response.status === 404) throw new Error('Endpoint not found (404). Check the Base URL.');
+        if (response.status === 429) throw new Error('Rate limited (429). Wait a moment and try again.');
+        throw new Error('API error ' + response.status + ': ' + (errText.slice(0, 200) || response.statusText));
+      }
+
+      // Remove typing indicator once streaming starts
+      chatInstance.messageRemove(typingId);
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
@@ -141,47 +429,138 @@ document.addEventListener('DOMContentLoaded', () => {
 
         for (let i = 0; i < lines.length - 1; i++) {
           const line = lines[i].trim();
-          if (line.startsWith('data: ')) {
-            const jsonString = line.slice(6);
-            if (jsonString !== '[DONE]') {
-              try {
-                const json = JSON.parse(jsonString);
-                if (json.choices && json.choices.length > 0) {
-                  const content = json.choices[0].delta.content;
-                  if (start) {
-                    id = chatInstance.messageAddNew(content, 'bot', 'left');
-                    start = false;
-                  } else {
-                    if (content) chatInstance.messageAppendContent(id, content);
-                  }
+          if (!line.startsWith('data: ')) continue;
+          const jsonString = line.slice(6);
+          if (jsonString === '[DONE]') continue;
+          try {
+            const json = JSON.parse(jsonString);
+            // Capture usage from final chunk (OpenAI stream_options)
+            if (json.usage) usage = json.usage;
+            if (json.choices && json.choices.length > 0) {
+              const content = json.choices[0].delta.content;
+              if (content) {
+                if (tFirstToken === null) tFirstToken = performance.now();
+                charsOut += content.length;
+                if (start) {
+                  id = chatInstance.messageAddNew(content, 'bot', 'left');
+                  start = false;
+                } else {
+                  chatInstance.messageAppendContent(id, content);
                 }
-              } catch (e) { /* partial JSON */ }
+              }
             }
-          }
+          } catch (e) { /* partial JSON */ }
         }
         accumulated = lines[lines.length - 1];
       }
     } catch (error) {
       console.error('Error streaming tokens:', error);
+      chatInstance.messageRemove(typingId);
       chatInstance.messageAddNew('Error: ' + error.message, 'system', 'left');
+    } finally {
+      chatInstance.inputAreaSetEnabled(true);
+      chatInstance.inputAreaSetButtonText('Send');
+    }
+
+    const tEnd = performance.now();
+    updateStats(tEnd - t0, tFirstToken ? tFirstToken - t0 : null, charsIn, charsOut, usage);
+  }
+
+  // ── Stats display ─────────────────────────────────────────────────
+  function fmt(n) {
+    return n >= 1000 ? n.toLocaleString() : String(n);
+  }
+  function fmtMs(ms) {
+    if (ms < 1000) return Math.round(ms) + 'ms';
+    return (ms / 1000).toFixed(2) + 's';
+  }
+
+  function updateStats(elapsed, ttft, charsIn, charsOut, usage) {
+    document.getElementById('statsEmpty').style.display = 'none';
+    document.getElementById('statsContent').style.display = '';
+
+    const tokIn  = usage ? usage.prompt_tokens : null;
+    const tokOut = usage ? usage.completion_tokens : null;
+    const hasTokens = tokIn !== null && tokOut !== null;
+
+    // Last request
+    document.getElementById('st-time').textContent = fmtMs(elapsed);
+    document.getElementById('st-ttft').textContent = ttft !== null ? fmtMs(ttft) : '—';
+    document.getElementById('st-chars-in').textContent = fmt(charsIn);
+    document.getElementById('st-chars-out').textContent = fmt(charsOut);
+    document.getElementById('st-tok-in').textContent = hasTokens ? fmt(tokIn) : '—';
+    document.getElementById('st-tok-in-note').textContent = hasTokens ? '' : 'not reported';
+    document.getElementById('st-tok-out').textContent = hasTokens ? fmt(tokOut) : '—';
+    document.getElementById('st-tok-out-note').textContent = hasTokens ? '' : 'not reported';
+
+    // Speed: tokens/sec if available, else chars/sec
+    if (hasTokens && tokOut > 0 && elapsed > 0) {
+      document.getElementById('st-speed').textContent = (tokOut / (elapsed / 1000)).toFixed(1) + ' tok/s';
+    } else if (charsOut > 0 && elapsed > 0) {
+      document.getElementById('st-speed').textContent = (charsOut / (elapsed / 1000)).toFixed(0) + ' char/s';
+    } else {
+      document.getElementById('st-speed').textContent = '—';
+    }
+
+    // Session totals
+    session.requests++;
+    session.totalTime += elapsed;
+    session.charsIn += charsIn;
+    session.charsOut += charsOut;
+    if (hasTokens) { session.tokIn += tokIn; session.tokOut += tokOut; session.tokReported = true; }
+
+    document.getElementById('st-s-reqs').textContent = session.requests;
+    document.getElementById('st-s-time').textContent = fmtMs(session.totalTime);
+    document.getElementById('st-s-chars').textContent = fmt(session.charsIn + session.charsOut);
+    document.getElementById('st-s-chars-sub').textContent = fmt(session.charsIn) + ' in / ' + fmt(session.charsOut) + ' out';
+    if (session.tokReported) {
+      document.getElementById('st-s-toks').textContent = fmt(session.tokIn + session.tokOut);
+      document.getElementById('st-s-toks-sub').textContent = fmt(session.tokIn) + ' in / ' + fmt(session.tokOut) + ' out';
+    } else {
+      document.getElementById('st-s-toks').textContent = '—';
+      document.getElementById('st-s-toks-sub').textContent = 'not reported by provider';
     }
   }
 
-  // Cookie persistence for settings
-  document.getElementById('settingsForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    document.cookie = 'prompt=' + document.getElementById('prompt').value;
-    document.cookie = 'apiKey=' + document.getElementById('apiKey').value;
-    document.cookie = 'baseUrl=' + document.getElementById('baseUrl').value;
+  // ── Clear chat ────────────────────────────────────────────────────
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    chatInstance.historyImport([]);
   });
 
-  window.addEventListener('load', function () {
-    document.cookie.split(';').forEach(cookie => {
-      const [name, value] = cookie.split('=');
-      const el = document.getElementById(name.trim());
-      if (el && value) el.value = value;
+  // ── Cookie persistence ────────────────────────────────────────────
+  const settingsKeys = ['provider', 'baseUrl', 'apiKey', 'model', 'temperature', 'maxTokens', 'topP', 'freqPenalty', 'presPenalty', 'stopSeq', 'seed', 'prompt'];
+
+  function saveSettings() {
+    const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
+    settingsKeys.forEach(key => {
+      const el = document.getElementById(key);
+      if (el) document.cookie = key + '=' + encodeURIComponent(el.value) + ';expires=' + expires + ';path=/;SameSite=Lax';
     });
+  }
+
+  function loadSettings() {
+    const cookies = {};
+    document.cookie.split(';').forEach(c => {
+      const [name, ...rest] = c.trim().split('=');
+      if (name && rest.length) cookies[name] = decodeURIComponent(rest.join('='));
+    });
+    settingsKeys.forEach(key => {
+      const el = document.getElementById(key);
+      if (el && cookies[key] !== undefined) el.value = cookies[key];
+    });
+    // Sync range display values
+    tempValEl.textContent    = parseFloat(temperatureEl.value).toFixed(2);
+    topPValEl.textContent    = parseFloat(topPEl.value).toFixed(2);
+    freqPenValEl.textContent = parseFloat(freqPenEl.value).toFixed(1);
+    presPenValEl.textContent = parseFloat(presPenEl.value).toFixed(1);
+  }
+
+  document.getElementById('saveBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    saveSettings();
   });
+
+  loadSettings();
 });
 </script>
 </body>

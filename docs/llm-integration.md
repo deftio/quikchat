@@ -311,5 +311,6 @@ See the `examples/` directory for complete, runnable demos:
 - `simple_ollama.html` — Ollama with and without streaming
 - `ollama_with_memory.html` — Ollama with conversational memory
 - `lmstudio_with_memory.html` — LM Studio with memory
-- `openai.html` — OpenAI with settings panel and streaming
+- `openai.html` — Any OpenAI-compatible API with configurable model, temperature, and token limit
 - `ollama_adapters.js` — Reusable callback functions for Ollama
+- `example_tool_editor.html` — LLM tool-calling demo: chat commands drive a QuikdownEditor through function calls (read, write, replace, undo/redo)

@@ -898,9 +898,9 @@ var quikchat = /*#__PURE__*/function () {
     key: "version",
     value: function version() {
       return {
-        "version": "1.2.6",
+        "version": "1.2.7",
         "license": "BSD-2",
-        "url": "https://github/deftio/quikchat"
+        "url": "https://github.com/deftio/quikchat"
       };
     }
 
@@ -958,7 +958,7 @@ var quikchat = /*#__PURE__*/function () {
 
 /**
  * quikdown - Lightweight Markdown Parser
- * @version 1.2.10
+ * @version 1.2.12
  * @license BSD-2-Clause
  * @copyright DeftIO 2025
  */
@@ -1070,7 +1070,7 @@ function isDashHRLine(trimmed) {
 // ────────────────────────────────────────────────────────────────────
 
 /** Build-time version stamp (injected by tools/updateVersion) */
-const quikdownVersion = '1.2.10';
+const quikdownVersion = '1.2.12';
 
 /** CSS class prefix used for all generated elements */
 const CLASS_PREFIX = 'quikdown-';
@@ -1078,6 +1078,10 @@ const CLASS_PREFIX = 'quikdown-';
 /** Placeholder sigils — chosen to be extremely unlikely in real text */
 const PLACEHOLDER_CB = '§CB';   // fenced code blocks
 const PLACEHOLDER_IC = '§IC';   // inline code spans
+const PLACEHOLDER_HT = '§HT';  // safe HTML tags (limited mode)
+
+/** Attributes whose values need URL sanitization */
+const URL_ATTRIBUTES = { href:1, src:1, action:1, formaction:1 };
 
 /** HTML entity escape map */
 const ESC_MAP = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};
@@ -1212,6 +1216,46 @@ function quikdown(markdown, options = {}) {
         return trimmedUrl;
     }
 
+    /**
+     * Sanitize attributes on an HTML tag string for limited mode.
+     * Strips on* event handlers (case-insensitive) and runs sanitizeUrl()
+     * on href/src/action/formaction values.
+     */
+    function sanitizeHtmlTagAttrs(tagStr) {
+        // Self-closing or void tag without attributes — pass through
+        if (!/\s/.test(tagStr.replace(/<\/?[a-zA-Z][a-zA-Z0-9]*/, '').replace(/\/?>$/, ''))) {
+            return tagStr;
+        }
+        // Parse: <tagname ...attrs... > or <tagname ...attrs... />
+        const m = tagStr.match(/^(<\/?[a-zA-Z][a-zA-Z0-9]*)([\s\S]*?)(\/?>)$/);
+        /* istanbul ignore next - defensive: Phase 1.5 regex guarantees valid tag shape */
+        if (!m) return tagStr;
+
+        const [, open, attrStr, close] = m;
+        // Match individual attributes: name="value", name='value', name=value, or bare name
+        // eslint-disable-next-line security/detect-unsafe-regex -- linear: no nested quantifiers
+        const attrRe = /([a-zA-Z_][\w\-.:]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|(\S+)))?/g;
+        const attrs = [];
+        let am;
+        while ((am = attrRe.exec(attrStr)) !== null) {
+            const name = am[1];
+            const value = am[2] !== undefined ? am[2] : am[3] !== undefined ? am[3] : am[4];
+            // Strip event handlers (on*)
+            if (/^on/i.test(name)) continue;
+            if (value === undefined) {
+                // Boolean attribute (e.g. disabled, checked)
+                attrs.push(name);
+            } else {
+                let sanitized = value;
+                if (name.toLowerCase() in URL_ATTRIBUTES) {
+                    sanitized = sanitizeUrl(value);
+                }
+                attrs.push(`${name}="${sanitized}"`);
+            }
+        }
+        return open + (attrs.length ? ' ' + attrs.join(' ') : '') + close;
+    }
+
     // ────────────────────────────────────────────────────────────────
     //  Phase 1 — Code Extraction
     // ────────────────────────────────────────────────────────────────
@@ -1264,14 +1308,54 @@ function quikdown(markdown, options = {}) {
     });
 
     // ────────────────────────────────────────────────────────────────
+    //  Phase 1.5 — Safe HTML Extraction (whitelist mode)
+    // ────────────────────────────────────────────────────────────────
+    // When allow_unsafe_html is an object or array, extract whitelisted
+    // HTML tags, sanitize their attributes, and replace with placeholders.
+    // Non-whitelisted tags stay in text so Phase 2 will escape them.
+
+    const safeTags = [];
+    // Normalize: array → object for O(1) lookup; object used as-is
+    const htmlAllow = Array.isArray(allow_unsafe_html)
+        ? Object.fromEntries(allow_unsafe_html.map(t => [t, 1]))
+        : (allow_unsafe_html && typeof allow_unsafe_html === 'object') ? allow_unsafe_html : null;
+
+    if (htmlAllow) {
+        // Pass through HTML comments — browsers render them as nothing
+        html = html.replace(/<!--[\s\S]*?-->/g, (match) => {
+            const idx = safeTags.length;
+            safeTags.push(match);
+            return `${PLACEHOLDER_HT}${idx}§`;
+        });
+        html = html.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)\b[^>]*\/?>/g, (match, tagName) => {
+            if (tagName.toLowerCase() in htmlAllow) {
+                const sanitized = sanitizeHtmlTagAttrs(match);
+                const idx = safeTags.length;
+                safeTags.push(sanitized);
+                return `${PLACEHOLDER_HT}${idx}§`;
+            }
+            // Not whitelisted — leave in text for Phase 2 to escape
+            return match;
+        });
+    }
+
+    // ────────────────────────────────────────────────────────────────
     //  Phase 2 — HTML Escaping
     // ────────────────────────────────────────────────────────────────
     // All remaining text (everything except code placeholders) is escaped
     // to prevent XSS.  The `allow_unsafe_html` option skips this for
     // trusted pipelines that intentionally embed raw HTML.
+    // For whitelist mode, escaping still runs (only `true` bypasses it).
 
-    if (!allow_unsafe_html) {
+    if (allow_unsafe_html !== true) {
         html = escapeHtml(html);
+    }
+
+    // Restore safe HTML tag placeholders after escaping
+    if (htmlAllow) {
+        safeTags.forEach((tag, i) => {
+            html = html.replace(`${PLACEHOLDER_HT}${i}§`, tag);
+        });
     }
 
     // ────────────────────────────────────────────────────────────────
@@ -1514,6 +1598,14 @@ function scanLineBlocks(text, getAttr, dataQd) {
 
     while (i < lines.length) {
         const line = lines[i];
+
+        // ── Markdown comment (reference-link hack) ──
+        // [//]: # (comment)  or  [//]: # "comment"  or  [//]: #
+        // These produce no output — standard markdown comment convention.
+        if (/^\[\/\/\]: #/.test(line)) {
+            i++;
+            continue;
+        }
 
         // ── Heading ──
         // Count leading '#' characters.  Valid heading: 1-6 hashes then a space.
@@ -1878,6 +1970,7 @@ quikdown.configure = function(options) {
 
 /** Semantic version (injected at build time) */
 quikdown.version = quikdownVersion;
+
 
 // ════════════════════════════════════════════════════════════════════
 //  Exports

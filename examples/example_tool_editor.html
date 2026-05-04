@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuikChat — LLM Tool Editor</title>
+  <link href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>&#x1F4AC;</text></svg>" rel="icon">
+  <link href="../site/site.css" rel="stylesheet">
+  <link href="../dist/quikchat.css" rel="stylesheet">
+  <script src="../dist/quikchat-md.umd.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/quikdown/dist/quikdown.light.min.css">
+  <script src="https://unpkg.com/quikdown/dist/quikdown_edit.umd.min.js"></script>
+  <style>
+    /* Settings bar */
+    .settings-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-end;
+      padding: 12px 16px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #fafafa;
+      margin-bottom: 16px;
+    }
+    .settings-bar label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #555;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .settings-bar input,
+    .settings-bar select {
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 0.82rem;
+      font-family: inherit;
+    }
+    .settings-bar select { appearance: auto; }
+    .settings-bar input[type="text"],
+    .settings-bar input[type="password"] {
+      min-width: 180px;
+    }
+    .settings-bar .save-btn {
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      border: 1px solid #d0d0d0;
+      border-radius: 5px;
+      background: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+      align-self: flex-end;
+    }
+    .settings-bar .save-btn:hover { background: #f5f5f5; border-color: #bbb; }
+    .settings-bar .save-btn:active { background: #e0e0e0; border-color: #999; transform: translateY(1px); }
+
+    /* Layout */
+    .layout {
+      display: grid;
+      grid-template-columns: 35fr 65fr;
+      gap: 16px;
+    }
+    .chat-panel, .editor-panel { height: calc(100vh - 240px); min-height: 300px; width: 100%; min-width: 0; overflow: hidden; }
+    .editor-panel {
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      background-color: #ffffff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .editor-title,
+    .chat-panel .quikchat-title-area {
+      padding: 8px;
+      font-size: 18.2px;
+      line-height: 1.4;
+      font-weight: 600;
+      font-family: inherit;
+      color: #1a1a1a;
+      background-color: #f5f5f5;
+      border-bottom: 1px solid #e8e8e8;
+      flex-shrink: 0;
+    }
+    .editor-title {
+      margin-left: 8px;
+      margin-right: 8px;
+    }
+    .editor-panel #editorBox { flex: 1; min-height: 0; }
+    .editor-panel .qde-btn[data-action="copy-html"] { display: none; }
+
+    /* Controls row */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .controls button {
+      padding: 8px 14px;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .controls button:hover { background: #f5f5f5; border-color: #bbb; }
+    .controls button.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+
+    /* Tool-call message styling */
+    .quikchat-role-tool .quikchat-message-content {
+      background: #f3e8ff;
+      border-left: 3px solid #9333ea;
+      padding-left: 8px;
+      font-family: monospace;
+      font-size: 0.85em;
+      word-break: break-all;
+      overflow-wrap: break-word;
+    }
+
+    /* Tool reference table */
+    .tool-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+    .tool-table th {
+      text-align: left; padding: 8px 10px; border-bottom: 2px solid #ddd;
+      font-weight: 600; font-size: 0.78rem; text-transform: uppercase;
+      letter-spacing: 0.03em; color: #666;
+    }
+    .tool-table td { padding: 8px 10px; border-bottom: 1px solid #eee; vertical-align: top; }
+    .tool-table tr:hover td { background: #f8f8fa; }
+    .tool-table code { font-size: 0.88em; }
+
+    /* Flow diagram */
+    .flow-steps {
+      display: flex; gap: 0; align-items: stretch; flex-wrap: wrap;
+      margin: 16px 0;
+    }
+    .flow-step {
+      flex: 1; min-width: 120px; padding: 12px 14px;
+      background: #f8f8fa; border: 1px solid #e0e0e0;
+      border-radius: 8px; text-align: center;
+      font-size: 0.82rem; line-height: 1.4;
+      position: relative;
+    }
+    .flow-step strong { display: block; font-size: 0.76rem; text-transform: uppercase; color: #888; letter-spacing: 0.03em; margin-bottom: 4px; }
+    .flow-arrow {
+      display: flex; align-items: center; padding: 0 6px;
+      font-size: 1.2rem; color: #bbb;
+    }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      .layout { grid-template-columns: 1fr; }
+      .chat-panel, .editor-panel { height: calc(100vh - 240px); min-height: 250px; }
+      .flow-steps { flex-direction: column; }
+      .flow-arrow { justify-content: center; transform: rotate(90deg); padding: 4px 0; }
+    }
+
+    /* Dark mode */
+    .site-dark .settings-bar { background: #1a1a1a; border-color: #3a3a3a; }
+    .site-dark .settings-bar label { color: #999; }
+    .site-dark .settings-bar input,
+    .site-dark .settings-bar select { background: #111; color: #ddd; border-color: #3a3a3a; }
+    .site-dark .settings-bar .save-btn { background: #1e1e1e; color: #ccc; border-color: #3a3a3a; }
+    .site-dark .settings-bar .save-btn:hover { background: #2a2a2a; border-color: #555; }
+    .site-dark .settings-bar .save-btn:active { background: #111; border-color: #666; transform: translateY(1px); }
+    .site-dark #systemPromptArea { background: #111; color: #ddd; border-color: #3a3a3a; }
+    .site-dark .editor-panel {
+      border-color: #3a3a3a;
+      background-color: #1a1a1a;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+    }
+    .site-dark .editor-title,
+    .site-dark .chat-panel .quikchat-title-area {
+      color: #f0f0f0;
+      background-color: #252525;
+      border-bottom-color: #3a3a3a;
+    }
+    .site-dark .controls button { background: #1e1e1e; color: #ccc; border-color: #3a3a3a; }
+    .site-dark .controls button:hover { background: #2a2a2a; border-color: #555; }
+    .site-dark .controls button.active { background: #e0e0e0; color: #111; border-color: #e0e0e0; }
+    .site-dark .quikchat-role-tool .quikchat-message-content { background: #1a0a2e; }
+    .site-dark .tool-table th { border-bottom-color: #333; color: #888; }
+    .site-dark .tool-table td { border-bottom-color: #1e1e1e; }
+    .site-dark .tool-table tr:hover td { background: #1a1a1a; }
+    .site-dark .flow-step { background: #1a1a1a; border-color: #3a3a3a; }
+    .site-dark .flow-step strong { color: #666; }
+    .site-dark .flow-arrow { color: #444; }
+  </style>
+</head>
+<body>
+<script src="../site/site-chrome.js?v=3"></script>
+
+<div class="wrap">
+  <header class="site-header">
+    <h1>LLM Tool Editor</h1>
+    <p class="tagline">Chat with an LLM to edit a document. Configure your API key in <strong>Params</strong>, then try "summarize this", "translate to French", or "fix the grammar". Toggle <strong>Show Tool Calls</strong> to inspect the function calls.</p>
+  </header>
+
+  <!-- ── Tabs ──────────────────────────────────────────────── -->
+  <div class="demo-tabs">
+    <button class="demo-tab active" data-tab="tab-demo">Demo</button>
+    <button class="demo-tab" data-tab="tab-params">Params</button>
+    <button class="demo-tab" data-tab="tab-explanation">Explanation</button>
+  </div>
+
+  <!-- ── Demo tab ──────────────────────────────────────────── -->
+  <div class="demo-tab-panel active" id="tab-demo" style="padding:16px;">
+    <!-- Main layout -->
+    <div class="layout">
+      <div class="chat-panel" id="chatBox"></div>
+      <div class="editor-panel">
+        <div class="editor-title">Document Canvas</div>
+        <div id="editorBox"></div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button id="btn-toggle">Show Tool Calls</button>
+      <button id="btn-clear">Clear Chat</button>
+      <button id="btn-export">Export Chat</button>
+      <button id="btn-copy">Copy Chat</button>
+    </div>
+  </div>
+
+  <!-- ── Params tab ────────────────────────────────────────── -->
+  <div class="demo-tab-panel" id="tab-params">
+    <h2 style="margin-top:0;">Configuration</h2>
+    <p>Set your API provider and key here. Any OpenAI-compatible API that supports function calling will work.</p>
+
+    <!-- Settings bar -->
+    <div class="settings-bar">
+      <label>Provider
+        <select id="provider">
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic (Claude)</option>
+          <option value="groq">Groq</option>
+          <option value="together">Together AI</option>
+          <option value="mistral">Mistral</option>
+          <option value="openrouter">OpenRouter</option>
+          <option value="ollama">Ollama (local)</option>
+          <option value="lmstudio">LM Studio (local)</option>
+          <option value="custom">Custom</option>
+        </select>
+      </label>
+      <label>API Key
+        <input type="password" id="apiKey" placeholder="sk-...">
+      </label>
+      <label>Base URL
+        <input type="text" id="baseUrl" value="https://api.openai.com/v1/chat/completions">
+      </label>
+      <label>Model
+        <input type="text" id="model" value="gpt-5.2">
+      </label>
+      <button class="save-btn" id="saveBtn">Save</button>
+    </div>
+
+    <h3>Providers</h3>
+    <table class="tool-table">
+      <thead>
+        <tr><th>Provider</th><th>Default Model</th><th>API Key</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>OpenAI</td><td><code>gpt-5.2</code></td><td>Required</td></tr>
+        <tr><td>Anthropic (Claude)</td><td><code>claude-sonnet-4-20250514</code></td><td>Required</td></tr>
+        <tr><td>Groq</td><td><code>llama-3.3-70b-versatile</code></td><td>Required</td></tr>
+        <tr><td>Together AI</td><td><code>Llama-3.3-70B-Instruct-Turbo</code></td><td>Required</td></tr>
+        <tr><td>Mistral</td><td><code>mistral-small-latest</code></td><td>Required</td></tr>
+        <tr><td>OpenRouter</td><td><code>openai/gpt-4o</code></td><td>Required</td></tr>
+        <tr><td>Ollama (local)</td><td><code>llama3.1</code></td><td>Not needed</td></tr>
+        <tr><td>LM Studio (local)</td><td><code>local-model</code></td><td>Not needed</td></tr>
+      </tbody>
+    </table>
+
+    <h3>System Prompt</h3>
+    <p>This prompt is sent to the LLM with every request. Edit it to change the assistant's behavior.</p>
+    <textarea id="systemPromptArea" rows="14" style="width:100%; font-family:monospace; font-size:0.82rem; padding:10px; border:1px solid #ccc; border-radius:6px; resize:vertical;"></textarea>
+    <div style="margin-top:8px;">
+      <button class="save-btn" id="resetPromptBtn">Reset to Default</button>
+    </div>
+
+    <p style="font-size:0.82rem; color:#888; margin-top:16px;">Settings are stored as cookies on your local machine (prefixed <code>te_</code>). Your API key is never sent anywhere except the API endpoint you configure.</p>
+  </div>
+
+  <!-- ── Explanation tab ───────────────────────────────────── -->
+  <div class="demo-tab-panel" id="tab-explanation">
+    <h2 style="margin-top:0;">How It Works</h2>
+    <p>This example connects two components — a <strong>QuikChat</strong> widget and a <strong>QuikdownEditor</strong> — through an LLM that uses function calling to bridge them. The user types natural-language commands in the chat; the LLM decides which editing operations to perform.</p>
+
+    <h3>Tool Reference</h3>
+    <p>Seven tools are registered with the LLM via the OpenAI <a href="https://platform.openai.com/docs/guides/function-calling">function calling</a> API. The LLM decides which tools to call and in what order.</p>
+
+    <table class="tool-table">
+      <thead>
+        <tr><th>Tool</th><th>Parameters</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>read_editor</code></td>
+          <td><em>none</em></td>
+          <td>Returns the full markdown content of the editor. The LLM should always call this first before making changes.</td>
+        </tr>
+        <tr>
+          <td><code>write_editor</code></td>
+          <td><code>content</code> <span style="color:#888">(string)</span></td>
+          <td>Replaces the entire editor content. Used for large rewrites, translations, or restructuring.</td>
+        </tr>
+        <tr>
+          <td><code>replace_text</code></td>
+          <td><code>find</code>, <code>replace</code> <span style="color:#888">(strings)</span></td>
+          <td>Finds the first occurrence of an exact string and replaces it. Best for small, targeted edits.</td>
+        </tr>
+        <tr>
+          <td><code>extract_text</code></td>
+          <td><code>start_line</code>, <code>end_line</code> <span style="color:#888">(integers)</span></td>
+          <td>Returns lines in range (1-based, inclusive) without modifying the document. Useful for quoting or analyzing a specific section.</td>
+        </tr>
+        <tr>
+          <td><code>get_stats</code></td>
+          <td><em>none</em></td>
+          <td>Returns JSON with <code>characters</code>, <code>words</code>, <code>lines</code>, and <code>paragraphs</code> counts.</td>
+        </tr>
+        <tr>
+          <td><code>undo</code></td>
+          <td><em>none</em></td>
+          <td>Undoes the last edit and returns the resulting content.</td>
+        </tr>
+        <tr>
+          <td><code>redo</code></td>
+          <td><em>none</em></td>
+          <td>Redoes a previously undone edit and returns the resulting content.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>API Configuration</h3>
+    <table class="tool-table">
+      <thead>
+        <tr><th>Parameter</th><th>Value</th><th>Why</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>stream</code></td><td><code>false</code></td><td>Tool-call JSON must be parsed as complete objects — streaming would fragment them.</td></tr>
+        <tr><td><code>temperature</code></td><td><code>0.3</code></td><td>Editing tasks benefit from more deterministic output.</td></tr>
+        <tr><td>Conversation history</td><td>Separate JS array</td><td>OpenAI tool calling requires <code>tool_calls</code> and <code>tool_call_id</code> fields in the message history, which <code>historyGet()</code> doesn't preserve.</td></tr>
+        <tr><td>Max tool-call rounds</td><td>10</td><td>Safety limit to prevent infinite loops if the LLM keeps calling tools.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Architecture</h3>
+    <div class="flow-steps">
+      <div class="flow-step"><strong>1. User</strong>Types a command in chat<br>(e.g. "summarize this")</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step"><strong>2. LLM</strong>Receives message + tool definitions, decides to call tools</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step"><strong>3. Tool Exec</strong>Browser runs tool locally<br>(read/write/replace editor)</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step"><strong>4. Result</strong>Tool output sent back to LLM as next message</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step"><strong>5. Response</strong>LLM replies with summary of changes</div>
+    </div>
+    <p>Steps 2&ndash;4 repeat if the LLM calls multiple tools (e.g. <code>read_editor</code> then <code>write_editor</code>). The loop runs up to 10 rounds per user message.</p>
+
+    <h3>Tool-Call Loop (Non-Streaming)</h3>
+    <p>Streaming is disabled (<code>stream: false</code>) because tool-call JSON in the response must be parsed as complete objects. The loop works as follows:</p>
+<pre><code>async function handleUserInput(chatInstance, userInput) {
+  // 1. Show user message, disable input
+  chatInstance.messageAddNew(userInput, 'user', 'right');
+
+  // 2. Push to conversation history (separate from chat widget)
+  conversationMessages.push({ role: 'user', content: userInput });
+
+  // 3. Build messages = [system_prompt, ...conversationMessages]
+  const messages = [{ role: 'system', content: systemPrompt }, ...conversationMessages];
+
+  // 4. Tool-call loop (max 10 rounds)
+  for (let round = 0; round &lt; 10; round++) {
+    const data = await fetch(baseUrl, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + apiKey, ... },
+      body: JSON.stringify({ model, messages, tools, temperature: 0.3, stream: false })
+    }).then(r => r.json());
+
+    const choice = data.choices[0];
+
+    // If the model called tools, execute them and continue the loop
+    if (choice.message.tool_calls) {
+      for (const tc of choice.message.tool_calls) {
+        const result = executeTool(tc.function.name, JSON.parse(tc.function.arguments));
+        messages.push({ role: 'tool', tool_call_id: tc.id, content: result });
+      }
+      continue;
+    }
+
+    // Otherwise, display the final text response and break
+    chatInstance.messageAddNew(choice.message.content, 'bot', 'left');
+    break;
+  }
+}</code></pre>
+
+    <h3>Hidden Tool-Call Messages</h3>
+    <p>Each tool call and result is added to the chat with <code>visible: false</code> and tagged <code>'tool-call'</code>. This keeps the conversation clean while preserving a full audit trail. The <strong>Show Tool Calls</strong> button toggles visibility using <code>messageSetVisibleByTag()</code>:</p>
+<pre><code>// Add hidden tool-call message
+chatInstance.messageAddFull({
+  content: 'Tool: read_editor\nResult: ...',
+  role: 'tool',
+  visible: false,
+  tags: ['tool-call']
+});
+
+// Toggle all tool-call messages on/off
+chat.messageSetVisibleByTag('tool-call', true);  // show
+chat.messageSetVisibleByTag('tool-call', false); // hide</code></pre>
+
+    <h3>Conversation History</h3>
+    <p>The conversation is tracked in a separate JavaScript array rather than using <code>historyGet()</code>. This is necessary because the OpenAI tool-calling protocol requires <code>tool_calls</code> objects on assistant messages and <code>tool_call_id</code> fields on tool result messages — metadata that QuikChat's history format doesn't capture.</p>
+
+    <h3>Components Used</h3>
+    <table class="tool-table">
+      <thead>
+        <tr><th>Component</th><th>Build</th><th>Role</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>QuikChat</strong></td>
+          <td><code>quikchat-md.umd.min.js</code></td>
+          <td>Chat widget with markdown rendering (LLM responses may contain markdown). Handles user input, message display, and tool-call visibility toggling.</td>
+        </tr>
+        <tr>
+          <td><strong>QuikdownEditor</strong></td>
+          <td><code>quikdown_edit.umd.min.js</code> (CDN)</td>
+          <td>Split-mode markdown editor. The LLM reads and writes its content via the <code>getMarkdown()</code> and <code>setMarkdown()</code> API.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Try These Commands</h3>
+    <ul style="font-size:0.88rem; line-height:1.8;">
+      <li><strong>"Summarize this"</strong> — rewrites the document as a brief summary</li>
+      <li><strong>"Translate to French"</strong> — full translation via <code>write_editor</code></li>
+      <li><strong>"Fix the grammar"</strong> — targeted corrections via <code>replace_text</code></li>
+      <li><strong>"How long is this document?"</strong> — triggers <code>get_stats</code></li>
+      <li><strong>"Show me lines 5-10"</strong> — uses <code>extract_text</code></li>
+      <li><strong>"Add a FAQ section at the end"</strong> — reads then rewrites</li>
+      <li><strong>"Rewrite in a more formal tone"</strong> — full rewrite via <code>write_editor</code></li>
+      <li><strong>"Undo that"</strong> — reverts the last edit via <code>undo</code></li>
+    </ul>
+  </div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  // ── Tab switching ───────────────────────────────────────────────
+  document.querySelectorAll('.demo-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.demo-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.demo-tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ── Initial editor content ──────────────────────────────────────
+  const initialContent = `# Product Launch: MagicDoc 2.0
+
+We are excited to announce the release of **MagicDoc 2.0**, our next-generation note-taking application.
+
+## Key Features
+
+- **Real-time collaboration** — multiple users can edit simultaneously
+- **Offline mode** — full functionality without an internet connection
+- **AI-powered search** — find notes using natural language queries
+- **Cross-platform sync** — available on iOS, Android, Windows, and macOS
+
+## Architecture
+
+\`\`\`mermaid
+graph LR
+    A[Client App] --> B[API Gateway]
+    B --> C[Auth Service]
+    B --> D[Doc Service]
+    D --> E[(Database)]
+    D --> F[Search Index]
+\`\`\`
+
+## Quick Start
+
+\`\`\`javascript
+import { MagicDoc } from 'magicdoc';
+
+const doc = new MagicDoc({
+  apiKey: 'your-api-key',
+  realtime: true
+});
+
+doc.on('change', (delta) => {
+  console.log('Document updated:', delta.summary);
+});
+
+await doc.open('my-notebook');
+\`\`\`
+
+## Office Locations
+
+\`\`\`geojson
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-122.4194, 37.7749] },
+      "properties": { "name": "SF HQ", "team": "Engineering" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-73.9857, 40.7484] },
+      "properties": { "name": "NYC Office", "team": "Sales" }
+    }
+  ]
+}
+\`\`\`
+
+## Availability
+
+MagicDoc 2.0 is available starting today for all existing subscribers at no additional cost. New users can sign up for a free 30-day trial at magicdoc.example.com.
+
+For questions or feedback, reach out to our team at support@magicdoc.example.com.`;
+
+  // ── Provider presets ─────────────────────────────────────────────
+  const presets = {
+    openai:    { url: 'https://api.openai.com/v1/chat/completions',      model: 'gpt-5.2',                  needsKey: true  },
+    anthropic: { url: 'https://api.anthropic.com/v1/chat/completions',  model: 'claude-sonnet-4-20250514', needsKey: true  },
+    groq:      { url: 'https://api.groq.com/openai/v1/chat/completions', model: 'llama-3.3-70b-versatile', needsKey: true  },
+    together:  { url: 'https://api.together.xyz/v1/chat/completions',    model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo', needsKey: true  },
+    mistral:   { url: 'https://api.mistral.ai/v1/chat/completions',      model: 'mistral-small-latest', needsKey: true  },
+    openrouter:{ url: 'https://openrouter.ai/api/v1/chat/completions',    model: 'openai/gpt-4o',     needsKey: true  },
+    ollama:    { url: 'http://localhost:11434/v1/chat/completions',       model: 'llama3.1',          needsKey: false },
+    lmstudio:  { url: 'http://localhost:1234/v1/chat/completions',        model: 'local-model',       needsKey: false },
+    custom:    { url: '',                                                 model: '',                  needsKey: true  }
+  };
+
+  // ── DOM refs ────────────────────────────────────────────────────
+  const providerEl = document.getElementById('provider');
+  const apiKeyEl   = document.getElementById('apiKey');
+  const baseUrlEl  = document.getElementById('baseUrl');
+  const modelEl    = document.getElementById('model');
+
+  // ── Provider preset selection ───────────────────────────────────
+  providerEl.addEventListener('change', () => {
+    const p = presets[providerEl.value];
+    if (p) {
+      baseUrlEl.value = p.url;
+      modelEl.value = p.model;
+    }
+  });
+
+  // ── QuikChat instance ───────────────────────────────────────────
+  const chat = new quikchat('#chatBox', handleUserInput, {
+    theme: 'quikchat-theme-light',
+    titleArea: { title: 'AI Assistant', align: 'left', show: true }
+  });
+
+  chat.messageAddNew('Welcome! Tell me what you\'d like to do with the document — for example, "summarize this", "translate to French", "fix grammar", or "add a conclusion".', 'bot', 'left');
+
+  // ── QuikdownEditor instance ─────────────────────────────────────
+  const editor = new QuikdownEditor('#editorBox', {
+    mode: 'preview',
+    showSplitButton: false,
+    preloadFences: 'all'
+  });
+  editor.setMarkdown(initialContent);
+
+  // ── Tool definitions ────────────────────────────────────────────
+  const tools = [
+    {
+      type: 'function',
+      function: {
+        name: 'read_editor',
+        description: 'Read the current markdown content from the editor',
+        parameters: { type: 'object', properties: {}, required: [] }
+      }
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'write_editor',
+        description: 'Replace the entire editor content with new markdown',
+        parameters: {
+          type: 'object',
+          properties: {
+            content: { type: 'string', description: 'The new markdown content' }
+          },
+          required: ['content']
+        }
+      }
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'replace_text',
+        description: 'Find and replace text in the editor (first occurrence)',
+        parameters: {
+          type: 'object',
+          properties: {
+            find: { type: 'string', description: 'The exact text to find' },
+            replace: { type: 'string', description: 'The replacement text' }
+          },
+          required: ['find', 'replace']
+        }
+      }
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'extract_text',
+        description: 'Extract a section of the document by line range (1-based, inclusive) and return it. Does not modify the editor.',
+        parameters: {
+          type: 'object',
+          properties: {
+            start_line: { type: 'integer', description: 'First line to extract (1-based)' },
+            end_line: { type: 'integer', description: 'Last line to extract (1-based, inclusive)' }
+          },
+          required: ['start_line', 'end_line']
+        }
+      }
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'get_stats',
+        description: 'Get document statistics: character count, word count, line count, and paragraph count.',
+        parameters: { type: 'object', properties: {}, required: [] }
+      }
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'undo',
+        description: 'Undo the last edit to the editor content. Returns the current content after undoing.',
+        parameters: { type: 'object', properties: {}, required: [] }
+      }
+    },
+    {
+      type: 'function',
+      function: {
+        name: 'redo',
+        description: 'Redo a previously undone edit. Returns the current content after redoing.',
+        parameters: { type: 'object', properties: {}, required: [] }
+      }
+    }
+  ];
+
+  // ── System prompt ───────────────────────────────────────────────
+  const defaultSystemPrompt = `You are a document editing assistant. You help the user edit and answer questions about a markdown document in an editor. The user and you have the ability to read, write, and edit the document. The user can see and edit the rendered document (HTML) or markdown, but you always get the markdown as the true source of truth.
+
+## Tools
+
+You have seven tools:
+1. read_editor — Read the current raw markdown content of the editor. Always call this before making changes or answering questions about the document. The content you receive is markdown source, not rendered HTML.
+2. write_editor — Replace the entire editor content with new markdown. Use for large rewrites, translations, or restructuring.
+3. replace_text — Find and replace an exact string in the markdown source (first occurrence). Use for small, targeted edits.
+4. extract_text — Return a range of lines (1-based, inclusive) from the markdown source without modifying it. Useful for quoting or inspecting a specific section.
+5. get_stats — Return document statistics (characters, words, lines, paragraphs).
+6. undo — Undo the last edit. Use when the user asks to revert a change or if you made a mistake.
+7. redo — Redo a previously undone edit. Use when the user wants to restore a reverted change.
+
+## Workflow
+
+- Always call read_editor first — even if you read the document on a previous turn, the user or another tool call may have changed it. Re-read before every edit or question.
+- For small edits (fix a typo, rephrase a sentence), prefer replace_text.
+- For large changes (summarize, translate, restructure), use write_editor.
+- Use get_stats when the user asks about document length or size.
+- Use extract_text to quote or inspect a specific section without modifying it.
+- After making changes, briefly describe what you changed.
+- Keep all markdown formatting intact when editing — the document may contain fenced code blocks, mermaid diagrams, geojson maps, tables, and other markdown constructs. Preserve them.
+- Prefer rich content: when the user asks for math, diagrams, maps, data, or graphics, use the appropriate fence type so it renders visually rather than as plain text.
+- Fences ONLY render when they have the correct language tag. \\\`\\\`\\\`math renders a typeset equation; \\\`\\\`\\\`mermaid renders a diagram; \\\`\\\`\\\`geojson renders a map; \\\`\\\`\\\`svg renders a graphic; and so on. A plain \\\`\\\`\\\` fence (no tag) or a wrong tag will NOT render — the user will see raw text instead. Always tag fences correctly.
+
+## Chat vs. canvas
+
+Pay attention to whether the user wants a response in the chat or a change to the document canvas:
+- "Add a section about X" / "put a table of Y in the doc" / "show a diagram of Z" → edit the document canvas using tools.
+- "What does the document say about X?" / "How many sections are there?" / "Explain Y to me" → answer in the chat. Read the document if needed but reply in the chat message, not by editing the document.
+- If ambiguous, default to answering in the chat. If the user wanted it in the document they will say so.
+
+## Answering questions
+
+The user may ask questions about the document rather than requesting edits. When this happens:
+- Always call read_editor first to get the current content before answering.
+- The document may contain data in tables, code blocks, diagrams, or other structured formats — examine the raw markdown carefully.
+- If the answer requires analyzing a specific section, use extract_text to focus on it.
+- Give a direct answer based on the document content.
+
+## Rendered vs. raw content
+
+The editor renders fenced blocks as live, rich content. The user sees the rendered output and will refer to what they see (e.g. "the flowchart", "the map", "the 3D model") rather than the raw markdown. When the user mentions rendered elements, map those references back to the corresponding fenced blocks in the markdown source.
+
+Editing the fenced block content updates the rendered output immediately. You CAN and SHOULD make these edits directly — do not tell the user to go edit code elsewhere, use a different editor, or configure a library. You have full control via write_editor and replace_text. This editor renders all of the fence types listed below — never suggest the user needs a different tool to view the content.
+
+### Available fence types
+
+All of the following fence types are rendered live in the preview:
+
+| Fence | Renders as | User can edit in preview? |
+|-------|-----------|--------------------------|
+| \\\`\\\`\\\`mermaid | Diagrams and flowcharts (Mermaid.js) | No (read-only visual) |
+| \\\`\\\`\\\`geojson | Interactive Leaflet maps | No (read-only visual) |
+| \\\`\\\`\\\`math | Math equations (MathJax/KaTeX) | No (read-only visual) |
+| \\\`\\\`\\\`stl | 3D model viewer (STL format) | No (read-only visual) |
+| \\\`\\\`\\\`svg | Inline SVG graphics | No (read-only visual) |
+| \\\`\\\`\\\`html | Rendered HTML (images, embeds, etc.) | No (read-only visual) |
+| \\\`\\\`\\\`javascript, \\\`\\\`\\\`python, etc. | Syntax-highlighted code | Yes |
+| \\\`\\\`\\\`csv | Rendered table from CSV data | Yes |
+| \\\`\\\`\\\`tsv | Rendered table from TSV data | Yes |
+| \\\`\\\`\\\`psv | Rendered table from pipe-separated data | Yes |
+| Markdown tables (| syntax) | Formatted tables | Yes |
+
+You can create, modify, or remove any of these fences. The document will live-update when you change the content.
+
+### Specific rendering behaviors
+
+- **Maps (\\\`\\\`\\\`geojson):** Uses Leaflet with fitBounds() — auto-zooms to fit all features. There is NO zoom property in GeoJSON. To control zoom, control the geographic spread of features. For street-level zoom, place 2-3 points within a few blocks of each other. Remove distant points that would cause the map to zoom out. The fence content must be valid GeoJSON (Feature or FeatureCollection). Example:
+  \\\`\\\`\\\`geojson
+  {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "geometry": { "type": "Point", "coordinates": [-74.0445, 40.6892] },
+        "properties": { "name": "Statue of Liberty" }
+      }
+    ]
+  }
+  \\\`\\\`\\\`
+  Supports Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, and GeometryCollection. Coordinates are [longitude, latitude].
+
+- **Diagrams (\\\`\\\`\\\`mermaid):** Supports graph, flowchart, sequence, gantt, pie, and other Mermaid diagram types. Edit the syntax to change the diagram.
+
+- **Math (\\\`\\\`\\\`math):** Renders LaTeX math notation as beautifully typeset equations. This is the ONLY way to render math in this editor. Do NOT use \\\\[ ... \\\\], \\\\( ... \\\\), $$ ... $$, or $ ... $ — none of those render. They will appear as ugly raw LaTeX text. ALWAYS wrap math in a \\\`\\\`\\\`math fence. Example:
+  \\\`\\\`\\\`math
+  \\\\int_0^{\\\\pi} \\\\cos(x)\\\\,dx = 0
+  \\\`\\\`\\\`
+  This renders as a formatted equation. Put each equation or derivation in its own \\\`\\\`\\\`math fence.
+
+- **3D models (\\\`\\\`\\\`stl):** Renders ASCII STL format 3D models with an interactive viewer (rotate, zoom, pan). The fence content must be valid ASCII STL. Example:
+  \\\`\\\`\\\`stl
+  solid name
+    facet normal nx ny nz
+      outer loop
+        vertex x1 y1 z1
+        vertex x2 y2 z2
+        vertex x3 y3 z3
+      endloop
+    endfacet
+    ...
+  endsolid name
+  \\\`\\\`\\\`
+  Each facet defines a triangle with a normal vector and three vertices. Build shapes by listing all triangular faces. For example, a cube has 12 facets (2 triangles per face × 6 faces).
+
+- **SVG (\\\`\\\`\\\`svg):** Renders inline SVG graphics directly. The fence content must be a valid \<svg\> element.
+- **HTML (\\\`\\\`\\\`html):** Renders HTML content such as images with custom attributes, embedded elements, etc.
+- **Data tables (\\\`\\\`\\\`csv, \\\`\\\`\\\`tsv, \\\`\\\`\\\`psv):** Renders structured data as formatted tables. CSV uses commas, TSV uses tabs, PSV uses pipes as delimiters.
+- **Code blocks (\\\`\\\`\\\`javascript, etc.):** Syntax highlighted via highlight.js. Supports all common languages.
+
+## Communication style
+
+- Be concise and direct.
+- When performing multi-step operations, give brief progress updates between tool calls (e.g. "Reading the document...", "Found the section — making the edit now.", "Done. Here's what I changed:").
+- Don't repeat large chunks of the document back to the user unless they ask.
+- The chat panel also renders markdown, including the same fenced blocks (math, mermaid, code, etc.). You can use markdown formatting, code blocks, or fenced content in your chat replies when it helps — for example, showing a small code snippet, a formatted equation, or a table in your response. This is optional; plain text is fine for simple answers.`;
+
+  const systemPromptEl = document.getElementById('systemPromptArea');
+  systemPromptEl.value = defaultSystemPrompt;
+
+  document.getElementById('resetPromptBtn').addEventListener('click', () => {
+    systemPromptEl.value = defaultSystemPrompt;
+  });
+
+  // ── Conversation history (separate from chat widget) ────────────
+  let conversationMessages = [];
+
+  // ── Execute a tool call locally ─────────────────────────────────
+  function executeTool(name, args) {
+    switch (name) {
+      case 'read_editor':
+        return editor.getMarkdown();
+      case 'write_editor':
+        editor.setMarkdown(args.content || '');
+        return 'Editor content updated successfully.';
+      case 'replace_text': {
+        const current = editor.getMarkdown();
+        const idx = current.indexOf(args.find);
+        if (idx === -1) return 'Text not found: "' + args.find + '"';
+        const updated = current.substring(0, idx) + args.replace + current.substring(idx + args.find.length);
+        editor.setMarkdown(updated);
+        return 'Replaced first occurrence of "' + args.find + '".';
+      }
+      case 'extract_text': {
+        const lines = editor.getMarkdown().split('\n');
+        const start = Math.max(1, args.start_line) - 1;
+        const end = Math.min(lines.length, args.end_line);
+        if (start >= lines.length) return 'Start line ' + args.start_line + ' is beyond the document (' + lines.length + ' lines).';
+        return lines.slice(start, end).join('\n');
+      }
+      case 'get_stats': {
+        const content = editor.getMarkdown();
+        const lines = content.split('\n');
+        const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+        const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim().length > 0).length;
+        return JSON.stringify({ characters: content.length, words: words, lines: lines.length, paragraphs: paragraphs });
+      }
+      case 'undo':
+        editor.undo();
+        return 'Undo performed. Current content:\n' + editor.getMarkdown();
+      case 'redo':
+        editor.redo();
+        return 'Redo performed. Current content:\n' + editor.getMarkdown();
+      default:
+        return 'Unknown tool: ' + name;
+    }
+  }
+
+  // ── Truncate long strings for display ───────────────────────────
+  function truncate(str, max) {
+    if (str.length <= max) return str;
+    return str.substring(0, max) + '... (' + str.length + ' chars)';
+  }
+
+  // ── Main handler ────────────────────────────────────────────────
+  async function handleUserInput(chatInstance, userInput) {
+    const apiKey  = apiKeyEl.value || '';
+    const baseUrl = baseUrlEl.value || 'https://api.openai.com/v1/chat/completions';
+    const model   = modelEl.value || 'gpt-5.2';
+
+    // Check for API key (local providers don't need one)
+    const preset = presets[providerEl.value];
+    if (preset && preset.needsKey && !apiKey) {
+      chatInstance.messageAddNew(userInput, 'user', 'right');
+      chatInstance.messageAddNew('Please enter an API key in the Params tab. Your key is only sent to the API endpoint you configure — it is never stored on any server.', 'system', 'left');
+      return;
+    }
+
+    // Show user message in chat
+    chatInstance.messageAddNew(userInput, 'user', 'right');
+    chatInstance.inputAreaSetEnabled(false);
+    chatInstance.inputAreaSetButtonText('...');
+
+    // Build messages array (don't push to conversationMessages until we get a successful response)
+    const messages = [
+      { role: 'system', content: systemPromptEl.value },
+      ...conversationMessages,
+      { role: 'user', content: userInput }
+    ];
+
+    // Show typing indicator while LLM is working
+    const typingId = chatInstance.messageAddTypingIndicator('Assistant', 'left');
+    let success = false;
+
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (apiKey) headers['Authorization'] = 'Bearer ' + apiKey;
+
+      // Tool-call loop (max 10 rounds)
+      for (let round = 0; round < 10; round++) {
+        let response;
+        try {
+          response = await fetch(baseUrl, {
+            method: 'POST',
+            headers: headers,
+            signal: AbortSignal.timeout(60000),
+            body: JSON.stringify({
+              model: model,
+              messages: messages,
+              tools: tools,
+              temperature: 0.3,
+              stream: false
+            })
+          });
+        } catch (fetchErr) {
+          if (fetchErr.name === 'TimeoutError') {
+            throw new Error('Request timed out after 60 seconds. Check that the API endpoint is reachable.');
+          }
+          throw new Error('Could not connect to ' + baseUrl + '. Check the URL and that the server is running.');
+        }
+
+        if (!response.ok) {
+          const errText = await response.text().catch(() => '');
+          if (response.status === 401) throw new Error('Authentication failed (401). Check your API key.');
+          if (response.status === 404) throw new Error('Endpoint not found (404). Check the Base URL.');
+          if (response.status === 429) throw new Error('Rate limited (429). Wait a moment and try again.');
+          throw new Error('API error ' + response.status + ': ' + (errText.slice(0, 200) || response.statusText));
+        }
+
+        const data = await response.json();
+        if (!data.choices || !data.choices[0]) {
+          throw new Error('Unexpected API response — no choices returned. ' + (data.error ? data.error.message : ''));
+        }
+
+        const choice = data.choices[0];
+        const assistantMsg = choice.message;
+
+        // Track in messages array for the tool-call loop
+        messages.push(assistantMsg);
+
+        // If the model wants to call tools
+        if (choice.finish_reason === 'tool_calls' || (assistantMsg.tool_calls && assistantMsg.tool_calls.length > 0)) {
+          for (const toolCall of assistantMsg.tool_calls) {
+            const fnName = toolCall.function.name;
+            let fnArgs = {};
+            try { fnArgs = JSON.parse(toolCall.function.arguments); } catch (e) { /* empty */ }
+
+            // Display tool call in chat (hidden)
+            const callDisplay = 'Tool: ' + fnName + '\nArgs: ' + truncate(JSON.stringify(fnArgs, null, 2), 300);
+            chatInstance.messageAddFull({
+              content: callDisplay,
+              userString: 'Tool Call',
+              align: 'left',
+              role: 'tool',
+              visible: false,
+              tags: ['tool-call']
+            });
+
+            // Execute the tool
+            const result = executeTool(fnName, fnArgs);
+
+            // Display tool result in chat (hidden)
+            chatInstance.messageAddFull({
+              content: 'Result: ' + truncate(result, 300),
+              userString: 'Tool Result',
+              align: 'left',
+              role: 'tool',
+              visible: false,
+              tags: ['tool-call']
+            });
+
+            // Add tool result to messages for next round
+            messages.push({
+              role: 'tool',
+              tool_call_id: toolCall.id,
+              content: result
+            });
+          }
+          // Continue the loop — let the LLM respond after seeing tool results
+          continue;
+        }
+
+        // finish_reason === "stop" — display the assistant's text response
+        if (assistantMsg.content) {
+          chatInstance.messageAddNew(assistantMsg.content, 'bot', 'left');
+        }
+        success = true;
+        break;
+      }
+    } catch (error) {
+      console.error('LLM request error:', error);
+      chatInstance.messageAddNew('Error: ' + error.message, 'system', 'left');
+    } finally {
+      chatInstance.messageRemove(typingId);
+      chatInstance.inputAreaSetEnabled(true);
+      chatInstance.inputAreaSetButtonText('Send');
+    }
+
+    // Only commit to conversation history on success (avoids poisoning history with partial exchanges)
+    if (success) {
+      // messages = [system, ...old_history, user_msg, ...new_assistant_and_tool_msgs]
+      // new messages start after the system prompt + old history + user message
+      const newStart = 1 + conversationMessages.length;
+      for (let i = newStart; i < messages.length; i++) {
+        conversationMessages.push(messages[i]);
+      }
+    }
+  }
+
+  // ── Toggle tool-call visibility ─────────────────────────────────
+  let toolsVisible = false;
+  document.getElementById('btn-toggle').addEventListener('click', () => {
+    toolsVisible = !toolsVisible;
+    chat.messageSetVisibleByTag('tool-call', toolsVisible);
+    const btn = document.getElementById('btn-toggle');
+    btn.textContent = toolsVisible ? 'Hide Tool Calls' : 'Show Tool Calls';
+    if (toolsVisible) btn.classList.add('active');
+    else btn.classList.remove('active');
+  });
+
+  // ── Clear chat ──────────────────────────────────────────────────
+  document.getElementById('btn-clear').addEventListener('click', () => {
+    chat.historyImport([]);
+    conversationMessages = [];
+    chat.messageAddNew('Chat cleared. The editor content is preserved — tell me what you\'d like to do next.', 'bot', 'left');
+  });
+
+  // ── Export chat history ────────────────────────────────────────
+  document.getElementById('btn-export').addEventListener('click', () => {
+    const history = chat.historyGet();
+    const text = history.map(m => m.role + ':\n' + m.content).join('\n\n---\n\n');
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'chat-history-' + new Date().toISOString().slice(0, 10) + '.txt';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  // ── Copy chat to clipboard ──────────────────────────────────────
+  document.getElementById('btn-copy').addEventListener('click', () => {
+    const history = chat.historyGet();
+    const text = history.map(m => m.role + ':\n' + m.content).join('\n\n---\n\n');
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('btn-copy');
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy Chat'; }, 1500);
+    });
+  });
+
+  // ── Cookie persistence (te_ prefix) ────────────────────────────
+  const settingsKeys = [
+    { id: 'provider', cookie: 'te_provider' },
+    { id: 'apiKey',   cookie: 'te_apiKey' },
+    { id: 'baseUrl',  cookie: 'te_baseUrl' },
+    { id: 'model',    cookie: 'te_model' },
+    { id: 'systemPromptArea', cookie: 'te_systemPrompt' }
+  ];
+
+  function saveSettings() {
+    const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
+    settingsKeys.forEach(({ id, cookie }) => {
+      const el = document.getElementById(id);
+      if (el) document.cookie = cookie + '=' + encodeURIComponent(el.value) + ';expires=' + expires + ';path=/;SameSite=Lax';
+    });
+  }
+
+  function loadSettings() {
+    const cookies = {};
+    document.cookie.split(';').forEach(c => {
+      const [name, ...rest] = c.trim().split('=');
+      if (name && rest.length) cookies[name] = decodeURIComponent(rest.join('='));
+    });
+    settingsKeys.forEach(({ id, cookie }) => {
+      const el = document.getElementById(id);
+      if (el && cookies[cookie] !== undefined) el.value = cookies[cookie];
+    });
+  }
+
+  document.getElementById('saveBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    saveSettings();
+  });
+
+  loadSettings();
+});
+</script>
+</body>
+</html>

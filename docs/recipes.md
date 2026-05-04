@@ -149,7 +149,7 @@ const chat = new quikchat('#chat', async (chat, msg) => {
 });
 ```
 
-See the [Streaming guide](../docs/streaming.md) for complete fetch + ReadableStream examples.
+See the [Streaming guide](streaming.md) for complete fetch + ReadableStream examples.
 
 ---
 

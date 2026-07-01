@@ -20,7 +20,7 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Use Node.js 24 (ships with npm 11+ for OIDC publishing)
         uses: actions/setup-node@v6

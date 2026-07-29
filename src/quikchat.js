@@ -159,7 +159,7 @@ class quikchat {
     }
 
     titleAreaSetContents(title, align = 'center') {
-        this._titleArea.innerHTML = title;
+        this._titleArea.innerHTML = this._processContent(title);
         this._titleArea.style.textAlign = align;
     }
 
@@ -319,7 +319,7 @@ class quikchat {
         const userDiv = document.createElement('div');
         userDiv.classList.add('quikchat-user-label');
         userDiv.style.textAlign = input.align;
-        userDiv.innerHTML = input.userString;
+        userDiv.innerHTML = this._processContent(input.userString);
 
         const contentDiv = document.createElement('div');
         contentDiv.classList.add('quikchat-message-content');

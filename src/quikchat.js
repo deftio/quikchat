@@ -159,7 +159,7 @@ class quikchat {
     }
 
     titleAreaSetContents(title, align = 'center') {
-        this._titleArea.innerHTML = title;
+        this._titleArea.innerHTML = this._sanitizeOnly(title);
         this._titleArea.style.textAlign = align;
     }
 
@@ -268,6 +268,15 @@ class quikchat {
         return div.innerHTML;
     }
 
+    _sanitizeOnly(content) {
+        if (this._sanitize === true) {
+            return this._escapeHTML(content);
+        } else if (typeof this._sanitize === 'function') {
+            return this._sanitize(content);
+        }
+        return content;
+    }
+
     _processContent(content) {
         if (this._sanitize === true) {
             content = this._escapeHTML(content);
@@ -319,7 +328,7 @@ class quikchat {
         const userDiv = document.createElement('div');
         userDiv.classList.add('quikchat-user-label');
         userDiv.style.textAlign = input.align;
-        userDiv.innerHTML = input.userString;
+        userDiv.innerHTML = this._sanitizeOnly(input.userString);
 
         const contentDiv = document.createElement('div');
         contentDiv.classList.add('quikchat-message-content');
@@ -609,7 +618,7 @@ class quikchat {
     }
 
     static version() {
-        return { "version": "1.2.7", "license": "BSD-2", "url": "https://github.com/deftio/quikchat" };
+        return { "version": "1.2.8", "license": "BSD-2", "url": "https://github.com/deftio/quikchat" };
     }
 
     /**

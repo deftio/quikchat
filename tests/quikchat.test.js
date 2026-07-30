@@ -844,7 +844,7 @@ describe('quikchat', () => {
     describe('static methods', () => {
         test('version should return version info', () => {
             const v = quikchat.version();
-            expect(v.version).toBe('1.2.7');
+            expect(v.version).toBe('1.2.8');
             expect(v.license).toBe('BSD-2');
             expect(v.url).toContain('quikchat');
         });
@@ -955,6 +955,48 @@ describe('quikchat', () => {
             const content = chatInstance.messageGetDOMObject(id).querySelector('.quikchat-message-content');
             expect(content.innerHTML).not.toContain('<b>');
             chatInstance.setSanitize(false);
+        });
+
+        test('sanitize: true should escape HTML in title and userString', () => {
+            document.body.innerHTML = '<div id="san-label-test"></div>';
+            const el = document.getElementById('san-label-test');
+            const instance = new quikchat(el, () => {}, { sanitize: true });
+
+            instance.titleAreaSetContents('<script>alert("xss")</script>');
+            expect(instance._titleArea.innerHTML).not.toContain('<script>');
+            expect(instance._titleArea.textContent).toContain('<script>');
+
+            const id = instance.messageAddNew('hi', '<img src=x onerror=alert(1)>', 'right');
+            const label = instance.messageGetDOMObject(id).querySelector('.quikchat-user-label');
+            expect(label.innerHTML).not.toContain('<img');
+            expect(label.querySelector('img')).toBeNull();
+        });
+
+        test('sanitize: function should run custom sanitizer on title and userString', () => {
+            document.body.innerHTML = '<div id="san-label-fn-test"></div>';
+            const el = document.getElementById('san-label-fn-test');
+            const sanitizer = (s) => s.replace(/<[^>]*>/g, '');
+            const instance = new quikchat(el, () => {}, { sanitize: sanitizer });
+
+            instance.titleAreaSetContents('<b>Title</b>');
+            expect(instance._titleArea.innerHTML).toBe('Title');
+
+            const id = instance.messageAddNew('hi', '<b>Alice</b>', 'right');
+            const label = instance.messageGetDOMObject(id).querySelector('.quikchat-user-label');
+            expect(label.innerHTML).toBe('Alice');
+        });
+
+        test('sanitize: false (default) should preserve raw HTML in title and userString', () => {
+            document.body.innerHTML = '<div id="san-label-off-test"></div>';
+            const el = document.getElementById('san-label-off-test');
+            const instance = new quikchat(el, () => {});
+
+            instance.titleAreaSetContents('<span class="icon">Chat</span>');
+            expect(instance._titleArea.querySelector('span.icon')).toBeTruthy();
+
+            const id = instance.messageAddNew('hi', '<b>Alice</b>', 'right');
+            const label = instance.messageGetDOMObject(id).querySelector('.quikchat-user-label');
+            expect(label.querySelector('b')).toBeTruthy();
         });
     });
 

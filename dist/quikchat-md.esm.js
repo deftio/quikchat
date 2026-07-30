@@ -344,7 +344,7 @@ var quikchat = /*#__PURE__*/function () {
     key: "titleAreaSetContents",
     value: function titleAreaSetContents(title) {
       var align = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'center';
-      this._titleArea.innerHTML = title;
+      this._titleArea.innerHTML = this._sanitizeOnly(title);
       this._titleArea.style.textAlign = align;
     }
   }, {
@@ -471,6 +471,16 @@ var quikchat = /*#__PURE__*/function () {
       return div.innerHTML;
     }
   }, {
+    key: "_sanitizeOnly",
+    value: function _sanitizeOnly(content) {
+      if (this._sanitize === true) {
+        return this._escapeHTML(content);
+      } else if (typeof this._sanitize === 'function') {
+        return this._sanitize(content);
+      }
+      return content;
+    }
+  }, {
     key: "_processContent",
     value: function _processContent(content) {
       if (this._sanitize === true) {
@@ -537,7 +547,7 @@ var quikchat = /*#__PURE__*/function () {
       var userDiv = document.createElement('div');
       userDiv.classList.add('quikchat-user-label');
       userDiv.style.textAlign = input.align;
-      userDiv.innerHTML = input.userString;
+      userDiv.innerHTML = this._sanitizeOnly(input.userString);
       var contentDiv = document.createElement('div');
       contentDiv.classList.add('quikchat-message-content');
       contentDiv.style.textAlign = input.align;
@@ -898,7 +908,7 @@ var quikchat = /*#__PURE__*/function () {
     key: "version",
     value: function version() {
       return {
-        "version": "1.2.7",
+        "version": "1.2.8",
         "license": "BSD-2",
         "url": "https://github.com/deftio/quikchat"
       };
